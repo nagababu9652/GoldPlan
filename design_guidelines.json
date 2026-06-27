@@ -1,0 +1,85 @@
+{
+  "theme": "light",
+  "archetype": "Hybrid: Swiss Brutalist + Luxury (Editorial Finance)",
+  "vibe": "High-end financial newspaper meets 2026 tech. Authoritative, grounded, precision. Focus on stark typography, spacious asymmetrical grids, and 1px sharp borders. Do not use glowing gradients or typical tech-SaaS styles.",
+  "colors": {
+    "background": {
+      "primary": "#F8F6F0",
+      "secondary": "#EFECE4",
+      "inverse": "#0C0B0A"
+    },
+    "text": {
+      "primary": "#0C0B0A",
+      "secondary": "#5C5850",
+      "inverse": "#F8F6F0",
+      "accent": "#9E7B35"
+    },
+    "brand": {
+      "primary": "#0C0B0A",
+      "accent": "#B48E4B",
+      "border": "#E2DED5"
+    }
+  },
+  "typography": {
+    "imports": [
+      "@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap');"
+    ],
+    "fonts": {
+      "heading": "'Cormorant Garamond', serif",
+      "body": "'Outfit', sans-serif",
+      "mono": "'IBM Plex Mono', monospace"
+    },
+    "scale": {
+      "h1": "text-5xl sm:text-6xl tracking-tighter leading-[1.05] font-medium",
+      "h2": "text-4xl sm:text-5xl tracking-tight leading-[1.1] font-medium",
+      "h3": "text-2xl sm:text-3xl tracking-tight",
+      "body": "text-base leading-relaxed text-[#5C5850]",
+      "label": "text-xs uppercase tracking-[0.2em] font-mono text-[#0C0B0A]"
+    }
+  },
+  "layout": {
+    "spacing_system": "Generous. Use p-8, p-12, p-24 for section padding.",
+    "grid_patterns": "Bento grids with 1px solid borders. Asymmetric layouts. Override standard centering with left-aligned optical precision.",
+    "borders": "1px solid #E2DED5 on cards, nav, and structural elements. No soft box-shadows. Use sharp corners (rounded-none)."
+  },
+  "components": {
+    "navigation": {
+      "style": "Full-width, sticky top-0 z-50, frosted glass (bg-[#F8F6F0]/90 backdrop-blur-xl) with a sharp 1px bottom border.",
+      "mega_menu": "Multi-column panel layout. Grouped by user outcome. Include icons (lucide-react), brief descriptions, and an embedded CTA card for high intent (e.g. 'Get Demo'). Must use hover triggers for desktop."
+    },
+    "hero": {
+      "composition": "Editorial split layout. Massive Serif Headline left-aligned. Include a live 'Gold Price Ticker' using IBM Plex Mono.",
+      "image_treatment": "Use abstract gold texture or real office photography within a strict 1px border. No full-screen dark overlays."
+    },
+    "cards": {
+      "style": "Flat background (bg-[#F8F6F0] or bg-[#EFECE4]), 1px solid border (#E2DED5), rounded-none. On hover, apply a slight brutalist shift (-translate-y-1) and a sharp hard shadow (shadow-[4px_4px_0px_#0C0B0A])."
+    },
+    "buttons": {
+      "primary": "bg-[#0C0B0A] text-[#F8F6F0] hover:bg-[#B48E4B] hover:text-[#0C0B0A] transition-colors rounded-none px-6 py-3 font-medium flex items-center justify-center",
+      "secondary": "bg-transparent border border-[#0C0B0A] text-[#0C0B0A] hover:bg-[#EFECE4] transition-colors rounded-none px-6 py-3 font-medium flex items-center justify-center"
+    }
+  },
+  "media": {
+    "hero_accent": {
+      "url": "https://images.pexels.com/photos/14331332/pexels-photo-14331332.png",
+      "description": "Abstract matte gold texture for hero accent panel"
+    },
+    "office_lifestyle": {
+      "url": "https://images.pexels.com/photos/7414274/pexels-photo-7414274.jpeg",
+      "description": "High-end investment professionals meeting. Use in Process or Dashboard section context."
+    },
+    "architecture_accent": {
+      "url": "https://images.pexels.com/photos/15291638/pexels-photo-15291638.jpeg",
+      "description": "Warm lit corporate architecture, use as a bento box filler or testimonial background image."
+    }
+  },
+  "instructions_to_main_agent": [
+    "Remove all existing dark theme, generic neon/purple gradients, and Inter font usage.",
+    "Implement the 'Editorial Finance' aesthetic. This requires sharp edges, off-white/linen backgrounds (#F8F6F0), and high contrast black (#0C0B0A) text.",
+    "Rebuild the Navigation component to include a full-width Mega Menu. The Mega Menu must feature multi-column layouts, lucide-react icons, and short descriptions for sub-items under 'Platform', 'Reports', etc.",
+    "Update the Tailwind configuration or layout.tsx to load Cormorant Garamond (heading), Outfit (body), and IBM Plex Mono (labels/data).",
+    "Design the Hero section like a financial newspaper's front page: huge serif headline ('Smarter Gold Planning for Smarter Businesses'), a monospace gold price ticker, and sharp structural borders.",
+    "Use standard HTML/Tailwind for main marketing sections to allow creative asymmetric grids, avoiding generic Shadcn Cards unless for complex interactive components.",
+    "Every interactive or informational element MUST include a 'data-testid' attribute (e.g., data-testid='mega-menu-platform', data-testid='hero-cta-button')."
+  ]
+}
