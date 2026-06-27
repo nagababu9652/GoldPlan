@@ -1,163 +1,108 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
 
 const plans = [
   {
     name: 'Starter',
     price: '$299',
-    period: 'per month',
-    description: 'Perfect for small investment portfolios',
-    features: [
-      'Up to 5 portfolio analyses',
-      'Monthly reports',
-      'Email support',
-      'Basic risk assessment',
-      'Market alerts',
-    ],
-    highlighted: false,
+    period: '/ month',
+    desc: 'For analysts and family offices testing the practice.',
+    features: ['Up to 5 portfolio briefs', 'Monthly reports', 'Email support', 'Baseline risk console', 'Daily market wire'],
+    featured: false,
   },
   {
     name: 'Professional',
     price: '$999',
-    period: 'per month',
-    description: 'Ideal for growing businesses',
-    features: [
-      'Unlimited portfolio analyses',
-      'Weekly reports',
-      'Priority support',
-      'Advanced risk modeling',
-      'Real-time market data',
-      'Custom dashboards',
-      'API access',
-      'White-label options',
-    ],
-    highlighted: true,
+    period: '/ month',
+    desc: 'For investment teams that read us every morning.',
+    features: ['Unlimited briefs', 'Weekly reports', 'Priority editorial line', 'Advanced risk modelling', 'Live console & alerts', 'Custom dashboards', 'API access', 'White-label option'],
+    featured: true,
   },
   {
-    name: 'Enterprise',
-    price: 'Custom',
-    period: 'contact sales',
-    description: 'For large-scale operations',
-    features: [
-      'Everything in Professional',
-      'Dedicated account manager',
-      'Custom integrations',
-      'Advanced automation',
-      'Training & onboarding',
-      'SLA guarantee',
-      'Compliance reports',
-    ],
-    highlighted: false,
+    name: 'Institutional',
+    price: 'Bespoke',
+    period: 'on enquiry',
+    desc: 'For treasuries, allocators and committees that need bespoke coverage.',
+    features: ['Everything in Professional', 'Named senior editor', 'Custom model calibration', 'Bespoke compliance packs', 'Onboarding & training', 'SLA & data residency', 'Quarterly review'],
+    featured: false,
   },
 ];
 
 export default function Pricing() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 },
-    },
-  };
-
   return (
-    <section id="pricing" className="py-24 px-4 sm:px-6 lg:px-8 relative border-y border-white/5">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gold-DEFAULT/5 to-transparent" />
+    <section id="pricing" className="hairline-b" data-testid="pricing-section">
+      <div className="px-6 lg:px-10 py-16 lg:py-24">
+        <div className="grid grid-cols-12 gap-6 mb-14">
+          <div className="col-span-12 lg:col-span-5">
+            <div className="label-mono text-ash mb-3">— 007 · Subscription</div>
+            <h2 className="display text-[44px] lg:text-[64px]">
+              Three tiers.<br/>One <em>standard</em>.
+            </h2>
+          </div>
+          <div className="col-span-12 lg:col-span-6 lg:col-start-7 flex items-end">
+            <p className="text-ash text-[16px] lg:text-[18px] leading-[1.6]">
+              Annual mandates. Cancel by quarter notice. Pricing reflects research access,
+              not seat licences — every member of your team is covered.
+            </p>
+          </div>
+        </div>
 
-      <div className="max-w-7xl mx-auto relative">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-center mb-20"
-        >
-          <span className="inline-block px-4 py-2 rounded-full glass border border-gold-DEFAULT/30 text-gold-DEFAULT text-sm font-semibold mb-6">
-            Pricing Plans
-          </span>
-          <h2 className="text-4xl lg:text-6xl font-bold mb-6">
-            Simple, Transparent <span className="gradient-text">Pricing</span>
-          </h2>
-          <p className="text-lg lg:text-xl text-gray-400 max-w-3xl mx-auto">
-            Choose the plan that fits your business needs and scale as you grow
-          </p>
-        </motion.div>
-
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
-        >
-          {plans.map((plan) => (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-px bg-line border border-line">
+          {plans.map((p, i) => (
             <motion.div
-              key={plan.name}
-              variants={cardVariants}
-              whileHover={{ y: -8, scale: 1.02 }}
-              className={`relative rounded-3xl p-8 transition-smooth ${
-                plan.highlighted
-                  ? 'glass-hover border-2 border-gold-DEFAULT shadow-2xl card-glow z-10'
-                  : 'glass hover:glass-hover border border-white/5 hover:border-gold-DEFAULT/30'
-              }`}
+              key={p.name}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, delay: i * 0.08 }}
+              className={`relative p-8 lg:p-10 flex flex-col ${p.featured ? 'bg-obsidian text-bone' : 'bg-bone'}`}
+              data-testid={`pricing-${p.name.toLowerCase()}`}
             >
-              {plan.highlighted && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <div className="btn-gold text-black px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                    Most Popular
-                  </div>
+              {p.featured && (
+                <div className="absolute -top-3 left-8 px-3 py-1 bg-antique text-obsidian font-mono text-[10px] uppercase tracking-wider2">
+                  Most chosen
                 </div>
               )}
 
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                <p className="text-gray-400 text-sm">{plan.description}</p>
+              <div className="flex items-baseline justify-between mb-2">
+                <h3 className="font-serif text-[34px] tracking-tight">{p.name}</h3>
+                <span className={`label-mono ${p.featured ? 'text-bone/50' : 'text-ash'}`}>0{i + 1}</span>
+              </div>
+              <p className={`text-[14px] mb-8 ${p.featured ? 'text-bone/60' : 'text-ash'}`}>{p.desc}</p>
+
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="font-serif text-[64px] leading-none tracking-tight">{p.price}</span>
+              </div>
+              <div className={`label-mono ${p.featured ? 'text-antique' : 'text-ash'} mb-8 pb-8 border-b ${p.featured ? 'border-bone/15' : 'border-line'}`}>
+                {p.period}
               </div>
 
-              <div className="mb-8">
-                <span className="text-5xl font-bold gradient-text">{plan.price}</span>
-                {plan.period && (
-                  <span className="text-gray-400 text-sm ml-2">/ {plan.period}</span>
-                )}
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`w-full py-4 rounded-xl font-bold mb-8 transition-smooth flex items-center justify-center gap-2 ${
-                  plan.highlighted
-                    ? 'btn-gold text-black'
-                    : 'glass hover:glass-hover border border-white/10'
-                }`}
-              >
-                Get Started <ArrowRight size={18} />
-              </motion.button>
-
-              <div className="space-y-4">
-                {plan.features.map((feature) => (
-                  <div key={feature} className="flex items-start gap-3">
-                    <CheckCircle2 size={20} className="text-emerald-DEFAULT flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300 text-sm leading-relaxed">{feature}</span>
-                  </div>
+              <ul className="space-y-3 mb-10 flex-1">
+                {p.features.map((f) => (
+                  <li key={f} className={`flex items-start gap-3 text-[14px] ${p.featured ? 'text-bone/85' : 'text-obsidian'}`}>
+                    <Check size={16} className={p.featured ? 'text-antique mt-0.5' : 'text-antique-dark mt-0.5'} />
+                    <span>{f}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
+
+              <a
+                href="#"
+                className={`inline-flex items-center justify-between px-5 py-3.5 text-[13px] font-medium border transition-colors ${
+                  p.featured
+                    ? 'bg-antique text-obsidian border-antique hover:bg-bone hover:border-bone'
+                    : 'border-obsidian text-obsidian hover:bg-obsidian hover:text-bone'
+                }`}
+                data-testid={`pricing-cta-${p.name.toLowerCase()}`}
+              >
+                {p.price === 'Bespoke' ? 'Speak to sales' : 'Start mandate'}
+                <ArrowRight size={14} />
+              </a>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

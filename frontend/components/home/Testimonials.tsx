@@ -1,120 +1,79 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
+import { Quote } from 'lucide-react';
 
 const testimonials = [
   {
     name: 'Sarah Johnson',
-    role: 'CFO at Wealth Advisors Inc',
-    company: 'Wealth Advisors',
-    rating: 5,
-    text: 'GoldPlan AI transformed how we analyze precious metal investments. The insights are invaluable.',
-    avatar: '👩‍💼',
+    role: 'Chief Financial Officer',
+    company: 'Wealth Advisors Inc.',
+    text: 'GoldPlan AI rewrote how we underwrite precious-metal exposure. The editorial standard is the difference — every claim is sourced, every model assumption is defended.',
+    initials: 'SJ',
   },
   {
     name: 'Michael Chen',
-    role: 'Investment Director at Global Finance',
-    company: 'Global Finance',
-    rating: 5,
-    text: 'The accuracy of their reports is unmatched. We\'ve seen 34% improvement in portfolio performance.',
-    avatar: '👨‍💼',
+    role: 'Director, Allocations',
+    company: 'Global Finance Partners',
+    text: 'Their forecasting cadence improved our risk-adjusted return by 34% over four quarters. We treat their morning brief like a Bloomberg replacement, not a supplement.',
+    initials: 'MC',
   },
   {
     name: 'Emily Rodriguez',
-    role: 'CEO at Investment Partners LLC',
-    company: 'Investment Partners',
-    rating: 5,
-    text: 'Outstanding platform. The AI insights help us make better decisions faster than ever before.',
-    avatar: '👩‍💼',
+    role: 'Chief Executive Officer',
+    company: 'Investment Partners LLC',
+    text: 'A research house that ships software. The dashboard is a courtesy — the real product is the people behind the analysis. Worth every basis point.',
+    initials: 'ER',
   },
 ];
 
 export default function Testimonials() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.5 },
-    },
-  };
-
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 relative">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gold-DEFAULT/5 to-transparent" />
+    <section className="hairline-b bg-obsidian text-bone" data-testid="testimonials-section">
+      <div className="px-6 lg:px-10 py-16 lg:py-24">
+        <div className="grid grid-cols-12 gap-6 mb-14">
+          <div className="col-span-12 lg:col-span-5">
+            <div className="label-mono text-bone/50 mb-3">— 006 · Letters</div>
+            <h2 className="display text-[44px] lg:text-[64px] text-bone">
+              From the<br/><em className="text-antique">desk</em> of clients.
+            </h2>
+          </div>
+          <div className="col-span-12 lg:col-span-5 lg:col-start-8 flex items-end">
+            <p className="text-bone/60 text-[16px] lg:text-[18px] leading-[1.6]">
+              Unedited correspondence from allocators, treasurers and chief economists who
+              read us every morning.
+            </p>
+          </div>
+        </div>
 
-      <div className="max-w-7xl mx-auto relative">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-center mb-20"
-        >
-          <span className="inline-block px-4 py-2 rounded-full glass border border-gold-DEFAULT/30 text-gold-DEFAULT text-sm font-semibold mb-6">
-            Testimonials
-          </span>
-          <h2 className="text-4xl lg:text-6xl font-bold mb-6">
-            What Our Clients <span className="gradient-text">Say</span>
-          </h2>
-          <p className="text-lg lg:text-xl text-gray-400 max-w-3xl mx-auto">
-            Join thousands of satisfied financial professionals worldwide
-          </p>
-        </motion.div>
-
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
-        >
-          {testimonials.map((testimonial) => (
-            <motion.div
-              key={testimonial.name}
-              variants={cardVariants}
-              whileHover={{ y: -8, scale: 1.02 }}
-              className="glass p-8 rounded-2xl hover:glass-hover transition-smooth card-glow border border-white/5 hover:border-gold-DEFAULT/30"
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-bone/10 border border-bone/10">
+          {testimonials.map((t, i) => (
+            <motion.figure
+              key={t.name}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, delay: i * 0.08 }}
+              className="bg-obsidian p-8 lg:p-10 flex flex-col"
+              data-testid={`testimonial-${i}`}
             >
-              {/* Quote icon and rating */}
-              <div className="flex items-start justify-between mb-6">
-                <div className="text-4xl text-gold-DEFAULT/30">"</div>
-                <div className="flex gap-1">
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star key={i} size={18} className="fill-gold-DEFAULT text-gold-DEFAULT" />
-                  ))}
+              <Quote size={28} className="text-antique mb-8" />
+              <blockquote className="font-serif text-[22px] lg:text-[24px] leading-[1.35] tracking-tight text-bone flex-1">
+                &ldquo;{t.text}&rdquo;
+              </blockquote>
+              <figcaption className="mt-8 pt-6 border-t border-bone/15 flex items-center gap-4">
+                <div className="w-12 h-12 border border-antique text-antique flex items-center justify-center font-serif text-[18px]">
+                  {t.initials}
                 </div>
-              </div>
-
-              {/* Quote */}
-              <p className="text-gray-300 mb-8 leading-relaxed text-lg italic">
-                {testimonial.text}
-              </p>
-
-              {/* Author */}
-              <div className="flex items-center gap-4 pt-6 border-t border-white/10">
-                <div className="text-4xl">{testimonial.avatar}</div>
                 <div>
-                  <p className="font-bold text-white text-lg">{testimonial.name}</p>
-                  <p className="text-sm text-gray-400">{testimonial.role}</p>
-                  <p className="text-xs text-gold-DEFAULT font-semibold">{testimonial.company}</p>
+                  <div className="text-[14px] font-medium text-bone">{t.name}</div>
+                  <div className="text-[12px] text-bone/55">{t.role}</div>
+                  <div className="label-mono text-antique mt-0.5">{t.company}</div>
                 </div>
-              </div>
-            </motion.div>
+              </figcaption>
+            </motion.figure>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

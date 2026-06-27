@@ -1,165 +1,162 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Mail, Linkedin, Twitter, Github } from 'lucide-react';
+import { ArrowUpRight, Mail, Linkedin, Twitter, Github } from 'lucide-react';
 
 const footerLinks = {
-  Company: [
-    { label: 'About', href: '#' },
-    { label: 'Blog', href: '#' },
-    { label: 'Careers', href: '#' },
-    { label: 'Press', href: '#' },
-  ],
-  Solutions: [
-    { label: 'Gold Planning', href: '#' },
-    { label: 'Financial Reports', href: '#' },
-    { label: 'Risk Assessment', href: '#' },
+  Platform: [
     { label: 'Market Intelligence', href: '#' },
+    { label: 'Forecasting',         href: '#' },
+    { label: 'Risk Console',        href: '#' },
+    { label: 'Report Builder',      href: '#' },
+  ],
+  Reports: [
+    { label: 'Gold Quarterly',    href: '#' },
+    { label: 'Silver & Platinum', href: '#' },
+    { label: 'FX & Macro',        href: '#' },
+    { label: 'Allocation',        href: '#' },
   ],
   Resources: [
+    { label: 'Field Notes',   href: '#' },
     { label: 'Documentation', href: '#' },
     { label: 'API Reference', href: '#' },
-    { label: 'Case Studies', href: '#' },
-    { label: 'Templates', href: '#' },
+    { label: 'Academy',       href: '#' },
   ],
-  Legal: [
-    { label: 'Privacy', href: '#' },
-    { label: 'Terms', href: '#' },
-    { label: 'Security', href: '#' },
-    { label: 'Compliance', href: '#' },
+  Company: [
+    { label: 'About',    href: '#' },
+    { label: 'Clients',  href: '#' },
+    { label: 'Careers',  href: '#' },
+    { label: 'Press',    href: '#' },
   ],
 };
 
 const socialLinks = [
   { icon: Linkedin, href: '#', label: 'LinkedIn' },
-  { icon: Twitter, href: '#', label: 'Twitter' },
-  { icon: Github, href: '#', label: 'GitHub' },
-  { icon: Mail, href: '#', label: 'Email' },
+  { icon: Twitter,  href: '#', label: 'Twitter / X' },
+  { icon: Github,   href: '#', label: 'GitHub' },
+  { icon: Mail,     href: '#', label: 'Email' },
 ];
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/5 bg-gradient-to-b from-transparent via-slate-900/50 to-slate-950/50 relative">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-t from-gold-DEFAULT/5 to-transparent" />
+    <footer className="bg-obsidian text-bone" data-testid="site-footer">
+      {/* Newsletter strip */}
+      <div className="px-6 lg:px-10 py-16 lg:py-20 border-b border-bone/10 grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-6">
+          <div className="label-mono text-antique mb-4">— Subscribe</div>
+          <h3 className="display text-[36px] lg:text-[56px] text-bone">
+            The morning wire,<br/>posted by <em className="text-antique">06:30 GMT</em>.
+          </h3>
+        </div>
+        <div className="col-span-12 lg:col-span-6 lg:col-start-7 flex flex-col justify-end gap-5">
+          <p className="text-bone/65 text-[15px] lg:text-[16px] leading-[1.65] max-w-lg">
+            A 4-minute editorial brief on gold, FX and macro — delivered by named editors,
+            read on six continents. Free. Indefinite.
+          </p>
+          <form className="flex flex-col sm:flex-row gap-3" data-testid="newsletter-form">
+            <input
+              type="email"
+              required
+              placeholder="you@firm.com"
+              className="flex-1 bg-transparent border border-bone/20 px-5 py-3.5 text-[14px] text-bone placeholder:text-bone/40 focus:border-antique focus:outline-none transition-colors"
+              data-testid="newsletter-input"
+            />
+            <button
+              type="submit"
+              className="px-6 py-3.5 bg-antique text-obsidian font-medium text-[14px] hover:bg-bone transition-colors flex items-center justify-center gap-2"
+              data-testid="newsletter-submit"
+            >
+              Subscribe <ArrowUpRight size={14} />
+            </button>
+          </form>
+          <p className="font-mono text-[11px] uppercase tracking-wider2 text-bone/40">
+            One email weekly. Unsubscribe in one click.
+          </p>
+        </div>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative">
-        {/* Newsletter Section */}
+      {/* Link columns */}
+      <div className="px-6 lg:px-10 py-16 grid grid-cols-12 gap-10 border-b border-bone/10">
+        {/* Brand */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="mb-20 pb-20 border-b border-white/5"
+          className="col-span-12 lg:col-span-4"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <span className="inline-block px-4 py-2 rounded-full glass border border-gold-DEFAULT/30 text-gold-DEFAULT text-sm font-semibold mb-6">
-                Stay Updated
-              </span>
-              <h3 className="text-3xl lg:text-4xl font-bold mb-4 text-white">
-                Subscribe to our Newsletter
-              </h3>
-              <p className="text-gray-400 text-lg leading-relaxed">
-                Get the latest insights on gold prices, market trends, and financial forecasts delivered to your inbox.
-              </p>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-9 h-9 bg-antique text-obsidian flex items-center justify-center">
+              <span className="font-serif text-[20px] leading-none">G</span>
             </div>
-            <div className="flex gap-3">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 glass px-6 py-4 rounded-xl border border-white/10 focus:outline-none focus:border-gold-DEFAULT transition-smooth text-white placeholder-gray-500"
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn-gold text-black px-8 py-4 rounded-xl font-bold transition-smooth whitespace-nowrap"
-              >
-                Subscribe
-              </motion.button>
+            <div className="leading-none">
+              <div className="font-serif text-[22px]">GoldPlan<span className="text-antique">.</span></div>
+              <div className="label-mono text-bone/40 mt-1">EST. MMXXVI · LONDON</div>
             </div>
+          </div>
+          <p className="text-bone/65 text-[14px] leading-[1.7] max-w-sm">
+            A research practice for capital that thinks in decades. Editorial intelligence
+            on gold, FX and macro — delivered as software.
+          </p>
+          <div className="mt-8 pt-6 border-t border-bone/10">
+            <div className="label-mono text-bone/40 mb-2">Editorial Desk</div>
+            <div className="font-serif text-[18px]">12 St. James's Square</div>
+            <div className="text-bone/60 text-[13px] mt-0.5">London, SW1Y 4LE · United Kingdom</div>
           </div>
         </motion.div>
 
-        {/* Main Footer */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
-          {/* Logo */}
+        {/* Columns */}
+        {Object.entries(footerLinks).map(([category, links], idx) => (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            key={category}
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="col-span-2 md:col-span-1"
+            transition={{ delay: idx * 0.05 }}
+            className="col-span-6 lg:col-span-2"
           >
-            <div className="flex items-center space-x-3 mb-5">
-              <div className="w-10 h-10 gradient-gold rounded-xl flex items-center justify-center shadow-lg">
-                <svg className="w-6 h-6 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-              </div>
-              <span className="text-xl font-bold gradient-text">GoldPlan AI</span>
+            <div className="label-mono text-antique mb-5 pb-3 border-b border-bone/10">
+              {category}
             </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Advanced financial planning and market intelligence for modern businesses.
-            </p>
+            <ul className="space-y-3">
+              {links.map((l) => (
+                <li key={l.label}>
+                  <a href={l.href} className="text-bone/70 hover:text-antique text-[14px] u-link">
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </motion.div>
+        ))}
+      </div>
 
-          {/* Links */}
-          {Object.entries(footerLinks).map(([category, links], index) => (
-            <motion.div
-              key={category}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <h4 className="font-bold text-white mb-5 text-sm uppercase tracking-wider">{category}</h4>
-              <ul className="space-y-3">
-                {links.map((link) => (
-                  <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-gray-400 hover:text-gold-DEFAULT transition-smooth text-sm inline-block hover:translate-x-1"
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          ))}
+      {/* Bottom bar */}
+      <div className="px-6 lg:px-10 py-6 flex flex-col md:flex-row items-center justify-between gap-5">
+        <div className="flex items-center gap-6 flex-wrap justify-center">
+          <p className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50">
+            © MMXXVI GoldPlan AI Ltd. All rights reserved.
+          </p>
+          <a href="#" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Privacy</a>
+          <a href="#" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Terms</a>
+          <a href="#" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Compliance</a>
         </div>
 
-        {/* Bottom Section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="border-t border-white/5 pt-10 flex flex-col md:flex-row items-center justify-between gap-6"
-        >
-          <p className="text-gray-400 text-sm">
-            &copy; 2024 GoldPlan AI. All rights reserved.
-          </p>
-
-          <div className="flex items-center gap-3">
-            {socialLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <motion.a
-                  key={link.label}
-                  href={link.href}
-                  whileHover={{ scale: 1.2, y: -3 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="text-gray-400 hover:text-gold-DEFAULT transition-smooth p-2 rounded-lg glass hover:glass-hover"
-                  title={link.label}
-                >
-                  <Icon size={18} />
-                </motion.a>
-              );
-            })}
-          </div>
-        </motion.div>
+        <div className="flex items-center gap-2">
+          {socialLinks.map((link) => {
+            const Icon = link.icon;
+            return (
+              <a
+                key={link.label}
+                href={link.href}
+                aria-label={link.label}
+                className="w-9 h-9 border border-bone/20 flex items-center justify-center hover:border-antique hover:text-antique transition-colors"
+                data-testid={`social-${link.label.toLowerCase()}`}
+              >
+                <Icon size={14} />
+              </a>
+            );
+          })}
+        </div>
       </div>
     </footer>
   );

@@ -1,196 +1,179 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { ArrowUpRight } from 'lucide-react';
 
 export default function DashboardPreview() {
   return (
-    <section id="reports" className="py-24 px-4 sm:px-6 lg:px-8 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gold-DEFAULT/5 to-transparent" />
-
-      <div className="max-w-7xl mx-auto relative">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <span className="inline-block px-4 py-2 rounded-full glass border border-gold-DEFAULT/30 text-gold-DEFAULT text-sm font-semibold mb-6">
-            Platform Preview
-          </span>
-          <h2 className="text-4xl lg:text-6xl font-bold mb-6">
-            <span className="gradient-text">Dashboard</span> Preview
+    <section id="reports" className="hairline-b" data-testid="dashboard-section">
+      {/* Header */}
+      <div className="px-6 lg:px-10 py-16 lg:py-20 grid grid-cols-12 gap-6 hairline-b">
+        <div className="col-span-12 lg:col-span-5">
+          <div className="label-mono text-ash mb-3">— 004 · Console</div>
+          <h2 className="display text-[44px] lg:text-[64px]">
+            One view.<br/>Every <em>position</em>.
           </h2>
-          <p className="text-lg lg:text-xl text-gray-400 max-w-3xl mx-auto">
-            Intuitive analytics and real-time monitoring at your fingertips
+        </div>
+        <div className="col-span-12 lg:col-span-6 lg:col-start-7 flex items-end">
+          <p className="text-ash text-[16px] lg:text-[18px] leading-[1.6]">
+            Live spot tape, allocation, scenario risk and a full audit trail — composed like a
+            broadsheet, not a dashboard. Built for the way principals actually read.
           </p>
-        </motion.div>
+        </div>
+      </div>
 
+      {/* Mock console */}
+      <div className="px-6 lg:px-10 py-16">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
           viewport={{ once: true }}
-          className="relative"
+          transition={{ duration: 0.7 }}
+          className="border border-obsidian bg-bone"
         >
-          <div className="glass rounded-3xl overflow-hidden border border-gold-DEFAULT/20 p-2 shadow-2xl">
-            {/* Browser header */}
-            <div className="bg-slate-900/80 px-4 py-3 flex items-center gap-2 border-b border-white/10">
-              <div className="flex gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                <div className="w-3 h-3 rounded-full bg-green-500/80" />
+          {/* Console header */}
+          <div className="flex items-center justify-between px-5 py-3 border-b border-obsidian bg-obsidian text-bone">
+            <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-wider2">
+              <span className="w-1.5 h-1.5 bg-antique rounded-full live-dot" />
+              app.goldplan.ai / desk
+            </div>
+            <div className="font-mono text-[11px] uppercase tracking-wider2 text-bone/60">
+              Session · 14:32 GMT
+            </div>
+          </div>
+
+          {/* Top KPIs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 border-b border-line">
+            {[
+              { l: 'Gold Spot',     v: '$2,048.50', d: '+2.5%',   pos: true },
+              { l: 'Market Cap',    v: '$8.2T',     d: 'Global',  pos: false },
+              { l: 'Vol · 24h',     v: '$124B',     d: '+8.1%',   pos: true },
+              { l: 'Portfolio',     v: '$847K',     d: '+12.3% YTD', pos: true },
+            ].map((k, i) => (
+              <div key={k.l} className={`p-6 lg:p-7 ${i < 3 ? 'border-r border-line' : ''} ${i >= 2 ? 'border-t lg:border-t-0 border-line' : ''}`}>
+                <div className="label-mono text-ash mb-3">{k.l}</div>
+                <div className="font-serif text-[34px] lg:text-[40px] leading-none tracking-tight">{k.v}</div>
+                <div className={`mt-3 font-mono text-[12px] ${k.pos ? 'text-emerald-700' : 'text-ash'}`}>{k.d}</div>
               </div>
-              <div className="flex-1 text-center">
-                <div className="inline-block px-4 py-1 bg-slate-800/50 rounded-md text-xs text-gray-400">
-                  app.goldplan.ai/dashboard
+            ))}
+          </div>
+
+          {/* Chart + Allocation */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 border-b border-line">
+            <div className="lg:col-span-2 p-6 lg:p-8 lg:border-r border-line">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <div className="label-mono text-ash">Gold Price · 12 mo</div>
+                  <div className="font-serif text-[22px] mt-1">Spot $/oz</div>
                 </div>
+                <div className="flex gap-1 font-mono text-[11px]">
+                  {['1D','1W','1M','1Y'].map((t, i) => (
+                    <span key={t} className={`px-2.5 py-1 border ${i === 3 ? 'bg-obsidian text-bone border-obsidian' : 'border-line text-ash'}`}>{t}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-end justify-between h-44 gap-1.5">
+                {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => {
+                  const h = [45, 52, 48, 58, 64, 60, 72, 68, 80, 76, 88, 92][i];
+                  return (
+                    <div key={m} className="flex-1 flex flex-col items-center gap-2">
+                      <motion.div
+                        initial={{ height: 0 }}
+                        whileInView={{ height: `${h}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, delay: i * 0.05 }}
+                        className="w-full bg-obsidian relative"
+                      >
+                        {i === 11 && <span className="absolute -top-6 left-1/2 -translate-x-1/2 font-mono text-[10px] text-antique-dark whitespace-nowrap">2,048</span>}
+                      </motion.div>
+                      <span className="font-mono text-[10px] text-ash">{m}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 lg:p-8">
-              {/* Top stats row */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div className="glass rounded-xl p-4 border border-gold-DEFAULT/20 hover:border-gold-DEFAULT/40 transition-smooth">
-                  <div className="text-xs text-gray-400 mb-1">Gold Spot Price</div>
-                  <div className="text-xl lg:text-2xl font-bold gradient-text">$2,048.50</div>
-                  <div className="text-xs text-emerald-DEFAULT mt-1">+2.5% today</div>
-                </div>
-                <div className="glass rounded-xl p-4 border border-emerald-DEFAULT/20 hover:border-emerald-DEFAULT/40 transition-smooth">
-                  <div className="text-xs text-gray-400 mb-1">Market Cap</div>
-                  <div className="text-xl lg:text-2xl font-bold text-emerald-DEFAULT">$8.2T</div>
-                  <div className="text-xs text-gray-400 mt-1">Global gold market</div>
-                </div>
-                <div className="glass rounded-xl p-4 border border-blue-400/20 hover:border-blue-400/40 transition-smooth">
-                  <div className="text-xs text-gray-400 mb-1">Trading Volume</div>
-                  <div className="text-xl lg:text-2xl font-bold text-blue-400">$124B</div>
-                  <div className="text-xs text-gray-400 mt-1">24h volume</div>
-                </div>
-                <div className="glass rounded-xl p-4 border border-purple-400/20 hover:border-purple-400/40 transition-smooth">
-                  <div className="text-xs text-gray-400 mb-1">Portfolio Value</div>
-                  <div className="text-xl lg:text-2xl font-bold gradient-text">$847K</div>
-                  <div className="text-xs text-emerald-DEFAULT mt-1">+12.3% YTD</div>
-                </div>
-              </div>
-
-              {/* Main chart area */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <div className="lg:col-span-2">
-                  <div className="glass rounded-xl p-6 border border-white/5 h-full">
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <div className="text-sm text-gray-400 mb-1">Gold Price Trend</div>
-                        <div className="text-lg font-bold text-white">Last 30 Days</div>
-                      </div>
-                      <div className="flex gap-2">
-                        <span className="text-xs bg-gold-DEFAULT/20 text-gold-DEFAULT px-3 py-1 rounded-full">1D</span>
-                        <span className="text-xs bg-white/5 text-gray-400 px-3 py-1 rounded-full">1W</span>
-                        <span className="text-xs bg-white/5 text-gray-400 px-3 py-1 rounded-full">1M</span>
-                        <span className="text-xs bg-white/5 text-gray-400 px-3 py-1 rounded-full">1Y</span>
-                      </div>
-                    </div>
-                    <div className="flex items-end justify-between h-40 gap-1">
-                      {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((month, i) => (
-                        <div key={month} className="flex-1 flex flex-col items-center gap-2">
-                          <motion.div
-                            initial={{ height: 0 }}
-                            whileInView={{ height: `${40 + Math.random() * 60}%` }}
-                            transition={{ duration: 0.8, delay: i * 0.1 }}
-                            className="w-full gradient-gold rounded-t-md"
-                          />
-                          <span className="text-[10px] text-gray-500">{month}</span>
-                        </div>
-                      ))}
-                    </div>
+            <div className="p-6 lg:p-8 bg-bone-deep">
+              <div className="label-mono text-ash mb-5">Allocation</div>
+              {[
+                { l: 'Gold & Metals', v: 45, c: '#B48E4B' },
+                { l: 'Equities',      v: 35, c: '#0C0B0A' },
+                { l: 'Fixed Income',  v: 20, c: '#8A857B' },
+              ].map((a, i) => (
+                <div key={a.l} className={`py-4 ${i < 2 ? 'border-b border-line' : ''}`}>
+                  <div className="flex justify-between items-baseline mb-2">
+                    <span className="text-[14px]">{a.l}</span>
+                    <span className="font-serif text-[22px]">{a.v}%</span>
+                  </div>
+                  <div className="h-[3px] bg-line">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${a.v}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1, delay: 0.3 + i * 0.1 }}
+                      className="h-full"
+                      style={{ background: a.c }}
+                    />
                   </div>
                 </div>
-
-                {/* Portfolio allocation */}
-                <div className="glass rounded-xl p-6 border border-white/5">
-                  <div className="text-sm text-gray-400 mb-4">Portfolio Allocation</div>
-                  <div className="space-y-4">
-                    {[
-                      { label: 'Gold & Precious Metals', value: '45%', color: '#D4AF37' },
-                      { label: 'Equities', value: '35%', color: '#10B981' },
-                      { label: 'Fixed Income', value: '20%', color: '#60A5FA' },
-                    ].map((item) => (
-                      <div key={item.label}>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-gray-300">{item.label}</span>
-                          <span className="font-bold text-white">{item.value}</span>
-                        </div>
-                        <div className="h-2.5 bg-slate-800 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            whileInView={{ width: item.value }}
-                            transition={{ duration: 1, delay: 0.5 }}
-                            className="h-full rounded-full"
-                            style={{ background: item.color, width: item.value }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-6 pt-4 border-t border-white/10">
-                    <div className="text-sm text-gray-400 mb-1">Total Portfolio</div>
-                    <div className="text-lg font-bold gradient-text">$847,234</div>
-                    <div className="text-xs text-emerald-DEFAULT mt-1">+12.3% this year</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom data table */}
-              <div className="glass rounded-xl border border-white/5 overflow-hidden">
-                <div className="px-6 py-4 border-b border-white/10">
-                  <div className="text-sm font-semibold text-white">Recent Transactions</div>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-white/10">
-                        <th className="text-left px-6 py-3 text-gray-400 font-medium">Asset</th>
-                        <th className="text-left px-6 py-3 text-gray-400 font-medium">Type</th>
-                        <th className="text-right px-6 py-3 text-gray-400 font-medium">Amount</th>
-                        <th className="text-right px-6 py-3 text-gray-400 font-medium">Value</th>
-                        <th className="text-right px-6 py-3 text-gray-400 font-medium">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        { asset: 'Gold XAU/USD', type: 'Buy', amount: '50 oz', value: '$102,425', status: 'Completed', color: 'emerald' },
-                        { asset: 'Silver XAG/USD', type: 'Buy', amount: '200 oz', value: '$4,800', status: 'Completed', color: 'emerald' },
-                        { asset: 'Gold Futures', type: 'Sell', amount: '25 contracts', value: '$51,212', status: 'Pending', color: 'yellow' },
-                        { asset: 'Platinum', type: 'Buy', amount: '100 oz', value: '$92,000', status: 'Completed', color: 'emerald' },
-                      ].map((row, i) => (
-                        <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-smooth">
-                          <td className="px-6 py-4 text-white font-medium">{row.asset}</td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              row.type === 'Buy' ? 'bg-emerald-DEFAULT/20 text-emerald-DEFAULT' : 'bg-red-500/20 text-red-400'
-                            }`}>
-                              {row.type}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-right text-gray-300">{row.amount}</td>
-                          <td className="px-6 py-4 text-right font-semibold text-white">{row.value}</td>
-                          <td className="px-6 py-4 text-right">
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              row.status === 'Completed' ? 'bg-emerald-DEFAULT/20 text-emerald-DEFAULT' : 'bg-yellow-500/20 text-yellow-400'
-                            }`}>
-                              {row.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              ))}
+              <div className="mt-6 pt-5 border-t border-line">
+                <div className="label-mono text-ash mb-1">Total NAV</div>
+                <div className="font-serif text-[28px] leading-none">$847,234</div>
+                <div className="font-mono text-[11px] text-emerald-700 mt-2">+12.3% YTD</div>
               </div>
             </div>
           </div>
 
-          <div className="absolute inset-0 bg-gradient-to-r from-gold-DEFAULT/20 via-emerald-DEFAULT/10 to-transparent rounded-3xl blur-3xl -z-10" />
+          {/* Transactions */}
+          <div>
+            <div className="px-6 lg:px-8 py-4 border-b border-line flex items-center justify-between">
+              <div className="label-mono text-ash">Recent Tape</div>
+              <a href="#" className="text-[12px] font-mono uppercase tracking-wider2 u-link">View all</a>
+            </div>
+            <table className="w-full text-[13.5px]">
+              <thead>
+                <tr className="border-b border-line text-ash font-mono text-[11px] uppercase tracking-wider2">
+                  <th className="text-left px-6 lg:px-8 py-3 font-normal">Asset</th>
+                  <th className="text-left px-6 py-3 font-normal">Type</th>
+                  <th className="text-right px-6 py-3 font-normal">Size</th>
+                  <th className="text-right px-6 py-3 font-normal">Value</th>
+                  <th className="text-right px-6 lg:px-8 py-3 font-normal">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { a: 'Gold XAU/USD',    t: 'Buy',  s: '50 oz',         v: '$102,425', st: 'Settled' },
+                  { a: 'Silver XAG/USD',  t: 'Buy',  s: '200 oz',        v: '$4,800',   st: 'Settled' },
+                  { a: 'Gold Futures',    t: 'Sell', s: '25 contracts',  v: '$51,212',  st: 'Pending' },
+                  { a: 'Platinum',        t: 'Buy',  s: '100 oz',        v: '$92,000',  st: 'Settled' },
+                ].map((r, i) => (
+                  <tr key={i} className="border-b border-line last:border-b-0 hover:bg-bone-deep transition-colors">
+                    <td className="px-6 lg:px-8 py-4 font-medium">{r.a}</td>
+                    <td className="px-6 py-4">
+                      <span className={`font-mono text-[11px] uppercase tracking-wider2 px-2 py-1 border ${r.t === 'Buy' ? 'border-emerald-700 text-emerald-700' : 'border-red-700 text-red-700'}`}>
+                        {r.t}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right font-mono text-ash">{r.s}</td>
+                    <td className="px-6 py-4 text-right font-medium">{r.v}</td>
+                    <td className="px-6 lg:px-8 py-4 text-right font-mono text-[11px] uppercase tracking-wider2 text-ash">{r.st}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </motion.div>
+
+        <div className="mt-8 flex items-center justify-between">
+          <p className="text-ash text-[14px] max-w-xl">
+            Console preview · A simplified rendering. Production view includes live order book,
+            scenario simulator and editor commentary.
+          </p>
+          <a href="#" className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-wider2 u-link">
+            Tour the desk <ArrowUpRight size={14} />
+          </a>
+        </div>
       </div>
     </section>
   );

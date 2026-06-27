@@ -4,104 +4,55 @@ import { motion } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
 
 const features = [
-  {
-    title: 'AI Powered Analytics',
-    description: 'Advanced machine learning algorithms for predictive analysis and insights.',
-  },
-  {
-    title: '99.9% Data Accuracy',
-    description: 'Verified data sources with stringent quality control processes.',
-  },
-  {
-    title: 'Enterprise Security',
-    description: 'Bank-grade encryption and compliance with international standards.',
-  },
-  {
-    title: 'Real-time Gold Prices',
-    description: 'Live market feeds updated every second with global exchanges.',
-  },
-  {
-    title: 'Industry Experts',
-    description: 'Team of financial analysts with 200+ years combined experience.',
-  },
-  {
-    title: 'Custom Reports',
-    description: 'Tailored analysis and reports specific to your business needs.',
-  },
+  { num: '01', title: 'AI Powered Analytics',  desc: 'Machine-learning ensembles trained on 30+ years of metals & macro data.' },
+  { num: '02', title: '99.9% Data Accuracy',   desc: 'Six independent vendor feeds, reconciled tick-by-tick by our pipeline.' },
+  { num: '03', title: 'Enterprise Security',   desc: 'AES-256 at rest, SOC 2 Type II, EU/US data residency on request.' },
+  { num: '04', title: 'Real-time Gold Prices', desc: 'Sub-second updates from LBMA, COMEX, Shanghai and OTC desks.' },
+  { num: '05', title: 'Industry Experts',      desc: '14 named editors. 220 years of cumulative buy-side experience.' },
+  { num: '06', title: 'Custom Reports',        desc: 'White-label PDFs, board memos and API-ready JSON — your brand, our rigour.' },
 ];
 
 export default function Features() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.5 },
-    },
-  };
-
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 relative border-y border-white/5">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-DEFAULT/5 to-transparent" />
-
-      <div className="max-w-7xl mx-auto relative">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-center mb-20"
-        >
-          <span className="inline-block px-4 py-2 rounded-full glass border border-emerald-DEFAULT/30 text-emerald-DEFAULT text-sm font-semibold mb-6">
-            Why Choose Us
-          </span>
-          <h2 className="text-4xl lg:text-6xl font-bold mb-6">
-            Why Choose <span className="gradient-text">GoldPlan AI</span>
+    <section className="hairline-b bg-bone-deep" data-testid="features-section">
+      <div className="px-6 lg:px-10 py-16 lg:py-24 grid grid-cols-12 gap-x-6 gap-y-12">
+        <div className="col-span-12 lg:col-span-5 lg:sticky lg:top-32 lg:self-start">
+          <div className="label-mono text-ash mb-4">— 003 · Why</div>
+          <h2 className="display text-[44px] lg:text-[72px]">
+            A house built for<br/><em>conviction</em>.
           </h2>
-          <p className="text-lg lg:text-xl text-gray-400 max-w-3xl mx-auto">
-            The most advanced financial planning platform trusted by industry leaders worldwide
+          <p className="text-ash text-[16px] lg:text-[18px] leading-[1.65] mt-8 max-w-md">
+            Not a feed. Not a dashboard. A research practice with editorial standards,
+            engineered for institutions that need defensible output.
           </p>
-        </motion.div>
+          <div className="mt-10 pt-8 border-t border-line">
+            <div className="font-mono text-[11px] uppercase tracking-wider2 text-ash mb-2">Independent Audit</div>
+            <div className="font-serif text-[28px] leading-tight">PwC verified · Q3 2025</div>
+          </div>
+        </div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {features.map((feature, index) => (
+        <div className="col-span-12 lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-px bg-line border border-line">
+          {features.map((f, i) => (
             <motion.div
-              key={feature.title}
-              variants={itemVariants}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="flex gap-5 glass p-7 rounded-2xl hover:glass-hover transition-smooth card-glow border border-white/5 hover:border-emerald-DEFAULT/30 group"
+              key={f.num}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.05 }}
+              className="bg-bone p-7 lg:p-8 group"
+              data-testid={`feature-${f.num}`}
             >
-              <div className="flex-shrink-0">
-                <div className="p-3 gradient-emerald rounded-xl group-hover:scale-110 transition-smooth shadow-lg">
-                  <CheckCircle2 className="text-slate-900" size={24} />
-                </div>
+              <div className="flex items-center justify-between mb-5">
+                <span className="label-mono text-ash">{f.num}</span>
+                <CheckCircle2 size={16} className="text-antique-dark" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold mb-3 text-white group-hover:text-emerald-DEFAULT transition-smooth">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-400 leading-relaxed">{feature.description}</p>
-              </div>
+              <h3 className="font-serif text-[24px] leading-tight tracking-tight mb-2 group-hover:text-antique-dark transition-colors">
+                {f.title}
+              </h3>
+              <p className="text-[13.5px] text-ash leading-relaxed">{f.desc}</p>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

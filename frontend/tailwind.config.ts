@@ -5,37 +5,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        gold: {
-          DEFAULT: '#D4AF37',
-          light: '#E5C158',
-          dark: '#B8941F',
-          accent: '#D4AF37',
-        },
-        emerald: {
-          DEFAULT: '#10B981',
-          light: '#34D399',
-          dark: '#059669',
-          accent: '#10B981',
-        },
-        slate: {
-          950: '#020617',
-          900: '#0B1120',
-          850: '#0F172A',
-        },
+        bone:   { DEFAULT: "#F8F6F0", deep: "#EFECE4" },
+        obsidian: { DEFAULT: "#0C0B0A", soft: "#1A1816" },
+        antique:  { DEFAULT: "#B48E4B", dark: "#9E7B35", light: "#D4B47A" },
+        ash:    { DEFAULT: "#5C5850", light: "#8A857B" },
+        line:   "#E2DED5",
+      },
+      fontFamily: {
+        serif: ['"Cormorant Garamond"', "serif"],
+        sans:  ['"Outfit"', "sans-serif"],
+        mono:  ['"IBM Plex Mono"', "monospace"],
+      },
+      letterSpacing: {
+        tightest: "-0.04em",
+        wider2: "0.2em",
       },
       animation: {
-        'float': 'float 6s ease-in-out infinite',
-        'float-delayed': 'float 6s ease-in-out 3s infinite',
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        "fade-up": "fadeUp 600ms cubic-bezier(0.16, 1, 0.3, 1) both",
       },
       keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-20px)' },
+        fadeUp: {
+          "0%":   { opacity: "0", transform: "translateY(12px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
-      },
-      backdropBlur: {
-        'xs': '2px',
       },
     },
   },
