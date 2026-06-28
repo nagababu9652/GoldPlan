@@ -1,26 +1,61 @@
 import type { Metadata } from "next";
+import { Cormorant_Garamond, Outfit, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+
+const serif = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
+const sans = Outfit({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
-    default: "GoldPlan AI — Editorial Intelligence for Gold & Capital",
-    template: "%s | GoldPlan AI"
+    default: "GoldPlan AI \u2014 Editorial Intelligence for Gold & Capital",
+    template: "%s | FinPlan India",
   },
-  description: "GoldPlan AI delivers institution-grade reports, forecasting, and risk intelligence for precious metals and capital allocation.",
-  keywords: ["gold analysis", "financial planning", "investment reports", "risk assessment", "AI analytics", "fintech"],
-  metadataBase: new URL("https://goldplan.ai"),
+  description:
+    "India's most trusted financial planning platform. Goal-based planning for retirement, education, home, tax saving, and wealth creation. SEBI-registered advisors.",
+  keywords: [
+    "financial planning india",
+    "goal planning",
+    "mutual fund advisor",
+    "SIP calculator",
+    "retirement planning india",
+    "tax saving 80C",
+    "NPS India",
+    "PPF",
+    "investment advisor india",
+    "SEBI registered advisor",
+  ],
+  metadataBase: new URL("https://finplan.in"),
   openGraph: {
     type: "website",
-    locale: "en_US",
-    url: "https://goldplan.ai",
-    title: "GoldPlan AI — Editorial Intelligence for Gold & Capital",
-    description: "Smarter gold planning for smarter businesses.",
-    siteName: "GoldPlan AI",
+    locale: "en_IN",
+    url: "https://finplan.in",
+    title: "GoldPlan AI \u2014 Editorial Intelligence for Gold & Capital",
+    description: "Plan your financial goals with India's most trusted advisory platform.",
+    siteName: "FinPlan India",
   },
   twitter: {
     card: "summary_large_image",
-    title: "GoldPlan AI",
-    description: "Editorial intelligence for gold & capital.",
+    title: "FinPlan India",
+    description: "Smart financial planning & goal planning for every Indian family.",
   },
 };
 
@@ -30,12 +65,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${serif.variable} ${sans.variable} ${mono.variable}`}
+    >
       <head>
         <meta name="theme-color" content="#F8F6F0" />
         <meta name="color-scheme" content="light" />
       </head>
-      <body className="antialiased bg-bone text-obsidian">
+      <body className="font-sans antialiased bg-bone text-obsidian pt-24">
         {children}
       </body>
     </html>

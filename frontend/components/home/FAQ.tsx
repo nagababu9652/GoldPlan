@@ -5,14 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
 
 const faqs = [
-  { q: 'How accurate are the gold-price forecasts?',         a: 'Our ensemble models achieve 94%+ directional accuracy on 30-day horizons, calibrated against three decades of LBMA and COMEX data. We publish back-tested error bands with every brief.' },
-  { q: 'What data security measures are in place?',          a: 'AES-256 encryption at rest, TLS 1.3 in transit, SOC 2 Type II audited, ISO 27001 in progress. EU and US data-residency options available on Institutional tier.' },
-  { q: 'Can I integrate GoldPlan with existing systems?',    a: 'Yes. We expose a REST API, webhook events, FIX bridge and CSV exports. Common integrations include BlackRock Aladdin, Bloomberg AIM, and FactSet Portfolio.' },
-  { q: 'How long does it take to generate a report?',        a: 'Quarterly briefs ship on schedule. Bespoke reports clear in 24–72 hours, depending on scope. The live console is available continuously.' },
-  { q: 'Do you offer training for our team?',                a: 'Institutional mandates include a 4-week onboarding programme, a named senior editor and quarterly desk visits — virtual or in person, your preference.' },
-  { q: 'What is your uptime guarantee?',                     a: '99.95% on the live console, 99.99% on the data layer. Service credits apply against SLA breaches under the Institutional tier.' },
-  { q: 'Which export formats do you support?',               a: 'Branded PDF, DOCX, XLSX, CSV and a versioned JSON payload via API. White-label options available from Professional upward.' },
-  { q: 'Is there a free trial available?',                   a: 'A 14-day institutional trial with full console and one sample report. No card required. Speak to our team to start.' },
+  { q: 'What is the minimum amount needed to start investing?',         a: 'You can start with as little as ₹500 per month through SIPs in mutual funds. Our platform helps you begin your journey with whatever budget you have.' },
+  { q: 'How is FinPlan India different from a regular mutual fund platform?',          a: 'Unlike generic investment platforms, FinPlan India is goal-based. We don’t just help you invest — we help you plan for specific goals like retirement, education, and home buying with personalised strategies.' },
+  { q: 'Can I track my existing investments on the platform?',    a: 'Yes. You can import your existing mutual fund holdings, PPF, EPF, NPS, FDs, and insurance policies. Our engine consolidates everything into one unified view.' },
+  { q: 'How does the tax-saving feature work?',        a: 'Our tax engine analyses your income profile and suggests optimal investments under Section 80C, 80D, 24(b), NPS (80CCD), and other applicable sections to minimise your tax outgo legally.' },
+  { q: 'Are your advisors SEBI-registered?',                a: 'Yes. Every advisor on our platform is SEBI-registered with verifiable credentials. You can view their registration number and track record on their profile.' },
+  { q: 'What happens if the market goes down?',                     a: 'Our goal-based framework builds in market volatility buffers. We use asset allocation and rebalancing strategies to protect your long-term goals from short-term market fluctuations.' },
+  { q: 'Can I involve my family members in planning?',               a: 'Absolutely. Our Family plan allows you to add spouse, children, and parents to create a unified family financial plan with shared goals and consolidated tracking.' },
+  { q: 'Is there a free trial available?',                   a: 'Yes. We offer a 14-day free trial with full platform access and one complimentary session with an advisor. No credit card required.' },
 ];
 
 export default function FAQ() {
@@ -27,11 +27,11 @@ export default function FAQ() {
             Questions,<br/>candidly <em>answered</em>.
           </h2>
           <p className="text-ash text-[15px] leading-[1.6] mt-6 max-w-sm">
-            Couldn't find what you were looking for? Our editorial line is open Mon–Fri,
-            08:00–18:00 GMT.
+            Couldn’t find what you were looking for? Our advisor team is available Mon–Sat,
+            09:00–19:00 IST.
           </p>
           <a href="#" className="inline-block mt-6 u-link text-[14px] font-medium">
-            Email an editor →
+            Email our advisors →
           </a>
         </div>
 

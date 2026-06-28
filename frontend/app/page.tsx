@@ -13,7 +13,7 @@ import CTA from "@/components/home/CTA";
 import Footer from "@/components/home/Footer";
 
 export const metadata: Metadata = {
-  title: "GoldPlan AI — Editorial Intelligence for Gold & Capital",
+  title: "FinPlan India — Smart Financial Planning & Goal Planning",
   description: "Institution-grade gold planning, forecasting, risk analysis and market intelligence for serious capital.",
 };
 

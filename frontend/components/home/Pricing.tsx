@@ -6,26 +6,26 @@ import { Check, ArrowRight } from 'lucide-react';
 const plans = [
   {
     name: 'Starter',
-    price: '$299',
+    price: '₹499',
     period: '/ month',
-    desc: 'For analysts and family offices testing the practice.',
-    features: ['Up to 5 portfolio briefs', 'Monthly reports', 'Email support', 'Baseline risk console', 'Daily market wire'],
+    desc: 'For individuals starting their financial planning journey.',
+    features: ['Up to 3 financial goals', 'Monthly portfolio review', 'Email support', 'Basic goal tracker', 'SIP calculator'],
     featured: false,
   },
   {
     name: 'Professional',
-    price: '$999',
+    price: '₹1,999',
     period: '/ month',
-    desc: 'For investment teams that read us every morning.',
-    features: ['Unlimited briefs', 'Weekly reports', 'Priority editorial line', 'Advanced risk modelling', 'Live console & alerts', 'Custom dashboards', 'API access', 'White-label option'],
+    desc: 'For families who want comprehensive planning and expert guidance.',
+    features: ['Unlimited goals', 'Weekly portfolio review', 'Priority advisor access', 'Advanced risk modelling', 'Tax optimisation engine', 'Insurance gap analysis', 'Goal rebalancing alerts', 'Annual review session'],
     featured: true,
   },
   {
-    name: 'Institutional',
+    name: 'Family',
     price: 'Bespoke',
     period: 'on enquiry',
-    desc: 'For treasuries, allocators and committees that need bespoke coverage.',
-    features: ['Everything in Professional', 'Named senior editor', 'Custom model calibration', 'Bespoke compliance packs', 'Onboarding & training', 'SLA & data residency', 'Quarterly review'],
+    desc: 'For HNI families and businesses requiring dedicated wealth management.',
+    features: ['Everything in Professional', 'Named senior advisor', 'Custom portfolio strategy', 'Bespoke tax planning', 'Family insurance audit', 'Quarterly in-person reviews', 'Estate & succession planning'],
     featured: false,
   },
 ];
@@ -38,13 +38,13 @@ export default function Pricing() {
           <div className="col-span-12 lg:col-span-5">
             <div className="label-mono text-ash mb-3">— 007 · Subscription</div>
             <h2 className="display text-[44px] lg:text-[64px]">
-              Three tiers.<br/>One <em>standard</em>.
+              Three plans.<br/>One <em>commitment</em>.
             </h2>
           </div>
           <div className="col-span-12 lg:col-span-6 lg:col-start-7 flex items-end">
             <p className="text-ash text-[16px] lg:text-[18px] leading-[1.6]">
-              Annual mandates. Cancel by quarter notice. Pricing reflects research access,
-              not seat licences — every member of your team is covered.
+              Annual mandates. Cancel anytime. All prices in INR. GST applicable. Every plan
+              includes access to the full FinPlan India platform.
             </p>
           </div>
         </div>
@@ -97,7 +97,7 @@ export default function Pricing() {
                 }`}
                 data-testid={`pricing-cta-${p.name.toLowerCase()}`}
               >
-                {p.price === 'Bespoke' ? 'Speak to sales' : 'Start mandate'}
+                {p.price === 'Bespoke' ? 'Talk to us' : 'Start plan'}
                 <ArrowRight size={14} />
               </a>
             </motion.div>

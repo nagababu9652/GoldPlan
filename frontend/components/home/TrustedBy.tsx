@@ -3,14 +3,14 @@
 import { motion } from 'framer-motion';
 
 const companies = [
-  'Goldman Sachs',
-  'Morgan Stanley',
-  'JPMorgan Chase',
-  'BlackRock',
-  'Vanguard',
-  'Fidelity',
-  'State Street',
-  'PIMCO',
+  'SBI Mutual Fund',
+  'HDFC Bank',
+  'ICICI Prudential',
+  'Kotak Mahindra',
+  'Axis Bank',
+  'Bajaj Finserv',
+  'LIC of India',
+  'Tata Capital',
 ];
 
 export default function TrustedBy() {
@@ -18,9 +18,9 @@ export default function TrustedBy() {
     <section className="px-6 lg:px-10 py-14 hairline-b" data-testid="trusted-section">
       <div className="grid grid-cols-12 gap-6 items-center">
         <div className="col-span-12 lg:col-span-3">
-          <div className="label-mono text-ash mb-2">— 001</div>
+          <div className="label-mono text-ash mb-2">&mdash; 001</div>
           <h3 className="font-serif text-[26px] leading-tight">
-            Read by the desks that <em className="text-antique-dark">move</em> markets.
+            Trusted by India&rsquo;s <em className="text-antique-dark">leading</em> institutions.
           </h3>
         </div>
         <div className="col-span-12 lg:col-span-9 overflow-hidden marquee-mask">

@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Menu, X, ChevronDown,
-  LineChart, BarChart3, Brain, Shield, Target, FileText,
-  Sparkles, BookOpen, GraduationCap, Newspaper,
-  Building2, Users, Briefcase, Globe2, ArrowUpRight, ArrowRight,
+  LineChart, BarChart3, Shield, Target, FileText,
+  BookOpen, GraduationCap, Newspaper,
+  Building2, Users, Briefcase,
+  Home, Heart, TrendingUp, PiggyBank, Calculator, ArrowUpRight, ArrowRight,
 } from 'lucide-react';
 
 type MegaItem = {
@@ -17,43 +18,44 @@ type MegaItem = {
 };
 
 type NavItem =
-  | { label: 'Platform' | 'Reports' | 'Resources' | 'Company'; columns: { heading: string; items: MegaItem[] }[]; promo?: { title: string; body: string; cta: string; href: string } }
+  | { label: 'Goals' | 'Investments' | 'Resources' | 'Company'; columns: { heading: string; items: MegaItem[] }[]; promo?: { title: string; body: string; cta: string; href: string } }
   | { label: string; href: string };
 
-const platformItems: { heading: string; items: MegaItem[] }[] = [
+const goalsItems: { heading: string; items: MegaItem[] }[] = [
   {
-    heading: 'Intelligence',
+    heading: 'Life Goals',
     items: [
-      { label: 'Market Intelligence', description: 'Real-time signals across 40+ exchanges.', href: '#', icon: Brain },
-      { label: 'Forecasting Engine',  description: 'Probabilistic models for gold & FX.',     href: '#', icon: LineChart },
-      { label: 'Risk Console',        description: 'VaR, stress, scenario, exposure.',         href: '#', icon: Shield },
+      { label: 'Retirement Planning', description: 'NPS, PPF, EPF and mutual funds for a stress-free retirement.', href: '#', icon: Target },
+      { label: 'Child Education', description: 'Beat inflation with inflation-adjusted education fund planning.', href: '#', icon: GraduationCap },
+      { label: 'Home Purchase', description: 'Plan your down payment, compare home loan options and maximise 80C/24(b).', href: '#', icon: Home },
+      { label: 'Wealth Creation', description: 'Long-term SIP strategies across equity, hybrid and index funds.', href: '#', icon: TrendingUp },
     ],
   },
   {
-    heading: 'Workflow',
+    heading: 'Protection',
     items: [
-      { label: 'Portfolio Studio', description: 'Allocate, rebalance, optimise.', href: '#', icon: Target },
-      { label: 'Report Builder',   description: 'Brand-grade PDFs in minutes.',   href: '#', icon: FileText },
-      { label: 'Analytics Lab',    description: 'Custom dashboards & alerts.',    href: '#', icon: BarChart3 },
+      { label: 'Term Life Insurance', description: 'Compare and optimise term cover across top Indian insurers.', href: '#', icon: Shield },
+      { label: 'Health Insurance', description: 'Family floater, critical illness and top-up plans.', href: '#', icon: Heart },
+      { label: 'Tax Saving (80C/80D)', description: 'ELSS, PPF, NSC, FDs and health insurance - maximise every rupee.', href: '#', icon: FileText },
     ],
   },
 ];
 
-const reportsItems: { heading: string; items: MegaItem[] }[] = [
+const investmentsItems: { heading: string; items: MegaItem[] }[] = [
   {
-    heading: 'By Asset',
+    heading: 'By Category',
     items: [
-      { label: 'Gold Quarterly',     description: 'Macro, flows, central banks.',     href: '#reports', icon: Sparkles },
-      { label: 'Silver & Platinum',  description: 'Industrial demand & supply gaps.', href: '#reports', icon: BarChart3 },
-      { label: 'FX & Macro',         description: 'Dollar, real rates, inflation.',   href: '#reports', icon: Globe2 },
+      { label: 'Mutual Funds',     description: 'Equity, hybrid, debt and index funds from 40+ AMCs.', href: '#dashboard', icon: BarChart3 },
+      { label: 'Fixed Deposits',         description: 'Compare FD rates, corporate deposits and RBI bonds.', href: '#dashboard', icon: PiggyBank },
+      { label: 'PPF / EPF / NPS',         description: 'Tax-free, guaranteed-return government-backed instruments.', href: '#dashboard', icon: Shield },
     ],
   },
   {
-    heading: 'By Need',
+    heading: 'Tools',
     items: [
-      { label: 'Allocation Reports', description: 'Strategic 5-year frameworks.', href: '#reports', icon: Target },
-      { label: 'Risk Reports',       description: 'Scenario & tail-risk briefings.', href: '#reports', icon: Shield },
-      { label: 'Compliance Packs',   description: 'Auditable, board-ready output.',  href: '#reports', icon: FileText },
+      { label: 'SIP Calculator', description: 'Estimate returns, inflation-adjusted corpus and goal timelines.', href: '#dashboard', icon: Calculator },
+      { label: 'Goal Tracker',       description: 'Real-time progress bars, rebalancing alerts and projections.', href: '#dashboard', icon: Target },
+      { label: 'Portfolio Review',  description: 'Upload or connect your existing holdings for a free review.', href: '#dashboard', icon: LineChart },
     ],
   },
 ];
@@ -81,8 +83,8 @@ const companyItems: { heading: string; items: MegaItem[] }[] = [
 ];
 
 const navItems: NavItem[] = [
-  { label: 'Platform', columns: platformItems, promo: { title: 'Live Demo', body: 'See the Forecasting Engine work on your portfolio.', cta: 'Book a session', href: '#' } },
-  { label: 'Reports',  columns: reportsItems,  promo: { title: 'Sample: Gold Q4', body: 'Read the 38-page institutional briefing — free.', cta: 'Download sample', href: '#reports' } },
+  { label: 'Goals', columns: goalsItems, promo: { title: 'Free Consultation', body: 'One complimentary 30-minute session with a SEBI-registered advisor.', cta: 'Book now', href: '#' } },
+  { label: 'Investments',  columns: investmentsItems,  promo: { title: 'SIP Calculator', body: 'Calculate your retirement, education or goal corpus in 60 seconds.', cta: 'Try it free', href: '#' } },
   { label: 'Pricing',  href: '#pricing' },
   { label: 'Resources', columns: resourcesItems },
   { label: 'Company',  columns: companyItems },
@@ -116,12 +118,12 @@ export default function Navigation() {
             <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full live-dot" />
             <span>Markets — Open</span>
           </span>
-          <span>London 14:32 GMT</span>
+          <span>Mumbai 19:02 IST</span>
         </div>
         <div className="flex items-center gap-6">
-          <span>XAU / USD <span className="text-obsidian">2,048.50</span> <span className="text-emerald-700">+0.42%</span></span>
-          <span>XAG / USD <span className="text-obsidian">24.12</span> <span className="text-red-700">−0.18%</span></span>
-          <a href="#" className="u-link text-obsidian">Client login →</a>
+          <span>NIFTY 50 <span className="text-obsidian">24,891</span> <span className="text-emerald-700">+1.2%</span></span>
+          <span>SENSEX <span className="text-obsidian">81,456</span> <span className="text-emerald-700">+1.1%</span></span>
+          <a href="/login" className="u-link text-obsidian">Client login →</a>
         </div>
       </div>
 
@@ -130,11 +132,11 @@ export default function Navigation() {
         {/* Brand */}
         <a href="#" className="flex items-center gap-3 shrink-0" data-testid="brand-logo">
           <div className="w-8 h-8 bg-obsidian text-bone flex items-center justify-center">
-            <span className="font-serif text-[18px] leading-none">G</span>
+            <span className="font-serif text-[18px] leading-none">F</span>
           </div>
           <div className="leading-none">
-            <div className="font-serif text-[20px] tracking-tight">GoldPlan<span className="text-antique">.</span></div>
-            <div className="font-mono text-[9px] uppercase tracking-wider2 text-ash mt-0.5">EST. MMXXVI · LONDON</div>
+            <div className="font-serif text-[20px] tracking-tight">FinPlan<span className="text-antique">.</span></div>
+            <div className="font-mono text-[9px] uppercase tracking-wider2 text-ash mt-0.5">EST. 2024 · MUMBAI</div>
           </div>
         </a>
 
@@ -174,7 +176,7 @@ export default function Navigation() {
 
         {/* Right actions */}
         <div className="hidden lg:flex items-center gap-3">
-          <a href="#" className="text-[13px] font-medium text-obsidian u-link" data-testid="nav-signin">Sign in</a>
+          <a href="/login" className="btn-outline text-[13px] font-medium text-obsidian" data-testid="nav-signin">Sign in</a>
           <a
             href="#"
             className="btn-obsidian text-[13px] py-2.5 px-4"
@@ -287,7 +289,7 @@ export default function Navigation() {
                 </a>
               ))}
               <div className="pt-5 flex flex-col gap-3">
-                <a href="#" onClick={closeMobile} className="btn-outline justify-center">Sign in</a>
+                <a href="/login" onClick={closeMobile} className="btn-outline justify-center">Sign in</a>
                 <a href="#" onClick={closeMobile} className="btn-obsidian justify-center">Request Demo <ArrowRight size={14} /></a>
               </div>
             </div>

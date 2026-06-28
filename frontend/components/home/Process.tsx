@@ -3,12 +3,12 @@
 import { motion } from 'framer-motion';
 
 const steps = [
-  { n: '01', t: 'Onboard',           d: 'Sign mandate, configure mandate constraints, link custody read-only.' },
-  { n: '02', t: 'Ingest',            d: 'Upload holdings or stream positions via API. Editors receive notice.' },
-  { n: '03', t: 'Model',             d: 'Our engine runs 12 macro scenarios on your specific exposure.' },
-  { n: '04', t: 'Editorial Review',  d: 'A named editor signs every report against an internal house view.' },
-  { n: '05', t: 'Deliver',           d: 'Branded PDF, API payload and live console — same data, three voices.' },
-  { n: '06', t: 'Compound',          d: 'Quarterly reviews refine the model on your realised returns.' },
+  { n: '01', t: 'Set Your Goal',           d: 'Define what matters — retirement corpus, child education, dream home, or wealth building.' },
+  { n: '02', t: 'Assess Risk & Timeline',            d: 'Our engine evaluates your risk appetite, time horizon, and income profile.' },
+  { n: '03', t: 'Build a Strategy',             d: 'Get a personalised plan with mutual funds, PPF, NPS, FDs, and insurance mapped to each goal.' },
+  { n: '04', t: 'Start Investing',  d: 'Set up SIPs, make lump-sum investments, and activate tax-saving strategies — all in one place.' },
+  { n: '05', t: 'Track Progress',           d: 'Monitor goal progress, portfolio performance, and get rebalancing alerts monthly.' },
+  { n: '06', t: 'Review & Optimise',          d: 'Annual reviews with expert advisors to realign your plan with life changes and market conditions.' },
 ];
 
 export default function Process() {
@@ -19,13 +19,13 @@ export default function Process() {
           <div className="col-span-12 lg:col-span-5">
             <div className="label-mono text-ash mb-3">— 005 · Method</div>
             <h2 className="display text-[44px] lg:text-[64px]">
-              Six steps.<br/>One <em>partnership</em>.
+              Six steps.<br/>One <em>journey</em>.
             </h2>
           </div>
           <div className="col-span-12 lg:col-span-6 lg:col-start-7 flex items-end">
             <p className="text-ash text-[16px] lg:text-[18px] leading-[1.6]">
-              We don't sell seats. We open a research desk for your firm — staffed by editors,
-              accountable to your committee, calibrated to your real exposure.
+              We don’t sell products. We build a financial roadmap for your life — mapped
+              to your income, your dreams, and the real India you live in.
             </p>
           </div>
         </div>

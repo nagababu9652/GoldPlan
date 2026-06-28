@@ -13,10 +13,10 @@
   --color-ash-light: #8A857B;
   --color-line: #E2DED5;
 
-  /* Fonts */
-  --font-serif: "Cormorant Garamond", serif;
-  --font-sans: "Outfit", sans-serif;
-  --font-mono: "IBM Plex Mono", monospace;
+  /* Fonts - Set via next/font CSS variables on html */
+  --font-serif: var(--font-serif, "Cormorant Garamond", serif);
+  --font-sans: var(--font-sans, "Outfit", sans-serif);
+  --font-mono: var(--font-mono, "IBM Plex Mono", monospace);
 
   /* Letter spacing */
   --tracking-tightest: -0.04em;
@@ -30,8 +30,6 @@
   0%   { opacity: 0; transform: translateY(12px); }
   100% { opacity: 1; transform: translateY(0); }
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap');
 
 :root {
   --bg-primary: #F8F6F0;
@@ -55,14 +53,16 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-variant-ligatures: common-ligatures;
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-sans);
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
-  font-feature-settings: "ss01", "ss02";
+  font-feature-settings: "ss01", "ss02", "kern";
+  font-kerning: normal;
 }
 
 ::selection {
@@ -72,12 +72,12 @@ body {
 
 a, button { cursor: pointer; }
 
-.font-serif { font-family: 'Cormorant Garamond', serif; font-feature-settings: "liga", "dlig"; }
-.font-mono  { font-family: 'IBM Plex Mono', monospace; }
-.font-sans  { font-family: 'Outfit', sans-serif; }
+.font-serif { font-family: var(--font-serif); font-feature-settings: "liga", "dlig"; }
+.font-mono  { font-family: var(--font-mono); }
+.font-sans  { font-family: var(--font-sans); }
 
 .label-mono {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -126,6 +126,7 @@ a, button { cursor: pointer; }
   gap: 10px;
   transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
+  font-family: var(--font-sans);
 }
 .btn-obsidian:hover {
   background: var(--accent);
@@ -146,6 +147,7 @@ a, button { cursor: pointer; }
   gap: 10px;
   transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
+  font-family: var(--font-sans);
 }
 .btn-outline:hover {
   background: var(--bg-secondary);
@@ -174,13 +176,14 @@ a, button { cursor: pointer; }
   border-right: 1px solid var(--border);
   background: var(--bg-primary);
   position: relative;
+  padding-top: 88px;
 }
 @media (max-width: 768px) {
   .page-frame { border-left: none; border-right: none; }
 }
 
 .display {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-serif);
   font-weight: 500;
   letter-spacing: -0.025em;
   line-height: 1.02;

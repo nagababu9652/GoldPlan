@@ -5,25 +5,25 @@ import { Quote } from 'lucide-react';
 
 const testimonials = [
   {
-    name: 'Sarah Johnson',
+    name: 'Rajesh Sharma',
     role: 'Chief Financial Officer',
-    company: 'Wealth Advisors Inc.',
-    text: 'GoldPlan AI rewrote how we underwrite precious-metal exposure. The editorial standard is the difference — every claim is sourced, every model assumption is defended.',
-    initials: 'SJ',
+    company: 'Bharat Industries Ltd.',
+    text: 'FinPlan India transformed how our family saves and invests. The goal-based approach made us realise we were under-insured and over-invested in the wrong funds. Now we have a clear roadmap for retirement and our kids’ education.',
+    initials: 'RS',
   },
   {
-    name: 'Michael Chen',
-    role: 'Director, Allocations',
-    company: 'Global Finance Partners',
-    text: 'Their forecasting cadence improved our risk-adjusted return by 34% over four quarters. We treat their morning brief like a Bloomberg replacement, not a supplement.',
-    initials: 'MC',
+    name: 'Priya Patel',
+    role: 'Senior Manager, IT',
+    company: 'Tech Solutions Pune',
+    text: 'I had been investing in random mutual funds without any strategy. FinPlan consolidated everything, showed me the tax savings I was missing, and set up a proper SIP plan. My portfolio grew 18% in the first year itself.',
+    initials: 'PP',
   },
   {
-    name: 'Emily Rodriguez',
-    role: 'Chief Executive Officer',
-    company: 'Investment Partners LLC',
-    text: 'A research house that ships software. The dashboard is a courtesy — the real product is the people behind the analysis. Worth every basis point.',
-    initials: 'ER',
+    name: 'Amit Verma',
+    role: 'Business Owner',
+    company: 'Verma & Sons Enterprises',
+    text: 'The NPS and PPF optimisation alone saved us over ₹1.2 lakh in taxes annually. The dashboard is incredibly intuitive — I can see all my goals and progress in one place. Worth every rupee.',
+    initials: 'AV',
   },
 ];
 
@@ -35,13 +35,13 @@ export default function Testimonials() {
           <div className="col-span-12 lg:col-span-5">
             <div className="label-mono text-bone/50 mb-3">— 006 · Letters</div>
             <h2 className="display text-[44px] lg:text-[64px] text-bone">
-              From the<br/><em className="text-antique">desk</em> of clients.
+              From the<br/><em className="text-antique">desk</em> of our clients.
             </h2>
           </div>
           <div className="col-span-12 lg:col-span-5 lg:col-start-8 flex items-end">
             <p className="text-bone/60 text-[16px] lg:text-[18px] leading-[1.6]">
-              Unedited correspondence from allocators, treasurers and chief economists who
-              read us every morning.
+              Real stories from families and professionals who transformed their financial future
+              with FinPlan India.
             </p>
           </div>
         </div>

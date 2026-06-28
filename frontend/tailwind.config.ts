@@ -12,9 +12,9 @@ const config: Config = {
         line:   "#E2DED5",
       },
       fontFamily: {
-        serif: ['"Cormorant Garamond"', "serif"],
-        sans:  ['"Outfit"', "sans-serif"],
-        mono:  ['"IBM Plex Mono"', "monospace"],
+        serif: ["var(--font-serif)", '"Cormorant Garamond"', "serif"],
+        sans:  ["var(--font-sans)", '"Outfit"', "sans-serif"],
+        mono:  ["var(--font-mono)", '"IBM Plex Mono"', "monospace"],
       },
       letterSpacing: {
         tightest: "-0.04em",
