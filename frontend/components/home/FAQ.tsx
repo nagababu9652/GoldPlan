@@ -30,7 +30,7 @@ export default function FAQ() {
             Couldn’t find what you were looking for? Our advisor team is available Mon–Sat,
             09:00–19:00 IST.
           </p>
-          <a href="#" className="inline-block mt-6 u-link text-[14px] font-medium">
+          <a href="/contact" className="inline-block mt-6 u-link text-[14px] font-medium">
             Email our advisors →
           </a>
         </div>

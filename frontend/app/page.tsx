@@ -22,16 +22,16 @@ export default function Home() {
     <main className="min-h-screen bg-bone text-obsidian" data-testid="home-main">
       <Navigation />
       <div className="page-frame grain">
-        <Hero />
-        <TrustedBy />
-        <Services />
-        <Features />
-        <DashboardPreview />
-        <Process />
-        <Testimonials />
-        <Pricing />
-        <FAQ />
-        <CTA />
+        <div style={{ marginBottom: '20px' }}><Hero /></div>
+        <div style={{ marginBottom: '20px' }}><TrustedBy /></div>
+        <div style={{ marginBottom: '20px' }}><Services /></div>
+        <div style={{ marginBottom: '20px' }}><Features /></div>
+        <div style={{ marginBottom: '20px' }}><DashboardPreview /></div>
+        <div style={{ marginBottom: '20px' }}><Process /></div>
+        <div style={{ marginBottom: '20px' }}><Testimonials /></div>
+        <div style={{ marginBottom: '20px' }}><Pricing /></div>
+        <div style={{ marginBottom: '20px' }}><FAQ /></div>
+        <div><CTA /></div>
         <Footer />
       </div>
     </main>

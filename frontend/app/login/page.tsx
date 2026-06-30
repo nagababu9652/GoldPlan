@@ -55,31 +55,37 @@ export default function LoginPage() {
 
               <form onSubmit={handleSubmit} className="space-y-5" data-testid="login-form">
                 <div>
-                  <label htmlFor="email" className="label-mono text-ash mb-2 block">Email or Mobile</label>
-                  <input
-                    id="email"
-                    type="text"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com or +91 98XXX XXXXX"
-                    className="w-full border border-obsidian bg-bone px-5 py-4 text-[15px] focus:border-antique focus:outline-none transition-colors"
-                    data-testid="login-email"
-                    required
-                  />
+                  <label htmlFor="email" className="label-mono text-ash block" style={{ marginBottom: '12px' }}>Email or Mobile</label>
+                  <div style={{ marginTop: '2px', marginBottom: '4px' }}>
+                    <input
+                      id="email"
+                      type="text"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com or +91 98XXX XXXXX"
+                      className="w-full border border-obsidian bg-bone text-[15px] focus:border-antique focus:outline-none transition-colors"
+                      style={{ padding: '14px 18px' }}
+                      data-testid="login-email"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="label-mono text-ash mb-2 block">Password</label>
-                  <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="w-full border border-obsidian bg-bone px-5 py-4 text-[15px] focus:border-antique focus:outline-none transition-colors"
-                    data-testid="login-password"
-                    required
-                  />
+                  <label htmlFor="password" className="label-mono text-ash block" style={{ marginBottom: '12px' }}>Password</label>
+                  <div style={{ marginTop: '2px', marginBottom: '4px' }}>
+                    <input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="w-full border border-obsidian bg-bone text-[15px] focus:border-antique focus:outline-none transition-colors"
+                      style={{ padding: '14px 18px' }}
+                      data-testid="login-password"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between text-[13px]">
@@ -94,6 +100,7 @@ export default function LoginPage() {
                   type="submit"
                   disabled={loading}
                   className="btn-obsidian w-full justify-center disabled:opacity-50"
+                  style={{ padding: '14px 24px' }}
                   data-testid="login-submit"
                 >
                   {loading ? 'Signing in...' : 'Sign In'}
@@ -104,7 +111,7 @@ export default function LoginPage() {
                   <div className="relative flex justify-center"><span className="bg-bone px-4 label-mono text-ash">or</span></div>
                 </div>
 
-                <button type="button" className="btn-outline w-full justify-center" data-testid="login-otp">Sign in with OTP</button>
+                <button type="button" className="btn-outline w-full justify-center" style={{ padding: '14px 24px' }} data-testid="login-otp">Sign in with OTP</button>
               </form>
 
               <p className="mt-10 text-[14px] text-ash text-center">
@@ -115,7 +122,7 @@ export default function LoginPage() {
 
             {/* Right: Info panel */}
             <div className="col-span-12 lg:col-span-6 lg:col-start-7">
-              <div className="border border-obsidian bg-bone-deep p-8 lg:p-10 h-full">
+              <div className="border border-obsidian bg-bone-deep" style={{ padding: '32px 40px' }}>
                 <div className="label-mono text-ash mb-6">Why FinPlan India</div>
                 <div className="space-y-8">
 

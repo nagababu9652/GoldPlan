@@ -8,7 +8,9 @@ import {
   BookOpen, GraduationCap, Newspaper,
   Building2, Users, Briefcase,
   Home, Heart, TrendingUp, PiggyBank, Calculator, ArrowUpRight, ArrowRight,
+  DollarSign, RefreshCw, BarChart3 as BarChartIcon,
 } from 'lucide-react';
+import { fetchMarketData, type MarketData } from '@/lib/api';
 
 type MegaItem = {
   label: string;
@@ -18,25 +20,49 @@ type MegaItem = {
 };
 
 type NavItem =
-  | { label: 'Goals' | 'Investments' | 'Resources' | 'Company'; columns: { heading: string; items: MegaItem[] }[]; promo?: { title: string; body: string; cta: string; href: string } }
+  | { label: 'Goals' | 'Investments' | 'Resources' | 'Company' | 'Tools'; columns: { heading: string; items: MegaItem[] }[]; promo?: { title: string; body: string; cta: string; href: string } }
   | { label: string; href: string };
+
+const toolsItems: { heading: string; items: MegaItem[] }[] = [
+  {
+    heading: 'Investment Calculators',
+    items: [
+      { label: 'SIP Calculator', description: 'Estimate returns on your Systematic Investment Plan.', href: '/tools/sip-calculator', icon: TrendingUp },
+      { label: 'Lumpsum + SIP', description: 'Combine lumpsum investment with monthly SIP contributions.', href: '/tools/lumpsum-plus-sip', icon: BarChartIcon },
+      { label: 'Lumpsum Calculator', description: 'Future value of a one-time investment with compound interest.', href: '/tools/lumpsum-calculator', icon: DollarSign },
+      { label: 'Step-Up SIP Calculator', description: 'Plan SIPs with annual increases to beat inflation.', href: '/tools/step-up-sip', icon: BarChartIcon },
+      { label: 'SWP Calculator', description: 'Systematic Withdrawal Plan payouts from your corpus.', href: '/tools/swp-calculator', icon: RefreshCw },
+      { label: 'XIRR Calculator', description: 'Accurate returns for irregular cash flows.', href: '/tools/xirr-calculator', icon: Calculator },
+    ],
+  },
+  {
+    heading: 'Loan & Planning',
+    items: [
+      { label: 'EMI Calculator', description: 'Home, car and personal loan EMI with amortization.', href: '/tools/emi-calculator', icon: Home },
+      { label: 'Retirement Corpus', description: 'Calculate monthly savings for retirement.', href: '/tools/retirement-corpus', icon: PiggyBank },
+      { label: 'Goal Planner', description: 'Set a target and find your monthly investment.', href: '/tools/goal-planner', icon: Target },
+      { label: 'Inflation Calculator', description: 'See how inflation erodes purchasing power.', href: '/tools/inflation-calculator', icon: LineChart },
+      { label: 'All Tools →', description: 'Browse the complete tool suite.', href: '/tools', icon: BarChart3 },
+    ],
+  },
+];
 
 const goalsItems: { heading: string; items: MegaItem[] }[] = [
   {
     heading: 'Life Goals',
     items: [
-      { label: 'Retirement Planning', description: 'NPS, PPF, EPF and mutual funds for a stress-free retirement.', href: '#', icon: Target },
-      { label: 'Child Education', description: 'Beat inflation with inflation-adjusted education fund planning.', href: '#', icon: GraduationCap },
-      { label: 'Home Purchase', description: 'Plan your down payment, compare home loan options and maximise 80C/24(b).', href: '#', icon: Home },
-      { label: 'Wealth Creation', description: 'Long-term SIP strategies across equity, hybrid and index funds.', href: '#', icon: TrendingUp },
+      { label: 'Retirement Planning', description: 'NPS, PPF, EPF and mutual funds for a stress-free retirement.', href: '/goals/retirement', icon: Target },
+      { label: 'Child Education', description: 'Beat inflation with inflation-adjusted education fund planning.', href: '/goals/education', icon: GraduationCap },
+      { label: 'Home Purchase', description: 'Plan your down payment, compare home loan options and maximise 80C/24(b).', href: '/goals/home', icon: Home },
+      { label: 'Wealth Creation', description: 'Long-term SIP strategies across equity, hybrid and index funds.', href: '/goals/wealth', icon: TrendingUp },
     ],
   },
   {
     heading: 'Protection',
     items: [
-      { label: 'Term Life Insurance', description: 'Compare and optimise term cover across top Indian insurers.', href: '#', icon: Shield },
-      { label: 'Health Insurance', description: 'Family floater, critical illness and top-up plans.', href: '#', icon: Heart },
-      { label: 'Tax Saving (80C/80D)', description: 'ELSS, PPF, NSC, FDs and health insurance - maximise every rupee.', href: '#', icon: FileText },
+      { label: 'Term Life Insurance', description: 'Compare and optimise term cover across top Indian insurers.', href: '/protection/term-life', icon: Shield },
+      { label: 'Health Insurance', description: 'Family floater, critical illness and top-up plans.', href: '/protection/health', icon: Heart },
+      { label: 'Tax Saving (80C/80D)', description: 'ELSS, PPF, NSC, FDs and health insurance - maximise every rupee.', href: '/protection/tax-saving', icon: FileText },
     ],
   },
 ];
@@ -45,17 +71,17 @@ const investmentsItems: { heading: string; items: MegaItem[] }[] = [
   {
     heading: 'By Category',
     items: [
-      { label: 'Mutual Funds',     description: 'Equity, hybrid, debt and index funds from 40+ AMCs.', href: '#dashboard', icon: BarChart3 },
-      { label: 'Fixed Deposits',         description: 'Compare FD rates, corporate deposits and RBI bonds.', href: '#dashboard', icon: PiggyBank },
-      { label: 'PPF / EPF / NPS',         description: 'Tax-free, guaranteed-return government-backed instruments.', href: '#dashboard', icon: Shield },
+      { label: 'Mutual Funds',     description: 'Equity, hybrid, debt and index funds from 40+ AMCs.', href: '/investments/mutual-funds', icon: BarChart3 },
+      { label: 'Fixed Deposits',         description: 'Compare FD rates, corporate deposits and RBI bonds.', href: '/investments/fixed-deposits', icon: PiggyBank },
+      { label: 'PPF / EPF / NPS',         description: 'Tax-free, guaranteed-return government-backed instruments.', href: '/investments/ppf-epf-nps', icon: Shield },
     ],
   },
   {
     heading: 'Tools',
     items: [
-      { label: 'SIP Calculator', description: 'Estimate returns, inflation-adjusted corpus and goal timelines.', href: '#dashboard', icon: Calculator },
-      { label: 'Goal Tracker',       description: 'Real-time progress bars, rebalancing alerts and projections.', href: '#dashboard', icon: Target },
-      { label: 'Portfolio Review',  description: 'Upload or connect your existing holdings for a free review.', href: '#dashboard', icon: LineChart },
+      { label: 'SIP Calculator', description: 'Estimate returns, inflation-adjusted corpus and goal timelines.', href: '/tools/sip-calculator', icon: Calculator },
+      { label: 'Goal Tracker',       description: 'Real-time progress bars, rebalancing alerts and projections.', href: '/tools/goal-tracker', icon: Target },
+      { label: 'Portfolio Review',  description: 'Upload or connect your existing holdings for a free review.', href: '/tools/portfolio-review', icon: LineChart },
     ],
   },
 ];
@@ -64,9 +90,9 @@ const resourcesItems: { heading: string; items: MegaItem[] }[] = [
   {
     heading: 'Learn',
     items: [
-      { label: 'Field Notes',     description: 'Weekly editorial on gold markets.', href: '#', icon: Newspaper },
-      { label: 'Documentation',   description: 'APIs, SDKs, schemas.',              href: '#', icon: BookOpen },
-      { label: 'Academy',         description: 'Courses for analysts.',             href: '#', icon: GraduationCap },
+      { label: 'Field Notes',     description: 'Weekly editorial on gold markets.', href: '/resources/blog', icon: Newspaper },
+      { label: 'Documentation',   description: 'APIs, SDKs, schemas.',              href: '/resources/sip-basics', icon: BookOpen },
+      { label: 'Academy',         description: 'Courses for analysts.',             href: '/resources/tax-guide', icon: GraduationCap },
     ],
   },
 ];
@@ -75,17 +101,18 @@ const companyItems: { heading: string; items: MegaItem[] }[] = [
   {
     heading: 'About',
     items: [
-      { label: 'Our Firm',  description: 'A research house, not a SaaS.', href: '#', icon: Building2 },
-      { label: 'Clients',   description: 'Allocators, family offices, treasuries.', href: '#', icon: Users },
-      { label: 'Careers',   description: 'Join our editorial team.', href: '#', icon: Briefcase },
+      { label: 'Our Firm',  description: 'A research house, not a SaaS.', href: '/company/our-story', icon: Building2 },
+      { label: 'Clients',   description: 'Allocators, family offices, treasuries.', href: '/company/advisors', icon: Users },
+      { label: 'Careers',   description: 'Join our editorial team.', href: '/company/careers', icon: Briefcase },
     ],
   },
 ];
 
 const navItems: NavItem[] = [
-  { label: 'Goals', columns: goalsItems, promo: { title: 'Free Consultation', body: 'One complimentary 30-minute session with a SEBI-registered advisor.', cta: 'Book now', href: '#' } },
-  { label: 'Investments',  columns: investmentsItems,  promo: { title: 'SIP Calculator', body: 'Calculate your retirement, education or goal corpus in 60 seconds.', cta: 'Try it free', href: '#' } },
-  { label: 'Pricing',  href: '#pricing' },
+  { label: 'Goals', columns: goalsItems, promo: { title: 'Free Consultation', body: 'One complimentary 30-minute session with a SEBI-registered advisor.', cta: 'Book now', href: '/contact' } },
+    { label: 'Tools',  columns: toolsItems,  promo: { title: 'SIP Calculator', body: 'Calculate your retirement, education or goal corpus in 60 seconds.', cta: 'Try it free', href: '/tools/sip-calculator' } },
+    { label: 'Investments',  columns: investmentsItems,  promo: { title: 'All Calculators', body: 'Explore 9 financial planning tools to make smarter decisions.', cta: 'Browse tools', href: '/tools' } },
+  { label: 'Pricing',  href: '/pricing' },
   { label: 'Resources', columns: resourcesItems },
   { label: 'Company',  columns: companyItems },
 ];
@@ -94,11 +121,42 @@ export default function Navigation() {
   const [openMega, setOpenMega] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [marketData, setMarketData] = useState<MarketData | null>(null);
+  const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString('en-IN', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      }) + ' IST');
+    };
+    updateTime();
+    const timeInterval = setInterval(updateTime, 1000);
+    return () => clearInterval(timeInterval);
+  }, []);
+
+  useEffect(() => {
+    const loadMarketData = async () => {
+      try {
+        const data = await fetchMarketData();
+        setMarketData(data);
+        console.log('Market data updated:', data);
+      } catch (error) {
+        console.error('Failed to load market data:', error);
+      }
+    };
+    loadMarketData();
+    const interval = setInterval(loadMarketData, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
@@ -118,11 +176,11 @@ export default function Navigation() {
             <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full live-dot" />
             <span>Markets — Open</span>
           </span>
-          <span>Mumbai 19:02 IST</span>
+          <span>Mumbai {currentTime || '19:02 IST'}</span>
         </div>
         <div className="flex items-center gap-6">
-          <span>NIFTY 50 <span className="text-obsidian">24,891</span> <span className="text-emerald-700">+1.2%</span></span>
-          <span>SENSEX <span className="text-obsidian">81,456</span> <span className="text-emerald-700">+1.1%</span></span>
+          <span>NIFTY 50 <span className="text-obsidian">{marketData?.nifty50.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '24,891'}</span> <span className={marketData?.nifty50_change_percent && marketData.nifty50_change_percent >= 0 ? 'text-emerald-700' : 'text-red-700'}>{marketData?.nifty50_change_percent ? (marketData.nifty50_change_percent >= 0 ? '+' : '') + marketData.nifty50_change_percent.toFixed(2) + '%' : '+1.2%'}</span></span>
+          <span>SENSEX <span className="text-obsidian">{marketData?.sensex.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '81,456'}</span> <span className={marketData?.sensex_change_percent && marketData.sensex_change_percent >= 0 ? 'text-emerald-700' : 'text-red-700'}>{marketData?.sensex_change_percent ? (marketData.sensex_change_percent >= 0 ? '+' : '') + marketData.sensex_change_percent.toFixed(2) + '%' : '+1.1%'}</span></span>
           <a href="/login" className="u-link text-obsidian">Client login →</a>
         </div>
       </div>
@@ -130,25 +188,25 @@ export default function Navigation() {
       {/* Main bar */}
       <div className="flex items-center justify-between px-6 lg:px-8 h-16">
         {/* Brand */}
-        <a href="#" className="flex items-center gap-3 shrink-0" data-testid="brand-logo">
-          <div className="w-8 h-8 bg-obsidian text-bone flex items-center justify-center">
-            <span className="font-serif text-[18px] leading-none">F</span>
+        <a href="/" className="flex items-center gap-3 shrink-0" data-testid="brand-logo">
+          <div className="w-10 h-10 border-2 border-antique bg-obsidian text-bone flex items-center justify-center">
+            <span className="font-serif text-[24px] leading-none text-antique">F</span>
           </div>
-          <div className="leading-none">
-            <div className="font-serif text-[20px] tracking-tight">FinPlan<span className="text-antique">.</span></div>
-            <div className="font-mono text-[9px] uppercase tracking-wider2 text-ash mt-0.5">EST. 2024 · MUMBAI</div>
-          </div>
+            <div className="leading-none">
+              <div className="font-serif text-[20px] tracking-tight">FinPlan<span className="text-antique">.</span></div>
+              <div className="font-mono text-[9px] uppercase tracking-wider2 text-ash mt-0.5">EST. 2026 · HYDERABAD</div>
+            </div>
         </a>
 
         {/* Center nav */}
-        <nav className="hidden lg:flex items-center h-full" data-testid="nav-links">
+        <nav className="hidden lg:flex items-center h-full gap-8" data-testid="nav-links">
           {navItems.map((item) => {
             if ('href' in item) {
               return (
                 <a
                   key={item.label}
                   href={item.href}
-                  className="h-full px-5 flex items-center text-[13px] font-medium text-obsidian hover:text-antique-dark transition-colors"
+                  className="h-full flex items-center text-[13px] font-medium text-obsidian hover:text-antique-dark transition-colors"
                   data-testid={`nav-link-${item.label.toLowerCase()}`}
                   onMouseEnter={() => setOpenMega(null)}
                 >
@@ -162,7 +220,7 @@ export default function Navigation() {
                 key={item.label}
                 onMouseEnter={() => setOpenMega(item.label)}
                 onClick={() => setOpenMega(isOpen ? null : item.label)}
-                className={`h-full px-5 flex items-center gap-1 text-[13px] font-medium transition-colors ${
+                className={`h-full flex items-center gap-1 text-[13px] font-medium transition-colors ${
                   isOpen ? 'text-antique-dark' : 'text-obsidian hover:text-antique-dark'
                 }`}
                 data-testid={`nav-trigger-${item.label.toLowerCase()}`}
@@ -178,7 +236,7 @@ export default function Navigation() {
         <div className="hidden lg:flex items-center gap-3">
           <a href="/login" className="btn-outline text-[13px] font-medium text-obsidian" data-testid="nav-signin">Sign in</a>
           <a
-            href="#"
+            href="/contact"
             className="btn-obsidian text-[13px] py-2.5 px-4"
             data-testid="nav-cta-demo"
           >
@@ -279,7 +337,7 @@ export default function Navigation() {
               {navItems.map((item) => (
                 <a
                   key={item.label}
-                  href={'href' in item ? item.href : '#'}
+                  href={'href' in item ? item.href : '/'}
                   onClick={closeMobile}
                   className="flex items-center justify-between py-3 border-b border-line text-[15px] font-medium text-obsidian"
                   data-testid={`mobile-nav-${item.label.toLowerCase()}`}
@@ -290,7 +348,7 @@ export default function Navigation() {
               ))}
               <div className="pt-5 flex flex-col gap-3">
                 <a href="/login" onClick={closeMobile} className="btn-outline justify-center">Sign in</a>
-                <a href="#" onClick={closeMobile} className="btn-obsidian justify-center">Request Demo <ArrowRight size={14} /></a>
+                <a href="/contact" onClick={closeMobile} className="btn-obsidian justify-center">Request Demo <ArrowRight size={14} /></a>
               </div>
             </div>
           </motion.div>

@@ -1,6 +1,10 @@
+'use client';
+
 import type { Metadata } from "next";
+import { useState, useEffect } from 'react';
 import Navigation from "@/components/home/Navigation";
 import Footer from "@/components/home/Footer";
+import { fetchMarketData, type MarketData } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: "Dashboard — FinPlan India",
@@ -8,6 +12,20 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardPage() {
+  const [marketData, setMarketData] = useState<MarketData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const data = await fetchMarketData();
+      setMarketData(data);
+      setLoading(false);
+    };
+    loadData();
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <main className="min-h-screen bg-bone text-obsidian " data-testid="dashboard-page">
       <Navigation />
@@ -25,7 +43,7 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="col-span-12 lg:col-span-3 lg:col-start-10 flex items-end">
-              <a href="#" className="btn-obsidian" data-testid="dashboard-add-goal">
+              <a href="/goals" className="btn-obsidian" data-testid="dashboard-add-goal">
                 + Add New Goal
               </a>
             </div>
@@ -36,7 +54,7 @@ export default function DashboardPage() {
             {[
               { l: 'Total Invested', v: '\u20B948,23,450' },
               { l: 'Current Value', v: '\u20B954,12,800' },
-              { l: 'Total Returns', v: '+12.3%' },
+              { l: 'Total Returns', v: loading ? '+12.3%' : (marketData?.nifty50_change_percent ? (marketData.nifty50_change_percent >= 0 ? '+' : '') + marketData.nifty50_change_percent.toFixed(2) + '%' : '+12.3%') },
               { l: 'Active Goals', v: '4/6' },
             ].map((s, i) => (
               <div key={s.l} className={`bg-bone p-6 lg:p-8 ${i < 3 ? 'lg:border-r border-line' : ''}`}>
@@ -85,7 +103,7 @@ export default function DashboardPage() {
             <div className="border border-obsidian bg-bone">
               <div className="px-6 lg:px-8 py-4 border-b border-line flex justify-between">
                 <span className="label-mono text-ash">Latest transactions and updates</span>
-                <a href="#" className="text-[12px] font-mono uppercase tracking-wider2 u-link">View all</a>
+                <a href="/dashboard" className="text-[12px] font-mono uppercase tracking-wider2 u-link">View all</a>
               </div>
               <div className="divide-y divide-line">
                 {[

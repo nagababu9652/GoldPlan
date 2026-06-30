@@ -13,13 +13,13 @@ export default function Nav() {
             GoldPlan AI
           </div>
           <nav className="hidden md:flex items-center gap-6 text-gray-300">
-            <Link href="#">Home</Link>
-            <Link href="#solutions">Solutions</Link>
-            <Link href="#reports">Reports</Link>
-            <Link href="#pricing">Pricing</Link>
-            <Link href="#resources">Resources</Link>
-            <Link href="#about">About</Link>
-            <Link href="#contact">Contact</Link>
+            <Link href="/">Home</Link>
+            <Link href="/services">Solutions</Link>
+            <Link href="/resources/blog">Reports</Link>
+            <Link href="/pricing">Pricing</Link>
+            <Link href="/resources">Resources</Link>
+            <Link href="/company/our-story">About</Link>
+            <Link href="/contact">Contact</Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">
@@ -27,7 +27,7 @@ export default function Nav() {
           <motion.a
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            href="#get-started"
+            href="/login"
             className="hidden md:inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-yellow-500 to-[#D4AF37] px-4 py-2 text-black font-semibold shadow-md"
           >
             Get Started

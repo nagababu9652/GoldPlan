@@ -23,7 +23,7 @@ export default function Hero() {
           >
             <div className="label-mono text-ash">Lead &middot; Planning</div>
             <div className="text-ash text-[14px] leading-relaxed border-l border-line pl-4">
-              India&rsquo;s most trusted financial planning platform &mdash; helping families plan for <span className="text-obsidian">retirement, education, home, and beyond</span>. Built in Mumbai. Trusted by 50,000+ families.
+              India&rsquo;s most trusted financial planning platform &mdash; helping families plan for <span className="text-obsidian font-medium">retirement, education, home, and beyond</span>. Built in Mumbai. Trusted by 50,000+ families.
             </div>
           </motion.div>
         </div>
@@ -44,24 +44,23 @@ export default function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-10 grid grid-cols-12 gap-6"
+            className="mt-12 grid grid-cols-12 gap-6"
           >
             <p className="col-span-12 lg:col-span-7 text-[17px] lg:text-[19px] leading-[1.55] text-ash">
-              FinPlan India is a comprehensive financial planning platform. From mutual funds and
-              tax saving to retirement planning and insurance &mdash; we help you map every rupee to a goal,
-              powered by smart algorithms, guided by expert advisors.
+              From your first SIP to retirement planning, we&rsquo;re here to help you invest smarter,
+              save more, and achieve your dreams. Trusted by 50,000+ families across India.
             </p>
 
-            <div className="col-span-12 lg:col-span-5 flex flex-col gap-3 lg:items-end">
+            <div className="col-span-12 lg:col-span-5 flex flex-col gap-4 lg:items-end">
               <div className="flex flex-wrap gap-3">
-                <a href="#" className="btn-obsidian" data-testid="hero-cta-demo">
+                <a href="/login" className="btn-obsidian" data-testid="hero-cta-demo">
                   Start Planning <ArrowRight size={16} />
                 </a>
-                <a href="#" className="btn-outline" data-testid="hero-cta-report">
+                <a href="/contact" className="btn-outline" data-testid="hero-cta-report">
                   Talk to an Advisor
                 </a>
               </div>
-              <div className="label-mono text-ash text-[11px] flex items-center gap-1">
+              <div className="label-mono text-ash text-[11px] flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full live-dot" /> Free consultation available
               </div>
             </div>
@@ -73,17 +72,17 @@ export default function Hero() {
         <div className="label-mono text-ash mb-6">Plan for what matters most</div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-px bg-line border border-line">
           {[
-            { icon: GraduationCap, label: 'Education', desc: 'Kids higher education fund' },
-            { icon: Home, label: 'Home', desc: 'Buy your dream home' },
-            { icon: Heart, label: 'Retirement', desc: 'Retire with confidence' },
-            { icon: Target, label: 'Wealth', desc: 'Build long-term wealth' },
-            { icon: TrendingUp, label: 'Tax Saving', desc: 'Optimise 80C, 80D and more' },
+            { icon: GraduationCap, label: 'Education', desc: 'Kids higher education fund', href: '/goals/education' },
+            { icon: Home, label: 'Home', desc: 'Buy your dream home', href: '/goals/home' },
+            { icon: Heart, label: 'Retirement', desc: 'Retire with confidence', href: '/goals/retirement' },
+            { icon: Target, label: 'Wealth', desc: 'Build long-term wealth', href: '/goals/wealth' },
+            { icon: TrendingUp, label: 'Tax Saving', desc: 'Optimise 80C, 80D and more', href: '/protection/tax-saving' },
           ].map((g, i) => {
             const Icon = g.icon;
             return (
               <motion.a
                 key={g.label}
-                href="#"
+                href={g.href}
                 initial={{ opacity: 0, y: 8 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

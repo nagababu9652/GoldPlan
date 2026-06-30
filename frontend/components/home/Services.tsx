@@ -6,14 +6,14 @@ import {
 } from 'lucide-react';
 
 const services = [
-  { icon: PiggyBank, title: 'Mutual Fund Planning', desc: 'SIP and lump-sum investment strategies across equity, debt, and hybrid funds.', tag: 'Popular' },
-  { icon: GraduationCap, title: 'Education Planning',    desc: 'Plan for your child&rsquo;s higher education with inflation-adjusted goal tracking.',     tag: 'Goals' },
-  { icon: Home, title: 'Home Loan Advisory', desc: 'Compare lenders, maximise deductions under Section 24, and plan your EMI strategy.',     tag: 'Loan' },
-  { icon: Heart, title: 'Retirement Planning',  desc: 'NPS, EPF, PPF and mutual fund strategies for a corpus that lasts 30+ years.',         tag: 'Essential' },
-  { icon: Shield, title: 'Insurance Advisory',      desc: 'Term life, health insurance and critical illness cover tailored to your family&rsquo;s needs.',     tag: 'Cover' },
-  { icon: TrendingUp, title: 'Tax Saving (80C/80D)', desc: 'Maximise deductions across ELSS, PPF, NSC, tax-saving FDs, and health insurance.',      tag: 'Seasonal' },
-  { icon: BarChart3, title: 'Fixed Deposits & Bonds',   desc: 'Compare FD rates, corporate bonds, and debt instruments for stable returns.',        tag: 'Stable' },
-  { icon: Target, title: 'Wealth Management',          desc: 'Portfolio rebalancing, goal-based asset allocation, and expert-reviewed strategies.',     tag: 'Premium' },
+  { icon: PiggyBank, title: 'Mutual Fund Planning', desc: 'SIP and lump-sum investment strategies across equity, debt, and hybrid funds.', tag: 'Popular', href: '/investments/mutual-funds' },
+  { icon: GraduationCap, title: 'Education Planning',    desc: 'Plan for your child&rsquo;s higher education with inflation-adjusted goal tracking.',     tag: 'Goals', href: '/goals/education' },
+  { icon: Home, title: 'Home Loan Advisory', desc: 'Compare lenders, maximise deductions under Section 24, and plan your EMI strategy.',     tag: 'Loan', href: '/goals/home' },
+  { icon: Heart, title: 'Retirement Planning',  desc: 'NPS, EPF, PPF and mutual fund strategies for a corpus that lasts 30+ years.',         tag: 'Essential', href: '/goals/retirement' },
+  { icon: Shield, title: 'Insurance Advisory',      desc: 'Term life, health insurance and critical illness cover tailored to your family&rsquo;s needs.',     tag: 'Cover', href: '/protection/term-life' },
+  { icon: TrendingUp, title: 'Tax Saving (80C/80D)', desc: 'Maximise deductions across ELSS, PPF, NSC, tax-saving FDs, and health insurance.',      tag: 'Seasonal', href: '/protection/tax-saving' },
+  { icon: BarChart3, title: 'Fixed Deposits & Bonds',   desc: 'Compare FD rates, corporate bonds, and debt instruments for stable returns.',        tag: 'Stable', href: '/investments/fixed-deposits' },
+  { icon: Target, title: 'Wealth Management',          desc: 'Portfolio rebalancing, goal-based asset allocation, and expert-reviewed strategies.',     tag: 'Premium', href: '/goals/wealth' },
 ];
 
 export default function Services() {
@@ -40,7 +40,7 @@ export default function Services() {
           return (
             <motion.a
               key={s.title}
-              href="#"
+              href={s.href}
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}

@@ -89,7 +89,7 @@ export default function Pricing() {
               </ul>
 
               <a
-                href="#"
+                href={p.price === 'Bespoke' ? '/contact' : '/login'}
                 className={`inline-flex items-center justify-between px-5 py-3.5 text-[13px] font-medium border transition-colors ${
                   p.featured
                     ? 'bg-antique text-obsidian border-antique hover:bg-bone hover:border-bone'

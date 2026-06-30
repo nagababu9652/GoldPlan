@@ -1,9 +1,25 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
+import { fetchMarketData, type MarketData } from '@/lib/api';
 
 export default function DashboardPreview() {
+  const [marketData, setMarketData] = useState<MarketData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const data = await fetchMarketData();
+      setMarketData(data);
+      setLoading(false);
+    };
+    loadData();
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section id="dashboard" className="hairline-b" data-testid="dashboard-section">
       {/* Header */}
@@ -45,7 +61,7 @@ export default function DashboardPreview() {
           {/* Top KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 border-b border-line">
             {[
-              { l: 'Nifty 50',     v: '24,891', d: '+1.2%',   pos: true },
+              { l: 'Nifty 50',     v: loading ? '24,891' : marketData?.nifty50.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '24,891', d: loading ? '+1.2%' : (marketData?.nifty50_change_percent ? (marketData.nifty50_change_percent >= 0 ? '+' : '') + marketData.nifty50_change_percent.toFixed(2) + '%' : '+1.2%'),   pos: loading ? true : (marketData?.nifty50_change_percent || 0) >= 0 },
               { l: 'My Portfolio',    v: '\u20B9 48.2L',     d: 'Across 12 funds',  pos: true },
               { l: 'Monthly SIP',     v: '\u20B9 85K', d: '+5% this year',   pos: true },
               { l: 'Goals Tracked',     v: '4/6',     d: 'On track', pos: true },
@@ -125,7 +141,7 @@ export default function DashboardPreview() {
           <div>
             <div className="px-6 lg:px-8 py-4 border-b border-line flex items-center justify-between">
               <div className="label-mono text-ash">Recent Transactions</div>
-              <a href="#" className="text-[12px] font-mono uppercase tracking-wider2 u-link">View all</a>
+              <a href="/dashboard" className="text-[12px] font-mono uppercase tracking-wider2 u-link">View all</a>
             </div>
             <table className="w-full text-[13.5px]">
               <thead>
@@ -166,7 +182,7 @@ export default function DashboardPreview() {
             Console preview &middot; Your actual dashboard includes SIP calendar, tax harvest alerts,
             goal rebalancing suggestions, and advisor notes.
           </p>
-          <a href="#" className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-wider2 u-link">
+          <a href="/dashboard" className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-wider2 u-link">
             Explore dashboard <ArrowUpRight size={14} />
           </a>
         </div>

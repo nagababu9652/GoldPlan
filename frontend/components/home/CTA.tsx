@@ -39,10 +39,10 @@ export default function CTA() {
               </p>
 
               <div className="col-span-12 lg:col-span-6 flex flex-col sm:flex-row gap-3 lg:justify-end">
-                <a href="#" className="btn-obsidian" data-testid="cta-primary">
+                <a href="/login" className="btn-obsidian" data-testid="cta-primary">
                   Start free trial <ArrowRight size={16} />
                 </a>
-                <a href="#" className="btn-outline" data-testid="cta-secondary">
+                <a href="/contact" className="btn-outline" data-testid="cta-secondary">
                   <Calendar size={16} /> Book a call
                 </a>
               </div>

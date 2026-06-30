@@ -5,36 +5,36 @@ import { ArrowUpRight, Mail, Linkedin, Twitter, Phone } from 'lucide-react';
 
 const footerLinks = {
   Goals: [
-    { label: 'Education Planning', href: '#' },
-    { label: 'Retirement Planning', href: '#' },
-    { label: 'Home Buying', href: '#' },
-    { label: 'Wealth Building', href: '#' },
+    { label: 'Education Planning', href: '/goals/education' },
+    { label: 'Retirement Planning', href: '/goals/retirement' },
+    { label: 'Home Buying', href: '/goals/home' },
+    { label: 'Wealth Building', href: '/goals/wealth' },
   ],
   Investments: [
-    { label: 'Mutual Funds', href: '#' },
-    { label: 'Fixed Deposits', href: '#' },
-    { label: 'PPF / EPF', href: '#' },
-    { label: 'NPS', href: '#' },
+    { label: 'Mutual Funds', href: '/investments/mutual-funds' },
+    { label: 'Fixed Deposits', href: '/investments/fixed-deposits' },
+    { label: 'PPF / EPF', href: '/investments/ppf-epf-nps' },
+    { label: 'NPS', href: '/investments/ppf-epf-nps' },
   ],
   Resources: [
-    { label: 'Calculators', href: '#' },
-    { label: 'Tax Guide', href: '#' },
-    { label: 'Blog', href: '#' },
-    { label: 'Help Centre', href: '#' },
+    { label: 'Calculators', href: '/tools/sip-calculator' },
+    { label: 'Tax Guide', href: '/resources/tax-guide' },
+    { label: 'Blog', href: '/resources/blog' },
+    { label: 'Help Centre', href: '/contact' },
   ],
   Company: [
-    { label: 'About Us', href: '#' },
-    { label: 'Our Advisors', href: '#' },
-    { label: 'Careers', href: '#' },
-    { label: 'Contact', href: '#' },
+    { label: 'About Us', href: '/company/our-story' },
+    { label: 'Our Advisors', href: '/company/advisors' },
+    { label: 'Careers', href: '/company/careers' },
+    { label: 'Contact', href: '/contact' },
   ],
 };
 
 const socialLinks = [
-  { icon: Linkedin, href: '#', label: 'LinkedIn' },
-  { icon: Twitter,  href: '#', label: 'Twitter / X' },
-  { icon: Mail,     href: '#', label: 'Email' },
-  { icon: Phone,    href: '#', label: 'Phone' },
+  { icon: Linkedin, href: 'https://linkedin.com/company/finplan', label: 'LinkedIn' },
+  { icon: Twitter,  href: 'https://twitter.com/finplan', label: 'Twitter / X' },
+  { icon: Mail,     href: 'mailto:info@finplan.com', label: 'Email' },
+  { icon: Phone,    href: 'tel:+919876543210', label: 'Phone' },
 ];
 
 export default function Footer() {
@@ -137,9 +137,9 @@ export default function Footer() {
           <p className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50">
             &copy; 2026 FinPlan India Pvt. Ltd. All rights reserved.
           </p>
-          <a href="#" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Privacy</a>
-          <a href="#" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Terms</a>
-          <a href="#" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Grievances</a>
+          <a href="/privacy" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Privacy</a>
+          <a href="/terms" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Terms</a>
+          <a href="/grievances" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Grievances</a>
         </div>
 
         <div className="flex items-center gap-2">
