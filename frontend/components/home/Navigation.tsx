@@ -207,7 +207,7 @@ export default function Navigation() {
         <div className="flex items-center gap-6">
           <span>NIFTY 50 <span className="text-obsidian">{marketData?.nifty50.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '24,891'}</span> <span className={marketData?.nifty50_change_percent && marketData.nifty50_change_percent >= 0 ? 'text-emerald-700' : 'text-red-700'}>{marketData?.nifty50_change_percent ? (marketData.nifty50_change_percent >= 0 ? '+' : '') + marketData.nifty50_change_percent.toFixed(2) + '%' : '+1.2%'}</span></span>
           <span>SENSEX <span className="text-obsidian">{marketData?.sensex.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '81,456'}</span> <span className={marketData?.sensex_change_percent && marketData.sensex_change_percent >= 0 ? 'text-emerald-700' : 'text-red-700'}>{marketData?.sensex_change_percent ? (marketData.sensex_change_percent >= 0 ? '+' : '') + marketData.sensex_change_percent.toFixed(2) + '%' : '+1.1%'}</span></span>
-          <a href="/login" className="u-link text-obsidian">Client login →</a>
+          <span>GOLD <span className="text-obsidian">₹{marketData?.gold_price ? marketData.gold_price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '6,180'}</span> <span className={marketData?.gold_change_percent && marketData.gold_change_percent >= 0 ? 'text-emerald-700' : 'text-red-700'}>{marketData?.gold_change_percent ? (marketData.gold_change_percent >= 0 ? '+' : '') + marketData.gold_change_percent.toFixed(2) + '%' : '+0.73%'}</span></span>
         </div>
       </div>
 

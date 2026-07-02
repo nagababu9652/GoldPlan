@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Navigation from "@/components/home/Navigation";
 import Footer from "@/components/home/Footer";
 import AuthGuard from "@/components/auth/AuthGuard";
+import MarketChart from "@/components/charts/MarketChart";
 import { fetchMarketData, type MarketData } from '@/lib/api';
 
 export default function DashboardPage() {
@@ -35,7 +36,7 @@ export default function DashboardPage() {
                 Welcome, <em>Admin</em>.
               </h1>
               <p className="text-ash text-[16px] lg:text-[18px] leading-[1.6] mt-4 max-w-2xl">
-                Here&rsquo;s your financial overview. Your goals are on track and your portfolio is performing well.
+                Here&rsquo;s your financial overview. Live market data, historical trends, and AI-powered predictions.
               </p>
             </div>
             <div className="col-span-12 lg:col-span-3 lg:col-start-10 flex items-end">
@@ -58,6 +59,16 @@ export default function DashboardPage() {
                 <div className="font-serif text-[32px] lg:text-[36px] leading-none">{s.v}</div>
               </div>
             ))}
+          </div>
+
+          {/* Market Charts Section */}
+          <div className="mb-12">
+            <div className="label-mono text-ash mb-6">&mdash; Market Trends & Predictions</div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <MarketChart title="NIFTY 50" symbol="NIFTY" color="#0C0B0A" />
+              <MarketChart title="SENSEX" symbol="SENSEX" color="#B48E4B" />
+              <MarketChart title="GOLD (₹/g)" symbol="GOLD" color="#C9A227" prefix="₹" />
+            </div>
           </div>
 
           {/* Goals section */}

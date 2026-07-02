@@ -10,11 +10,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "framer-motion": "^11.0.0",
+    "lucide-react": "^0.400.0",
     "next": "15.5.19",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "framer-motion": "^11.0.0",
-    "lucide-react": "^0.400.0"
+    "recharts": "^3.9.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.1",
