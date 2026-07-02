@@ -1,15 +1,10 @@
 'use client';
 
-import type { Metadata } from "next";
 import { useState, useEffect } from 'react';
 import Navigation from "@/components/home/Navigation";
 import Footer from "@/components/home/Footer";
+import AuthGuard from "@/components/auth/AuthGuard";
 import { fetchMarketData, type MarketData } from '@/lib/api';
-
-export const metadata: Metadata = {
-  title: "Dashboard — FinPlan India",
-  description: "Your financial dashboard with goal tracking, portfolio overview, and advisor insights.",
-};
 
 export default function DashboardPage() {
   const [marketData, setMarketData] = useState<MarketData | null>(null);
@@ -27,8 +22,9 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-bone text-obsidian " data-testid="dashboard-page">
-      <Navigation />
+    <AuthGuard requireAuth={true}>
+      <main className="min-h-screen bg-bone text-obsidian " data-testid="dashboard-page">
+        <Navigation />
 
       <div className="page-frame grain">
         <section className="px-6 lg:px-10 py-16 lg:py-24">
@@ -130,5 +126,6 @@ export default function DashboardPage() {
 
       <Footer />
     </main>
+    </AuthGuard>
   );
 }

@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Navigation from '@/components/home/Navigation';
 import Footer from '@/components/home/Footer';
+import { loginUser, type LoginCredentials } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,20 +14,60 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('finplan_token');
+    if (token) {
+      router.push('/dashboard');
+    }
+  }, [router]);
+
+  const validateEmail = (email: string): boolean => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    if (email === 'admin' && password === 'admin') {
+    // Validation
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      setLoading(false);
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address');
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const credentials: LoginCredentials = { email, password };
+      const response = await loginUser(credentials);
+
+      // Store token in localStorage
+      localStorage.setItem('finplan_token', response.access_token);
+      localStorage.setItem('finplan_refresh_token', response.refresh_token);
       localStorage.setItem('finplan_user', JSON.stringify({
-        email: 'admin@finplan.in',
-        name: 'Admin User',
-        token: 'demo-jwt-token-12345'
+        email: email,
+        token: response.access_token,
+        expires_in: response.expires_in
       }));
+
+      // Redirect to dashboard
       router.push('/dashboard');
-    } else {
-      setError('Invalid credentials. Use demo: admin / admin');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
       setLoading(false);
     }
   };
@@ -93,7 +135,7 @@ export default function LoginPage() {
                     <input type="checkbox" className="border border-obsidian w-4 h-4" data-testid="login-remember" />
                     <span className="text-ash">Remember me</span>
                   </label>
-                  <a href="#" className="u-link text-obsidian hover:text-antique-dark transition-colors">Forgot password?</a>
+                  <Link href="/forgot-password" className="u-link text-obsidian hover:text-antique-dark transition-colors">Forgot password?</Link>
                 </div>
 
                 <button
@@ -116,7 +158,7 @@ export default function LoginPage() {
 
               <p className="mt-10 text-[14px] text-ash text-center">
                 Don&rsquo;t have an account?{' '}
-                <a href="#" className="u-link text-obsidian hover:text-antique-dark transition-colors font-medium">Create one free</a>
+                <Link href="/register" className="u-link text-obsidian hover:text-antique-dark transition-colors font-medium">Create one free</Link>
               </p>
             </div>
 
@@ -147,9 +189,9 @@ export default function LoginPage() {
                 <div className="mt-10 pt-8 border-t border-line">
                   <div className="label-mono text-ash mb-3">New here?</div>
                   <p className="text-[14px] text-ash leading-relaxed mb-5">Join 50,000+ families who plan with FinPlan India.</p>
-                  <a href="#" className="btn-obsidian inline-flex" data-testid="login-cta-signup">
+                  <Link href="/register" className="btn-obsidian inline-flex" data-testid="login-cta-signup">
                     Create free account
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>

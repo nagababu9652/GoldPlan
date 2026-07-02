@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Menu, X, ChevronDown,
@@ -123,6 +124,8 @@ export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const [marketData, setMarketData] = useState<MarketData | null>(null);
   const [currentTime, setCurrentTime] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -158,6 +161,29 @@ export default function Navigation() {
     const interval = setInterval(loadMarketData, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('finplan_token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('http://localhost:8000/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('finplan_token');
+      localStorage.removeItem('finplan_refresh_token');
+      localStorage.removeItem('finplan_user');
+      setIsLoggedIn(false);
+      router.push('/');
+    }
+  };
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
@@ -234,14 +260,29 @@ export default function Navigation() {
 
         {/* Right actions */}
         <div className="hidden lg:flex items-center gap-3">
-          <a href="/login" className="btn-outline text-[13px] font-medium text-obsidian" data-testid="nav-signin">Sign in</a>
-          <a
-            href="/contact"
-            className="btn-obsidian text-[13px] py-2.5 px-4"
-            data-testid="nav-cta-demo"
-          >
-            Request Demo <ArrowRight size={14} />
-          </a>
+          {isLoggedIn ? (
+            <>
+              <a href="/dashboard" className="btn-outline text-[13px] font-medium text-obsidian" data-testid="nav-dashboard">Dashboard</a>
+              <button
+                onClick={handleLogout}
+                className="btn-outline text-[13px] font-medium text-obsidian"
+                data-testid="nav-signout"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <a href="/login" className="btn-outline text-[13px] font-medium text-obsidian" data-testid="nav-signin">Sign in</a>
+              <a
+                href="/contact"
+                className="btn-obsidian text-[13px] py-2.5 px-4"
+                data-testid="nav-cta-demo"
+              >
+                Request Demo <ArrowRight size={14} />
+              </a>
+            </>
+          )}
         </div>
 
         {/* Mobile burger */}
@@ -347,8 +388,17 @@ export default function Navigation() {
                 </a>
               ))}
               <div className="pt-5 flex flex-col gap-3">
-                <a href="/login" onClick={closeMobile} className="btn-outline justify-center">Sign in</a>
-                <a href="/contact" onClick={closeMobile} className="btn-obsidian justify-center">Request Demo <ArrowRight size={14} /></a>
+                {isLoggedIn ? (
+                  <>
+                    <a href="/dashboard" onClick={closeMobile} className="btn-outline justify-center">Dashboard</a>
+                    <button onClick={() => { handleLogout(); closeMobile(); }} className="btn-outline justify-center">Sign Out</button>
+                  </>
+                ) : (
+                  <>
+                    <a href="/login" onClick={closeMobile} className="btn-outline justify-center">Sign in</a>
+                    <a href="/contact" onClick={closeMobile} className="btn-obsidian justify-center">Request Demo <ArrowRight size={14} /></a>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

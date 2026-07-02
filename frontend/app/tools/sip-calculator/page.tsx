@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Navigation from '@/components/home/Navigation';
 import Footer from '@/components/home/Footer';
+import AuthGuard from '@/components/auth/AuthGuard';
 import { Calculator, TrendingUp, Info } from 'lucide-react';
 
 export default function SIPCalculatorPage() {
@@ -42,8 +43,9 @@ export default function SIPCalculatorPage() {
   };
 
   return (
-    <main className="min-h-screen bg-bone text-obsidian" data-testid="sip-calculator-page">
-      <Navigation />
+    <AuthGuard requireAuth={true}>
+      <main className="min-h-screen bg-bone text-obsidian" data-testid="sip-calculator-page">
+        <Navigation />
 
       <div className="page-frame grain">
         <section className="px-6 lg:px-10 py-16 lg:py-24">
@@ -266,5 +268,6 @@ export default function SIPCalculatorPage() {
 
       <Footer />
     </main>
+    </AuthGuard>
   );
 }

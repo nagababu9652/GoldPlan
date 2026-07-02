@@ -5,6 +5,7 @@ import Footer from '@/components/home/Footer';
 import { tools } from '@/lib/tools-data';
 import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 
 export default function ToolsPage() {
   const categories = [
