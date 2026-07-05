@@ -212,15 +212,15 @@ export default function Navigation() {
       </div>
 
       {/* Main bar */}
-      <div className="flex items-center justify-between px-6 lg:px-8 h-16">
+      <div className="flex items-center justify-between px-4 lg:px-8 h-14 lg:h-16">
         {/* Brand */}
-        <a href="/" className="flex items-center gap-3 shrink-0" data-testid="brand-logo">
-          <div className="w-10 h-10 border-2 border-antique bg-obsidian text-bone flex items-center justify-center">
-            <span className="font-serif text-[24px] leading-none text-antique">F</span>
+        <a href="/" className="flex items-center gap-2 lg:gap-3 shrink-0" data-testid="brand-logo">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-antique bg-obsidian text-bone flex items-center justify-center">
+            <span className="font-serif text-[18px] lg:text-[24px] leading-none text-antique">F</span>
           </div>
             <div className="leading-none">
-              <div className="font-serif text-[20px] tracking-tight">FinPlan<span className="text-antique">.</span></div>
-              <div className="font-mono text-[9px] uppercase tracking-wider2 text-ash mt-0.5">EST. 2026 · HYDERABAD</div>
+              <div className="font-serif text-[16px] lg:text-[20px] tracking-tight">FinPlan<span className="text-antique">.</span></div>
+              <div className="hidden lg:block font-mono text-[9px] uppercase tracking-wider2 text-ash mt-0.5">EST. 2026 · HYDERABAD</div>
             </div>
         </a>
 
@@ -288,11 +288,11 @@ export default function Navigation() {
         {/* Mobile burger */}
         <button
           onClick={() => setMobileOpen((v) => !v)}
-          className="lg:hidden w-10 h-10 border border-obsidian flex items-center justify-center"
+          className="lg:hidden w-8 h-8 border border-obsidian flex items-center justify-center shrink-0"
           aria-label="Toggle menu"
           data-testid="mobile-menu-toggle"
         >
-          {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          {mobileOpen ? <X size={16} /> : <Menu size={16} />}
         </button>
       </div>
 
@@ -374,7 +374,7 @@ export default function Navigation() {
             className="lg:hidden bg-bone border-t border-line overflow-hidden"
             data-testid="mobile-drawer"
           >
-            <div className="px-6 py-6 space-y-1">
+            <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-6 space-y-1">
               {navItems.map((item) => (
                 <a
                   key={item.label}
