@@ -63,6 +63,7 @@ def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
 
 def create_user(db: Session, user_data: dict) -> User:
     hashed_password = get_password_hash(user_data.pop("password"))
+    # Role is already a string, no conversion needed
     user = User(**user_data, password_hash=hashed_password)
     db.add(user)
     db.commit()

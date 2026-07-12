@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { sendOTP, verifyOTP } from '@/lib/api';
+import { sendOTP, verifyOTP, registerUser } from '@/lib/api';
 
 // Floating goal icons
 const goals = [
@@ -54,6 +54,7 @@ export default function RegisterPage() {
   const [countdown, setCountdown] = useState(0);
   const [successMessage, setSuccessMessage] = useState('');
   const [isResending, setIsResending] = useState(false);
+  const [registerRole, setRegisterRole] = useState<'individual' | 'advisor'>('individual');
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -134,20 +135,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/auth/send-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, purpose: 'registration' }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || 'Failed to send OTP');
-      }
-
-      const data = await response.json();
+      const data = await sendOTP(email, 'registration');
       
       // Show OTP in development mode
       if (data.otp_code) {
@@ -175,19 +163,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/auth/verify-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, otp_code: otp, purpose: 'registration' }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || 'Invalid or expired OTP');
-      }
-
+      await verifyOTP(email, otp, 'registration');
       setStep('details');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'OTP verification failed. Please try again.');
@@ -228,29 +204,22 @@ export default function RegisterPage() {
 
     try {
       const { confirmPassword, ...userData } = formData;
-      const response = await fetch('http://localhost:8000/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...userData,
-          email,
-        }),
+      const result = await registerUser({
+        ...userData,
+        email,
+        role: registerRole === 'advisor' ? 'advisor' : 'user',
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || 'Registration failed');
-      }
-
-      const result = await response.json();
       
       localStorage.setItem('finplan_token', result.access_token);
       localStorage.setItem('finplan_refresh_token', result.refresh_token);
       localStorage.setItem('finplan_user', JSON.stringify(result.user));
       
-      router.push('/dashboard');
+      // Redirect based on role
+      if (result.user.role === 'advisor') {
+        router.push('/advisor-dashboard');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
@@ -259,7 +228,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bone text-obsidian overflow-hidden" ref={containerRef}>
+    <main className="min-h-screen bg-bone text-obsidian overflow-hidden" ref={containerRef}>
       {/* Floating Goals Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         {particles.map((particle, index) => (
@@ -317,13 +286,45 @@ export default function RegisterPage() {
             >
               Create your account
             </motion.h1>
+            
+            {/* Role Toggle */}
+            <motion.div
+              className="flex border border-[#C9A227] mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
+            >
+              <button
+                type="button"
+                onClick={() => setRegisterRole('individual')}
+                className={`flex-1 py-2 px-4 text-[12px] font-mono uppercase tracking-wider2 transition-colors ${
+                  registerRole === 'individual'
+                    ? 'bg-[#C9A227] text-[#0C0B0A]'
+                    : 'bg-transparent text-[#C9A227] hover:bg-[#1C1A19]'
+                }`}
+              >
+                Individual Investor
+              </button>
+              <button
+                type="button"
+                onClick={() => setRegisterRole('advisor')}
+                className={`flex-1 py-2 px-4 text-[12px] font-mono uppercase tracking-wider2 transition-colors ${
+                  registerRole === 'advisor'
+                    ? 'bg-[#C9A227] text-[#0C0B0A]'
+                    : 'bg-transparent text-[#C9A227] hover:bg-[#1C1A19]'
+                }`}
+              >
+                Advisor Portal
+              </button>
+            </motion.div>
+            
             <motion.p
               className="text-ash text-[15px]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              {step === 'email' && 'Enter your email to get started'}
+              {step === 'email' && (registerRole === 'individual' ? 'Enter your email to manage your personal finances' : 'Enter your email to manage client portfolios')}
               {step === 'otp' && 'Verify your email address'}
               {step === 'details' && 'Complete your profile'}
             </motion.p>
@@ -642,6 +643,6 @@ export default function RegisterPage() {
           </motion.div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

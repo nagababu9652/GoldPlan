@@ -23,7 +23,7 @@ def create_default_user():
             print(f"  Password: Test@123456")
             return
         
-        # Create default user
+        # Create default individual user
         user_data = {
             "email": "user@finplan.in",
             "password": "Test@123456",
@@ -35,10 +35,27 @@ def create_default_user():
         
         user = create_user(db, user_data)
         
-        print("✓ Default user created successfully!")
+        print("✓ Default individual user created successfully!")
         print(f"\nLogin Credentials:")
         print(f"  Email: user@finplan.in")
         print(f"  Password: Test@123456")
+        
+        # Create default advisor user
+        advisor_data = {
+            "email": "advisor@finplan.in",
+            "password": "Advisor@123456",
+            "first_name": "Demo",
+            "last_name": "Advisor",
+            "phone": "+91 9876543211",
+            "role": "advisor"
+        }
+        
+        advisor = create_user(db, advisor_data)
+        
+        print(f"\n✓ Default advisor user created successfully!")
+        print(f"\nAdvisor Login Credentials:")
+        print(f"  Email: advisor@finplan.in")
+        print(f"  Password: Advisor@123456")
         print(f"\nYou can now login with these credentials at http://localhost:3000/login")
         
     except Exception as e:

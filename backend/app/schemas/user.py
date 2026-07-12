@@ -11,6 +11,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8)
+    role: str = Field(default="user", pattern="^(user|advisor)$")
 
 
 class UserLogin(BaseModel):
@@ -21,6 +22,7 @@ class UserLogin(BaseModel):
 class UserResponse(UserBase):
     id: int
     is_active: bool
+    is_verified: bool
     role: str
     created_at: str
     last_login: Optional[str] = None

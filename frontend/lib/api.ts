@@ -25,6 +25,7 @@ export interface TokenResponse {
 export interface LoginCredentials {
   email: string;
   password: string;
+  role?: string;
 }
 
 export interface RegisterData {
@@ -33,6 +34,7 @@ export interface RegisterData {
   first_name: string;
   last_name: string;
   phone?: string;
+  role?: string;
 }
 
 export interface RegisterResponse {
@@ -71,6 +73,7 @@ export const register = registerUser;
 export interface OTPSendResponse {
   message: string;
   expires_in_minutes: number;
+  otp_code?: string; // Only in development mode
 }
 
 export interface OTPVerifyResponse {
@@ -114,14 +117,18 @@ export async function verifyOTP(email: string, otpCode: string, purpose: string 
   return response.json();
 }
 
-export async function loginUser(credentials: LoginCredentials): Promise<TokenResponse> {
+export async function loginUser(credentials: LoginCredentials & { role?: string }): Promise<TokenResponse> {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: JSON.stringify(credentials),
+    body: JSON.stringify({
+      email: credentials.email,
+      password: credentials.password,
+      role: credentials.role || 'user'
+    }),
     credentials: 'include',
   });
 
@@ -233,6 +240,115 @@ export async function resetPassword(email: string, otpCode: string, newPassword:
   }
 
   return response.json();
+}
+
+// ==================== ADVISOR API ====================
+
+export interface AdvisorDashboard {
+  advisor_name: string;
+  email: string;
+  portfolio_value: number;
+  portfolio_change: number;
+  total_reports: number;
+  pending_reports: number;
+  unread_messages: number;
+  last_login: string | null;
+}
+
+export interface AdvisorPortfolio {
+  holdings: Array<{
+    name: string;
+    value: number;
+    allocation: number;
+    returns: number;
+  }>;
+  total_value: number;
+  total_cost: number;
+  total_returns: number;
+  returns_percentage: number;
+}
+
+export interface AdvisorReports {
+  reports: Array<{
+    id: number;
+    title: string;
+    date: string;
+    type: string;
+    status: string;
+  }>;
+}
+
+export interface AdvisorDocuments {
+  documents: Array<{
+    id: number;
+    name: string;
+    date: string;
+    category: string;
+    size: string;
+  }>;
+}
+
+export interface AdvisorMessages {
+  messages: Array<{
+    id: number;
+    from: string;
+    subject: string;
+    date: string;
+    unread: boolean;
+  }>;
+}
+
+export interface AdvisorProfile {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  role: string;
+  member_since: string;
+  plan_type: string;
+  client_name: string;
+  risk_profile: string;
+}
+
+async function advisorFetch(endpoint: string, token: string) {
+  const response = await fetch(`${API_BASE_URL}/advisors${endpoint}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Request failed');
+  }
+
+  return response.json();
+}
+
+export function getAdvisorDashboard(token: string): Promise<AdvisorDashboard> {
+  return advisorFetch('/dashboard', token);
+}
+
+export function getAdvisorPortfolio(token: string): Promise<AdvisorPortfolio> {
+  return advisorFetch('/portfolio', token);
+}
+
+export function getAdvisorReports(token: string): Promise<AdvisorReports> {
+  return advisorFetch('/reports', token);
+}
+
+export function getAdvisorDocuments(token: string): Promise<AdvisorDocuments> {
+  return advisorFetch('/documents', token);
+}
+
+export function getAdvisorMessages(token: string): Promise<AdvisorMessages> {
+  return advisorFetch('/messages', token);
+}
+
+export function getAdvisorProfile(token: string): Promise<AdvisorProfile> {
+  return advisorFetch('/profile', token);
 }
 
 // ==================== MARKET DATA ====================

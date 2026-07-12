@@ -1,162 +1,47 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { ArrowUpRight, Mail, Linkedin, Twitter, Phone } from 'lucide-react';
-
-const footerLinks = {
-  Goals: [
-    { label: 'Education Planning', href: '/goals/education' },
-    { label: 'Retirement Planning', href: '/goals/retirement' },
-    { label: 'Home Buying', href: '/goals/home' },
-    { label: 'Wealth Building', href: '/goals/wealth' },
-  ],
-  Investments: [
-    { label: 'Mutual Funds', href: '/investments/mutual-funds' },
-    { label: 'Fixed Deposits', href: '/investments/fixed-deposits' },
-    { label: 'PPF / EPF', href: '/investments/ppf-epf-nps' },
-    { label: 'NPS', href: '/investments/ppf-epf-nps' },
-  ],
-  Resources: [
-    { label: 'Calculators', href: '/tools/sip-calculator' },
-    { label: 'Tax Guide', href: '/resources/tax-guide' },
-    { label: 'Blog', href: '/resources/blog' },
-    { label: 'Help Centre', href: '/contact' },
-  ],
-  Company: [
-    { label: 'About Us', href: '/company/our-story' },
-    { label: 'Our Advisors', href: '/company/advisors' },
-    { label: 'Careers', href: '/company/careers' },
-    { label: 'Contact', href: '/contact' },
-  ],
-};
-
-const socialLinks = [
-  { icon: Linkedin, href: 'https://linkedin.com/company/finplan', label: 'LinkedIn' },
-  { icon: Twitter,  href: 'https://twitter.com/finplan', label: 'Twitter / X' },
-  { icon: Mail,     href: 'mailto:info@finplan.com', label: 'Email' },
-  { icon: Phone,    href: 'tel:+919876543210', label: 'Phone' },
-];
+import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-obsidian text-bone" data-testid="site-footer">
-      {/* Newsletter strip */}
-      <div className="px-6 lg:px-10 py-16 lg:py-20 border-b border-bone/10 grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-6">
-          <div className="label-mono text-antique mb-4">&mdash; Subscribe</div>
-          <h3 className="display text-[36px] lg:text-[56px] text-bone">
-            Weekly financial insights,<br/>delivered every <em className="text-antique">Monday</em>.
-          </h3>
+    <footer className="bg-obsidian text-bone py-12" data-testid="site-footer">
+      <div className="px-6 lg:px-10">
+        {/* Top Section - Logo & Tagline */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-10 border-b border-bone/10">
+          <div>
+            <Link href="/" className="font-serif text-[22px] text-antique inline-block mb-2">
+              FinPlan<span className="text-bone">.</span>
+            </Link>
+            <p className="text-bone/60 text-[14px] max-w-md">
+              India&rsquo;s trusted financial planning platform for smarter investing.
+            </p>
+          </div>
+          <div className="flex gap-6">
+            <Link href="/company" className="text-bone/70 hover:text-antique text-[14px] transition-colors">
+              About Us
+            </Link>
+            <Link href="/contact" className="text-bone/70 hover:text-antique text-[14px] transition-colors">
+              Contact
+            </Link>
+            <Link href="/company/advisors" className="text-bone/70 hover:text-antique text-[14px] transition-colors">
+              Advisors
+            </Link>
+          </div>
         </div>
-        <div className="col-span-12 lg:col-span-6 lg:col-start-7 flex flex-col justify-end gap-5">
-          <p className="text-bone/65 text-[15px] lg:text-[16px] leading-[1.65] max-w-lg">
-            A 5-minute newsletter on smart investing, tax tips, and goal planning &mdash; written by
-            our advisors, read by 50,000+ subscribers across India. Free. Forever.
-          </p>
-          <form className="flex flex-col sm:flex-row gap-3" data-testid="newsletter-form">
-            <input
-              type="email"
-              required
-              placeholder="your@email.com"
-              className="flex-1 bg-transparent border border-bone/20 px-5 py-3.5 text-[14px] text-bone placeholder:text-bone/40 focus:border-antique focus:outline-none transition-colors"
-              data-testid="newsletter-input"
-            />
-            <button
-              type="submit"
-              className="px-6 py-3.5 bg-antique text-obsidian font-medium text-[14px] hover:bg-bone transition-colors flex items-center justify-center gap-2"
-              data-testid="newsletter-submit"
-            >
-              Subscribe <ArrowUpRight size={14} />
-            </button>
-          </form>
+
+        {/* Bottom Section - Copyright */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
           <p className="font-mono text-[11px] uppercase tracking-wider2 text-bone/40">
-            One email weekly. Unsubscribe in one click.
-          </p>
-        </div>
-      </div>
-
-      {/* Link columns */}
-      <div className="px-6 lg:px-10 py-16 grid grid-cols-12 gap-10 border-b border-bone/10">
-        {/* Brand */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="col-span-12 lg:col-span-4"
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-9 h-9 bg-antique text-obsidian flex items-center justify-center">
-              <span className="font-serif text-[20px] leading-none">F</span>
-            </div>
-            <div className="leading-none">
-              <div className="font-serif text-[22px]">FinPlan<span className="text-antique">.</span></div>
-              <div className="label-mono text-bone/40 mt-1">EST. 2024 &middot; MUMBAI</div>
-            </div>
-          </div>
-          <p className="text-bone/65 text-[14px] leading-[1.7] max-w-sm">
-            India&rsquo;s most trusted financial planning platform. Helping families plan for
-            retirement, education, home, and wealth &mdash; powered by smart algorithms and expert advisors.
-          </p>
-
-          <div className="mt-8 pt-6 border-t border-bone/10">
-            <div className="label-mono text-bone/40 mb-2">Corporate Office</div>
-            <div className="font-serif text-[18px]">BKC, Bandra East</div>
-            <div className="text-bone/60 text-[13px] mt-0.5">Mumbai, Maharashtra 400051 &middot; India</div>
-          </div>
-        </motion.div>
-
-        {/* Columns */}
-        {Object.entries(footerLinks).map(([category, links], idx) => (
-          <motion.div
-            key={category}
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: idx * 0.05 }}
-            className="col-span-6 lg:col-span-2"
-          >
-            <div className="label-mono text-antique mb-5 pb-3 border-b border-bone/10">
-              {category}
-            </div>
-            <ul className="space-y-3">
-              {links.map((l) => (
-                <li key={l.label}>
-                  <a href={l.href} className="text-bone/70 hover:text-antique text-[14px] u-link">
-                    {l.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Bottom bar */}
-      <div className="px-6 lg:px-10 py-6 flex flex-col md:flex-row items-center justify-between gap-5">
-        <div className="flex items-center gap-6 flex-wrap justify-center">
-          <p className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50">
             &copy; 2026 FinPlan India Pvt. Ltd. All rights reserved.
           </p>
-          <a href="/privacy" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Privacy</a>
-          <a href="/terms" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Terms</a>
-          <a href="/grievances" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/50 hover:text-antique transition-colors">Grievances</a>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {socialLinks.map((link) => {
-            const Icon = link.icon;
-            return (
-              <a
-                key={link.label}
-                href={link.href}
-                aria-label={link.label}
-                className="w-9 h-9 border border-bone/20 flex items-center justify-center hover:border-antique hover:text-antique transition-colors"
-                data-testid={`social-${link.label.toLowerCase()}`}
-              >
-                <Icon size={14} />
-              </a>
-            );
-          })}
+          <div className="flex gap-6">
+            <Link href="/privacy" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/40 hover:text-antique transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/40 hover:text-antique transition-colors">
+              Terms
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

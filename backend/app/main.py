@@ -9,6 +9,7 @@ from .models.otp import OTP  # Import OTP model to register it with Base
 from .routers.items import router as items_router
 from .routers.market import router as market_router
 from .routers.auth import router as auth_router
+from .routers.advisors import router as advisors_router
 
 
 def create_app() -> FastAPI:
@@ -21,6 +22,7 @@ def create_app() -> FastAPI:
     app.include_router(items_router)
     app.include_router(market_router)
     app.include_router(auth_router)
+    app.include_router(advisors_router)
 
     Base.metadata.create_all(bind=engine)
 

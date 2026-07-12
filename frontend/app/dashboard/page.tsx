@@ -23,11 +23,10 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <AuthGuard requireAuth={true}>
+    <AuthGuard requireAuth={true} requiredRole="user">
       <main className="min-h-screen bg-bone text-obsidian " data-testid="dashboard-page">
         <Navigation />
-
-      <div className="page-frame grain">
+        <div className="page-frame grain">
         <section className="px-6 lg:px-10 py-16 lg:py-24">
           <div className="grid grid-cols-12 gap-6 mb-12">
             <div className="col-span-12 lg:col-span-8">
