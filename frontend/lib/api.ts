@@ -253,6 +253,14 @@ export interface AdvisorDashboard {
   pending_reports: number;
   unread_messages: number;
   last_login: string | null;
+  total_clients: number;
+  active_clients: number;
+  new_clients_this_month: number;
+  total_aum: number;
+  avg_portfolio_size: number;
+  client_satisfaction: number;
+  reviews_completed: number;
+  upcoming_reviews: number;
 }
 
 export interface AdvisorPortfolio {
