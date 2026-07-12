@@ -12,6 +12,9 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8)
     role: str = Field(default="user", pattern="^(user|advisor)$")
+    firm_name: Optional[str] = None
+    registration_number: Optional[str] = None
+    experience_years: Optional[int] = None
 
 
 class UserLogin(BaseModel):

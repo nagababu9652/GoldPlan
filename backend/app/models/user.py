@@ -19,3 +19,7 @@ class User(Base):
     last_login = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    # Advisor-specific fields
+    firm_name = Column(String(100), nullable=True)
+    registration_number = Column(String(50), nullable=True)
+    experience_years = Column(Integer, nullable=True)
