@@ -336,7 +336,16 @@ async function advisorFetch(endpoint: string, token: string) {
 }
 
 export function getAdvisorDashboard(token: string): Promise<AdvisorDashboard> {
-  return advisorFetch('/dashboard', token);
+  return advisorFetch('/dashboard', token).catch((error) => {
+    if (error.message.includes('Could not validate credentials')) {
+      // Clear invalid token and redirect to login
+      localStorage.removeItem('finplan_token');
+      localStorage.removeItem('finplan_refresh_token');
+      localStorage.removeItem('finplan_user');
+      window.location.href = '/login';
+    }
+    throw error;
+  });
 }
 
 export function getAdvisorPortfolio(token: string): Promise<AdvisorPortfolio> {
