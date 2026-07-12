@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { sendOTP, verifyOTP, registerUser } from '@/lib/api';
 
-// Floating goal icons
-const goals = [
+// Floating goal icons for individual investors
+const userGoals = [
   { icon: '🏠', label: 'Dream Home' },
   { icon: '🎓', label: 'Education' },
   { icon: '✈️', label: 'Travel' },
@@ -18,10 +18,21 @@ const goals = [
   { icon: '💍', label: 'Wedding' },
 ];
 
+// Professional icons for advisors
+const advisorGoals = [
+  { icon: '📊', label: 'Analytics' },
+  { icon: '💼', label: 'Business' },
+  { icon: '📈', label: 'Growth' },
+  { icon: '🎯', label: 'Strategy' },
+  { icon: '💰', label: 'Wealth Mgmt' },
+  { icon: '🤝', label: 'Relationships' },
+  { icon: '📋', label: 'Reports' },
+  { icon: '🏆', label: 'Excellence' },
+];
+
 // Reduce particles for better performance
 const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 const particleCount = isMobile ? 4 : 6;
-const displayGoals = goals.slice(0, particleCount);
 
 interface FloatingParticle {
   id: number;
@@ -44,6 +55,9 @@ export default function RegisterPage() {
     first_name: '',
     last_name: '',
     phone: '',
+    firm_name: '', // Advisor-specific
+    registration_number: '', // Advisor-specific
+    experience_years: '', // Advisor-specific
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -58,9 +72,10 @@ export default function RegisterPage() {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize floating particles
+  // Initialize floating particles based on role
   useEffect(() => {
-    const initialParticles = goals.map((goal, i) => ({
+    const goals = registerRole === 'advisor' ? advisorGoals : userGoals;
+    const initialParticles = goals.slice(0, particleCount).map((goal, i) => ({
       id: i,
       x: 5 + Math.random() * 90,
       y: 5 + Math.random() * 90,
@@ -69,7 +84,7 @@ export default function RegisterPage() {
       rotation: Math.random() * 360,
     }));
     setParticles(initialParticles);
-  }, []);
+  }, [registerRole]);
 
   // Animate particles
   useEffect(() => {
@@ -324,9 +339,9 @@ export default function RegisterPage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              {step === 'email' && (registerRole === 'individual' ? 'Enter your email to manage your personal finances' : 'Enter your email to manage client portfolios')}
+              {step === 'email' && (registerRole === 'individual' ? 'Enter your email to manage your personal finances' : 'Enter your email to join India\'s leading investment advisory platform')}
               {step === 'otp' && 'Verify your email address'}
-              {step === 'details' && 'Complete your profile'}
+              {step === 'details' && (registerRole === 'individual' ? 'Complete your profile' : 'Tell us about your advisory practice')}
             </motion.p>
           </div>
 
@@ -527,6 +542,92 @@ export default function RegisterPage() {
                       />
                     </div>
                   </div>
+
+                  {/* Advisor-specific fields */}
+                  {registerRole === 'advisor' && (
+                    <>
+                      <div>
+                        <label htmlFor="firm_name" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
+                          Firm/Legal Name
+                        </label>
+                        <input
+                          id="firm_name"
+                          name="firm_name"
+                          type="text"
+                          required={registerRole === 'advisor'}
+                          value={formData.firm_name}
+                          onChange={handleChange}
+                          onFocus={() => handleFieldFocus('firm_name')}
+                          onBlur={handleFieldBlur}
+                          style={{
+                            width: '100%',
+                            padding: '10px 14px',
+                            border: '1px solid #C9A227',
+                            background: '#1C1A19',
+                            color: '#F8F6F0',
+                            fontSize: '14px',
+                            outline: 'none',
+                          }}
+                          placeholder="Your Advisory Firm Pvt. Ltd."
+                        />
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div>
+                          <label htmlFor="registration_number" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
+                            SEBI/AMFI Reg. No.
+                          </label>
+                          <input
+                            id="registration_number"
+                            name="registration_number"
+                            type="text"
+                            required={registerRole === 'advisor'}
+                            value={formData.registration_number}
+                            onChange={handleChange}
+                            onFocus={() => handleFieldFocus('registration_number')}
+                            onBlur={handleFieldBlur}
+                            style={{
+                              width: '100%',
+                              padding: '10px 14px',
+                              border: '1px solid #C9A227',
+                              background: '#1C1A19',
+                              color: '#F8F6F0',
+                              fontSize: '14px',
+                              outline: 'none',
+                            }}
+                            placeholder="REG123456"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="experience_years" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
+                            Years of Experience
+                          </label>
+                          <input
+                            id="experience_years"
+                            name="experience_years"
+                            type="number"
+                            min="0"
+                            max="50"
+                            required={registerRole === 'advisor'}
+                            value={formData.experience_years}
+                            onChange={handleChange}
+                            onFocus={() => handleFieldFocus('experience_years')}
+                            onBlur={handleFieldBlur}
+                            style={{
+                              width: '100%',
+                              padding: '10px 14px',
+                              border: '1px solid #C9A227',
+                              background: '#1C1A19',
+                              color: '#F8F6F0',
+                              fontSize: '14px',
+                              outline: 'none',
+                            }}
+                            placeholder="5"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                   <div>
                     <label htmlFor="phone" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
