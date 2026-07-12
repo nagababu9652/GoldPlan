@@ -30,9 +30,9 @@ const advisorGoals = [
   { icon: '🏆', label: 'Excellence' },
 ];
 
-// Reduce particles for better performance
+// Reduced particles for better performance
 const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-const particleCount = isMobile ? 4 : 6;
+const particleCount = isMobile ? 3 : 4;  // Reduced from 4-6 to 3-4
 
 interface FloatingParticle {
   id: number;
@@ -72,7 +72,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize floating particles based on role
+  // Initialize floating particles based on role - CSS-based animations
   useEffect(() => {
     const goals = registerRole === 'advisor' ? advisorGoals : userGoals;
     const initialParticles = goals.slice(0, particleCount).map((goal, i) => ({
@@ -80,42 +80,26 @@ export default function RegisterPage() {
       x: 5 + Math.random() * 90,
       y: 5 + Math.random() * 90,
       emoji: goal.icon,
-      scale: 1.2 + Math.random() * 1.0,
+      scale: 1.2 + Math.random() * 0.8,
       rotation: Math.random() * 360,
     }));
     setParticles(initialParticles);
   }, [registerRole]);
 
-  // Animate particles
+  // Pause animations when tab is hidden (performance optimization)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setParticles(prev => prev.map(p => {
-        const dx = (Math.random() - 0.5) * 12;
-        const dy = (Math.random() - 0.5) * 12;
-        return {
-          ...p,
-          x: Math.max(0, Math.min(100, p.x + dx)),
-          y: Math.max(0, Math.min(100, p.y + dy)),
-          rotation: p.rotation + (Math.random() - 0.5) * 20,
-        };
-      }));
-    }, 800);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Track mouse position
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setMousePos({
-          x: ((e.clientX - rect.left) / rect.width) * 100,
-          y: ((e.clientY - rect.top) / rect.height) * 100,
-        });
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Pause animations by reducing frame rate
+        document.documentElement.style.animationPlayState = 'paused';
+      } else {
+        // Resume animations
+        document.documentElement.style.animationPlayState = 'running';
       }
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   // Countdown timer for OTP resend
@@ -125,17 +109,6 @@ export default function RegisterPage() {
       return () => clearTimeout(timer);
     }
   }, [countdown]);
-
-  const handleParticleClick = (index: number) => {
-    setParticles(prev => prev.map((p, i) => 
-      i === index ? { ...p, scale: p.scale * 1.5 } : p
-    ));
-    setTimeout(() => {
-      setParticles(prev => prev.map((p, i) => 
-        i === index ? { ...p, scale: p.scale / 1.5 } : p
-      ));
-    }, 300);
-  };
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -244,31 +217,22 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen bg-bone text-obsidian overflow-hidden" ref={containerRef}>
-      {/* Floating Goals Background */}
+      {/* Floating Goals Background - CSS-based animations */}
       <div className="fixed inset-0 pointer-events-none z-0">
         {particles.map((particle, index) => (
           <motion.div
             key={particle.id}
-            className="absolute cursor-pointer pointer-events-auto"
-            style={{ zIndex: Math.floor(particle.scale * 10) }}
-            animate={{
+            className="absolute cursor-pointer pointer-events-auto floating-particle"
+            style={{
+              zIndex: Math.floor(particle.scale * 10),
               left: `${particle.x}%`,
               top: `${particle.y}%`,
-              rotate: particle.rotation,
-              scale: particle.scale,
             }}
-            transition={{ 
-              left: { duration: 0.8, ease: 'easeInOut' },
-              top: { duration: 0.8, ease: 'easeInOut' },
-              rotate: { duration: 0.8, ease: 'easeInOut' },
-              scale: { duration: 0.3, ease: 'easeOut' },
-            }}
-            onClick={() => handleParticleClick(index)}
-            whileHover={{ scale: particle.scale * 1.4, opacity: 1 }}
-            whileTap={{ scale: particle.scale * 0.8 }}
+            whileHover={{ scale: particle.scale * 1.2, opacity: 1 }}
+            whileTap={{ scale: particle.scale * 0.9 }}
           >
             <div className="relative flex items-center justify-center">
-              <span className="text-5xl lg:text-6xl select-none drop-shadow-lg hover:drop-shadow-2xl transition-all duration-200">
+              <span className="text-4xl lg:text-5xl select-none drop-shadow-lg hover:drop-shadow-2xl transition-all duration-200">
                 {particle.emoji}
               </span>
               <div className="absolute inset-0 bg-[#C9A227]/20 rounded-full blur-xl opacity-0 hover:opacity-100 transition-opacity duration-300" />
