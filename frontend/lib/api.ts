@@ -368,6 +368,253 @@ export function getAdvisorProfile(token: string): Promise<AdvisorProfile> {
   return advisorFetch('/profile', token);
 }
 
+// ==================== CLIENT MANAGEMENT ====================
+
+export interface Client {
+  id: number;
+  advisor_id: number;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  alternate_phone?: string;
+  date_of_birth?: string;
+  age?: number;
+  gender?: string;
+  marital_status?: string;
+  occupation?: string;
+  pan_number?: string;
+  aadhar_number?: string;
+  address_line1?: string;
+  address_line2?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  country?: string;
+  annual_income?: number;
+  net_worth?: number;
+  risk_profile?: string;
+  investment_experience?: string;
+  financial_goals?: string;
+  nominee_name?: string;
+  nominee_relation?: string;
+  nominee_contact?: string;
+  bank_name?: string;
+  account_number?: string;
+  ifsc_code?: string;
+  account_type?: string;
+  kyc_status?: string;
+  kyc_document_url?: string;
+  notes?: string;
+  group_id?: number;
+  group_name?: string;
+  is_active: boolean;
+  assigned_date?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ClientCreate {
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  alternate_phone?: string;
+  date_of_birth?: string;
+  age?: number;
+  gender?: string;
+  marital_status?: string;
+  occupation?: string;
+  pan_number?: string;
+  aadhar_number?: string;
+  address_line1?: string;
+  address_line2?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  country?: string;
+  annual_income?: number;
+  net_worth?: number;
+  risk_profile?: string;
+  investment_experience?: string;
+  financial_goals?: string;
+  nominee_name?: string;
+  nominee_relation?: string;
+  nominee_contact?: string;
+  bank_name?: string;
+  account_number?: string;
+  ifsc_code?: string;
+  account_type?: string;
+  kyc_status?: string;
+  notes?: string;
+  group_id?: number;
+}
+
+export interface ClientListResponse {
+  clients: Client[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface Group {
+  id: number;
+  advisor_id: number;
+  name: string;
+  group_type: string;
+  description?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  head_client_id?: number;
+  head_client_name?: string;
+  is_active: boolean;
+  total_investment: number;
+  client_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GroupCreate {
+  name: string;
+  group_type?: string;
+  description?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  head_client_id?: number;
+}
+
+export interface GroupListResponse {
+  groups: Group[];
+  total: number;
+}
+
+async function advisorPost(endpoint: string, token: string, body: any) {
+  const response = await fetch(`${API_BASE_URL}/advisors${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Request failed');
+  }
+
+  return response.json();
+}
+
+async function advisorPut(endpoint: string, token: string, body: any) {
+  const response = await fetch(`${API_BASE_URL}/advisors${endpoint}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Request failed');
+  }
+
+  return response.json();
+}
+
+async function advisorDelete(endpoint: string, token: string) {
+  const response = await fetch(`${API_BASE_URL}/advisors${endpoint}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Request failed');
+  }
+
+  return response.json();
+}
+
+// Client API functions
+export function getClients(token: string, params?: { search?: string; group_id?: number; kyc_status?: string; risk_profile?: string; page?: number; page_size?: number }): Promise<ClientListResponse> {
+  const queryParams = new URLSearchParams();
+  if (params?.search) queryParams.set('search', params.search);
+  if (params?.group_id) queryParams.set('group_id', String(params.group_id));
+  if (params?.kyc_status) queryParams.set('kyc_status', params.kyc_status);
+  if (params?.risk_profile) queryParams.set('risk_profile', params.risk_profile);
+  if (params?.page) queryParams.set('page', String(params.page));
+  if (params?.page_size) queryParams.set('page_size', String(params.page_size));
+  const qs = queryParams.toString();
+  return advisorFetch(`/clients${qs ? '?' + qs : ''}`, token);
+}
+
+export function createClient(token: string, data: ClientCreate): Promise<Client> {
+  return advisorPost('/clients', token, data);
+}
+
+export function getClient(token: string, id: number): Promise<Client> {
+  return advisorFetch(`/clients/${id}`, token);
+}
+
+export function updateClient(token: string, id: number, data: Partial<ClientCreate>): Promise<Client> {
+  return advisorPut(`/clients/${id}`, token, data);
+}
+
+export function deleteClient(token: string, id: number): Promise<{ message: string }> {
+  return advisorDelete(`/clients/${id}`, token);
+}
+
+// Group API functions
+export function getGroups(token: string, params?: { group_type?: string; search?: string }): Promise<GroupListResponse> {
+  const queryParams = new URLSearchParams();
+  if (params?.group_type) queryParams.set('group_type', params.group_type);
+  if (params?.search) queryParams.set('search', params.search);
+  const qs = queryParams.toString();
+  return advisorFetch(`/groups${qs ? '?' + qs : ''}`, token);
+}
+
+export function createGroup(token: string, data: GroupCreate): Promise<Group> {
+  return advisorPost('/groups', token, data);
+}
+
+export function getGroup(token: string, id: number): Promise<Group> {
+  return advisorFetch(`/groups/${id}`, token);
+}
+
+export function updateGroup(token: string, id: number, data: Partial<GroupCreate>): Promise<Group> {
+  return advisorPut(`/groups/${id}`, token, data);
+}
+
+export function deleteGroup(token: string, id: number): Promise<{ message: string }> {
+  return advisorDelete(`/groups/${id}`, token);
+}
+
+export function assignClientToGroup(token: string, groupId: number, clientId: number): Promise<{ message: string }> {
+  return advisorPost(`/groups/${groupId}/clients`, token, { client_id: clientId });
+}
+
+export function removeClientFromGroup(token: string, groupId: number, clientId: number): Promise<{ message: string }> {
+  return advisorDelete(`/groups/${groupId}/clients/${clientId}`, token);
+}
+
+export function setGroupHead(token: string, groupId: number, clientId: number): Promise<{ message: string }> {
+  return advisorPut(`/groups/${groupId}/head`, token, { client_id: clientId });
+}
+
 // ==================== MARKET DATA ====================
 
 export interface MarketData {
