@@ -56,6 +56,16 @@ pids
 # Optional eslint cache
 .eslintcache
 
+# Emergent tool
+.emergent/
+
+# Personal git config
+.gitconfig
+
+# Auto-generated next.js files
+frontend/next-env.d.ts
+frontend/tsconfig.tsbuildinfo
+
 # VS Code
 .vscode/
 
