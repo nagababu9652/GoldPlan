@@ -2,13 +2,14 @@
 
 import { motion } from 'framer-motion';
 import { Quote } from 'lucide-react';
+import SectionContainer from '@/components/shared/SectionContainer';
 
 const testimonials = [
   {
     name: 'Rajesh Sharma',
     role: 'Chief Financial Officer',
     company: 'Bharat Industries Ltd.',
-    text: 'FinPlan India transformed how our family saves and invests. The goal-based approach made us realise we were under-insured and over-invested in the wrong funds. Now we have a clear roadmap for retirement and our kids’ education.',
+    text: 'FinPlan India transformed how our family saves and invests. The goal-based approach made us realise we were under-insured and over-invested in the wrong funds. Now we have a clear roadmap for retirement and our kids\u2019 education.',
     initials: 'RS',
   },
   {
@@ -22,7 +23,7 @@ const testimonials = [
     name: 'Amit Verma',
     role: 'Business Owner',
     company: 'Verma & Sons Enterprises',
-    text: 'The NPS and PPF optimisation alone saved us over ₹1.2 lakh in taxes annually. The dashboard is incredibly intuitive — I can see all my goals and progress in one place. Worth every rupee.',
+    text: 'The NPS and PPF optimisation alone saved us over \u20B91.2 lakh in taxes annually. The dashboard is incredibly intuitive \u2014 I can see all my goals and progress in one place. Worth every rupee.',
     initials: 'AV',
   },
 ];
@@ -30,7 +31,7 @@ const testimonials = [
 export default function Testimonials() {
   return (
     <section className="hairline-b bg-obsidian text-bone" data-testid="testimonials-section">
-      <div className="px-6 lg:px-10 py-16 lg:py-24">
+      <SectionContainer className="py-16 lg:py-24">
         <div className="grid grid-cols-12 gap-6 mb-14">
           <div className="col-span-12 lg:col-span-5">
             <div className="label-mono text-bone/50 mb-3">— 006 · Letters</div>
@@ -74,7 +75,7 @@ export default function Testimonials() {
             </motion.figure>
           ))}
         </div>
-      </div>
+      </SectionContainer>
     </section>
   );
 }

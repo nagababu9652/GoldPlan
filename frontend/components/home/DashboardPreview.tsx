@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { fetchMarketData, type MarketData } from '@/lib/api';
+import SectionContainer from '@/components/shared/SectionContainer';
 
 export default function DashboardPreview() {
   const [marketData, setMarketData] = useState<MarketData | null>(null);
@@ -23,7 +24,7 @@ export default function DashboardPreview() {
   return (
     <section id="dashboard" className="hairline-b" data-testid="dashboard-section">
       {/* Header */}
-      <div className="px-6 lg:px-10 py-16 lg:py-20 grid grid-cols-12 gap-6 hairline-b">
+      <SectionContainer className="py-16 lg:py-24 grid grid-cols-12 gap-6 hairline-b">
         <div className="col-span-12 lg:col-span-5">
           <div className="label-mono text-ash mb-3">&mdash; 004 &middot; Console</div>
           <h2 className="display text-[44px] lg:text-[64px]">
@@ -36,10 +37,10 @@ export default function DashboardPreview() {
             like a financial newspaper, not a generic fintech dashboard.
           </p>
         </div>
-      </div>
+      </SectionContainer>
 
       {/* Mock console */}
-      <div className="px-6 lg:px-10 py-16">
+      <SectionContainer className="py-16 lg:py-24">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -66,7 +67,7 @@ export default function DashboardPreview() {
               { l: 'Monthly SIP',     v: '\u20B9 85K', d: '+5% this year',   pos: true },
               { l: 'Goals Tracked',     v: '4/6',     d: 'On track', pos: true },
             ].map((k, i) => (
-              <div key={k.l} className={`p-6 lg:p-7 ${i < 3 ? 'border-r border-line' : ''} ${i >= 2 ? 'border-t lg:border-t-0 border-line' : ''}`}>
+              <div key={k.l} className={`p-6 lg:p-8 ${i < 3 ? 'border-r border-line' : ''} ${i >= 2 ? 'border-t lg:border-t-0 border-line' : ''}`}>
                 <div className="label-mono text-ash mb-3">{k.l}</div>
                 <div className="font-serif text-[34px] lg:text-[40px] leading-none tracking-tight">{k.v}</div>
                 <div className={`mt-3 font-mono text-[12px] ${k.pos ? 'text-emerald-700' : 'text-ash'}`}>{k.d}</div>
@@ -186,7 +187,7 @@ export default function DashboardPreview() {
             Explore dashboard <ArrowUpRight size={14} />
           </a>
         </div>
-      </div>
+      </SectionContainer>
     </section>
   );
 }

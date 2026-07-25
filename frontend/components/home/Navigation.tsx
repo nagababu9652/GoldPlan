@@ -21,7 +21,7 @@ type MegaItem = {
 };
 
 type NavItem =
-  | { label: 'Goals' | 'Investments' | 'Resources' | 'Company' | 'Tools'; columns: { heading: string; items: MegaItem[] }[]; promo?: { title: string; body: string; cta: string; href: string } }
+  | { label: string; columns: { heading: string; items: MegaItem[] }[]; promo?: { title: string; body: string; cta: string; href: string } }
   | { label: string; href: string };
 
 const toolsItems: { heading: string; items: MegaItem[] }[] = [
@@ -109,13 +109,11 @@ const companyItems: { heading: string; items: MegaItem[] }[] = [
   },
 ];
 
-const navItems: NavItem[] = [
-  { label: 'Goals', columns: goalsItems, promo: { title: 'Free Consultation', body: 'One complimentary 30-minute session with a SEBI-registered advisor.', cta: 'Book now', href: '/contact' } },
-    { label: 'Tools',  columns: toolsItems,  promo: { title: 'SIP Calculator', body: 'Calculate your retirement, education or goal corpus in 60 seconds.', cta: 'Try it free', href: '/tools/sip-calculator' } },
-    { label: 'Investments',  columns: investmentsItems,  promo: { title: 'All Calculators', body: 'Explore 9 financial planning tools to make smarter decisions.', cta: 'Browse tools', href: '/tools' } },
-  { label: 'Pricing',  href: '/pricing' },
-  { label: 'Resources', columns: resourcesItems },
-  { label: 'Company',  columns: companyItems },
+  const navItems: NavItem[] = [
+    { label: 'Solutions', columns: toolsItems, promo: { title: 'Advisor Demo', body: 'See how FinPlan India streamlines client onboarding and reviews.', cta: 'Book now', href: '/contact' } },
+    { label: 'Resources', columns: resourcesItems },
+    { label: 'Company', columns: companyItems },
+    { label: 'Pricing', href: '/pricing' },
 ];
 
 export default function Navigation() {
@@ -262,23 +260,13 @@ export default function Navigation() {
         <div className="hidden lg:flex items-center gap-3">
           {isLoggedIn ? (
             <>
-              <a href="/dashboard" className="btn-outline text-[13px] font-medium text-obsidian" data-testid="nav-dashboard">Dashboard</a>
-              <button
-                onClick={handleLogout}
-                className="btn-outline text-[13px] font-medium text-obsidian"
-                data-testid="nav-signout"
-              >
-                Sign Out
-              </button>
+              <a href="/advisor-dashboard" className="btn-outline text-[13px] font-medium text-obsidian" data-testid="nav-dashboard">Advisor Dashboard</a>
+              <button onClick={handleLogout} className="btn-outline text-[13px] font-medium text-obsidian" data-testid="nav-signout">Sign Out</button>
             </>
           ) : (
             <>
-              <a href="/login" className="btn-outline text-[13px] font-medium text-obsidian" data-testid="nav-signin">Sign in</a>
-              <a
-                href="/contact"
-                className="btn-obsidian text-[13px] py-2.5 px-4"
-                data-testid="nav-cta-demo"
-              >
+              <a href="/login" className="btn-outline text-[13px] font-medium text-obsidian" data-testid="nav-signin">Advisor Login</a>
+              <a href="/contact" className="btn-obsidian text-[13px] py-2.5 px-4" data-testid="nav-cta-demo">
                 Request Demo <ArrowRight size={14} />
               </a>
             </>
@@ -375,31 +363,31 @@ export default function Navigation() {
             data-testid="mobile-drawer"
           >
             <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-6 space-y-1">
-              {navItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={'href' in item ? item.href : '/'}
-                  onClick={closeMobile}
-                  className="flex items-center justify-between py-3 border-b border-line text-[15px] font-medium text-obsidian"
-                  data-testid={`mobile-nav-${item.label.toLowerCase()}`}
-                >
-                  {item.label}
-                  <ArrowUpRight size={16} className="text-ash" />
-                </a>
-              ))}
-              <div className="pt-5 flex flex-col gap-3">
-                {isLoggedIn ? (
-                  <>
-                    <a href="/dashboard" onClick={closeMobile} className="btn-outline justify-center">Dashboard</a>
-                    <button onClick={() => { handleLogout(); closeMobile(); }} className="btn-outline justify-center">Sign Out</button>
-                  </>
-                ) : (
-                  <>
-                    <a href="/login" onClick={closeMobile} className="btn-outline justify-center">Sign in</a>
-                    <a href="/contact" onClick={closeMobile} className="btn-obsidian justify-center">Request Demo <ArrowRight size={14} /></a>
-                  </>
-                )}
-              </div>
+               {navItems.map((item) => (
+                 <a
+                   key={item.label}
+                   href={'href' in item ? item.href : '/'}
+                   onClick={closeMobile}
+                   className="flex items-center justify-between py-3 border-b border-line text-[15px] font-medium text-obsidian"
+                   data-testid={`mobile-nav-${item.label.toLowerCase()}`}
+                 >
+                   {item.label}
+                   <ArrowUpRight size={16} className="text-ash" />
+                 </a>
+               ))}
+               <div className="pt-5 flex flex-col gap-3">
+                 {isLoggedIn ? (
+                   <>
+                     <a href="/advisor-dashboard" onClick={closeMobile} className="btn-outline justify-center">Advisor Dashboard</a>
+                     <button onClick={() => { handleLogout(); closeMobile(); }} className="btn-outline justify-center">Sign Out</button>
+                   </>
+                 ) : (
+                   <>
+                     <a href="/login" onClick={closeMobile} className="btn-outline justify-center">Advisor Login</a>
+                     <a href="/contact" onClick={closeMobile} className="btn-obsidian justify-center">Request Demo <ArrowRight size={14} /></a>
+                   </>
+                 )}
+               </div>
             </div>
           </motion.div>
         )}

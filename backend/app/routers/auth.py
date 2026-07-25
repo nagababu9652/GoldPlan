@@ -7,7 +7,6 @@ from ..database.session import get_db
 from ..schemas.user import (
     UserCreate, UserLogin, UserResponse, Token, PasswordReset, PasswordResetConfirm, MessageResponse
 )
-from pydantic import BaseModel
 from ..schemas.otp import (
     OTPSendRequest, OTPVerifyRequest, OTPResponse, OTPVerifyResponse
 )
@@ -55,25 +54,19 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered"
         )
     
-    # Create new user (role comes from request data, defaults to "user")
-    user = auth.create_user(db, user_data.model_dump())
-    return user
-
-
-class LoginWithRole(BaseModel):
-    email: str
-    password: str
-    role: str = "user"  # Expected role: "user" or "advisor"
+    # Create new user
+    try:
+        user = auth.create_user(db, user_data.model_dump())
+        return user
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
 
 
 @router.post("/login", response_model=Token)
-def login(
-    request: LoginWithRole,
-    response: Response, 
-    db: Session = Depends(get_db)
-):
+def login(credentials: UserLogin, response: Response, db: Session = Depends(get_db)):
     # Authenticate user
-    credentials = UserLogin(email=request.email, password=request.password)
     user = auth.authenticate_user(db, credentials.email, credentials.password)
     if not user:
         raise HTTPException(
@@ -88,25 +81,12 @@ def login(
             detail="Account is deactivated"
         )
     
-    # Validate role matches expected role
-    if request.role == 'advisor' and user.role != 'advisor':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="This account is not registered as an advisor. Please use Individual Investor login."
-        )
-    
-    if request.role == 'user' and user.role == 'advisor':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Advisor accounts must login through the Advisor Portal. Please select Advisor Portal to login."
-        )
-    
     # Create tokens
     access_token = auth.create_access_token(
         data={"sub": str(user.id), "email": user.email, "role": user.role}
     )
     refresh_token = auth.create_refresh_token(
-        data={"sub": str(user.id), "email": user.email}
+        data={"sub": str(user.id), "email": user.email, "role": user.role}
     )
     
     # Update last login

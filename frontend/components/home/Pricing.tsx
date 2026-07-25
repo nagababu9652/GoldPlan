@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Check, ArrowRight } from 'lucide-react';
+import SectionContainer from '@/components/shared/SectionContainer';
 
 const plans = [
   {
@@ -33,7 +34,7 @@ const plans = [
 export default function Pricing() {
   return (
     <section id="pricing" className="hairline-b" data-testid="pricing-section">
-      <div className="px-6 lg:px-10 py-16 lg:py-24">
+      <SectionContainer className="py-16 lg:py-24">
         <div className="grid grid-cols-12 gap-6 mb-14">
           <div className="col-span-12 lg:col-span-5">
             <div className="label-mono text-ash mb-3">— 007 · Subscription</div>
@@ -103,7 +104,7 @@ export default function Pricing() {
             </motion.div>
           ))}
         </div>
-      </div>
+      </SectionContainer>
     </section>
   );
 }

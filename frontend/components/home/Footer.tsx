@@ -3,44 +3,99 @@
 import Link from 'next/link';
 
 export default function Footer() {
+  const sections = [
+    {
+      title: 'Product',
+      links: [['How It Works','/how-it-works'],['Features','/features'],['Pricing','/pricing'],['Updates','/updates']]
+    },
+    {
+      title: 'Company',
+      links: [['About','/company'],['Careers','/careers'],['Contact','/contact']]
+    },
+    {
+      title: 'Advisors',
+      links: [['Advisor Login','/login'],['Request Demo','/contact'],['Support','/contact']]
+    }
+  ];
+
   return (
-    <footer className="bg-obsidian text-bone py-12" data-testid="site-footer">
-      <div className="px-6 lg:px-10">
-        {/* Top Section - Logo & Tagline */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-10 border-b border-bone/10">
-          <div>
-            <Link href="/" className="font-serif text-[22px] text-antique inline-block mb-2">
+    <footer className="border-t border-bone/10 bg-obsidian text-bone ">
+      <div className="border-10 border-black mx-auto max-w-7xl px-6 py-20">
+        <div
+          className="grid gap-12"
+          style={{gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))'}}
+        >
+          <div className="max-w-md">
+            <Link href="/" className="font-serif text-4xl text-antique">
               FinPlan<span className="text-bone">.</span>
             </Link>
-            <p className="text-bone/60 text-[14px] max-w-md">
-              India&rsquo;s trusted financial planning platform for smarter investing.
+            <p className="mt-5 leading-7 text-bone/60">
+              The advisor operating system for client onboarding, portfolio oversight, and review workflows.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-5 text-sm">
+              <Link href="#" className="hover:text-antique">LinkedIn</Link>
+              <Link href="#" className="hover:text-antique">X</Link>
+              <Link href="#" className="hover:text-antique">YouTube</Link>
+            </div>
+          </div>
+
+          {sections.map((s)=>(
+            <div key={s.title}>
+              <h3 className="mb-5 text-xs uppercase tracking-[0.25em] text-antique">
+                {s.title}
+              </h3>
+              <ul className="space-y-4">
+                {s.links.map(([label,href])=>(
+                  <li key={label}>
+                    <Link
+                      href={href}
+                      className="text-bone/70 transition-all duration-300 hover:translate-x-1 hover:text-antique inline-block"
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="my-14 border-t border-bone/10"></div>
+
+        <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
+          <div>
+            <h3 className="mb-4 text-xs uppercase tracking-[0.25em] text-antique">
+              Disclaimer
+            </h3>
+            <p className="max-w-3xl text-sm leading-7 text-bone/50">
+              Investments are subject to market risks. Read all scheme related
+              documents carefully before investing. Past performance does not
+              guarantee future returns. FinPlan provides financial planning and
+              educational tools only.
             </p>
           </div>
-          <div className="flex gap-6">
-            <Link href="/company" className="text-bone/70 hover:text-antique text-[14px] transition-colors">
-              About Us
-            </Link>
-            <Link href="/contact" className="text-bone/70 hover:text-antique text-[14px] transition-colors">
-              Contact
-            </Link>
-            <Link href="/company/advisors" className="text-bone/70 hover:text-antique text-[14px] transition-colors">
-              Advisors
-            </Link>
+
+          <div>
+            <h3 className="mb-4 text-xs uppercase tracking-[0.25em] text-antique">
+              Legal
+            </h3>
+            <div className="flex flex-wrap gap-x-6 gap-y-3">
+              <Link href="/privacy" className="hover:text-antique">Privacy</Link>
+              <Link href="/terms" className="hover:text-antique">Terms</Link>
+              <Link href="/cookies" className="hover:text-antique">Cookies</Link>
+              <Link href="/disclaimer" className="hover:text-antique">Disclaimer</Link>
+            </div>
           </div>
         </div>
 
-        {/* Bottom Section - Copyright */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
-          <p className="font-mono text-[11px] uppercase tracking-wider2 text-bone/40">
-            &copy; 2026 FinPlan India Pvt. Ltd. All rights reserved.
-          </p>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/40 hover:text-antique transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms" className="font-mono text-[11px] uppercase tracking-wider2 text-bone/40 hover:text-antique transition-colors">
-              Terms
-            </Link>
+        <div className="my-10 border-t border-bone/10"></div>
+
+        <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-bone/40">
+          <p>© 2026 FinPlan India Pvt. Ltd. All rights reserved.</p>
+          <div className="flex flex-wrap gap-6">
+            <span>🔒 Secure Platform</span>
+            <span>📈 Trusted Planning</span>
+            <span>🇮🇳 Built for India</span>
           </div>
         </div>
       </div>

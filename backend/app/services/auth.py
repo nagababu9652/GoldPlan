@@ -64,11 +64,17 @@ def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
 def create_user(db: Session, user_data: dict) -> User:
     hashed_password = get_password_hash(user_data.pop("password"))
     # Role is already a string, no conversion needed
-    user = User(**user_data, password_hash=hashed_password)
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
+    try:
+        user = User(**user_data, password_hash=hashed_password)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        print(f"CREATED USER: {user.id} {user.email}")
+        return user
+    except Exception as e:
+        db.rollback()
+        print(f"CREATE_USER ERROR: {type(e).__name__}: {e}")
+        raise
 
 
 def update_last_login(db: Session, user: User) -> User:

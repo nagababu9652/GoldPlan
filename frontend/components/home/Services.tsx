@@ -2,39 +2,38 @@
 
 import { motion } from 'framer-motion';
 import {
-  BarChart3, TrendingUp, PiggyBank, Shield, Target, GraduationCap, Home, Heart, ArrowUpRight,
+  Users, FileText, Shield, Target, BarChart3, CheckCircle2, ArrowUpRight,
 } from 'lucide-react';
+import SectionContainer from '@/components/shared/SectionContainer';
 
 const services = [
-  { icon: PiggyBank, title: 'Mutual Fund Planning', desc: 'SIP and lump-sum investment strategies across equity, debt, and hybrid funds.', tag: 'Popular', href: '/investments/mutual-funds' },
-  { icon: GraduationCap, title: 'Education Planning',    desc: 'Plan for your child&rsquo;s higher education with inflation-adjusted goal tracking.',     tag: 'Goals', href: '/goals/education' },
-  { icon: Home, title: 'Home Loan Advisory', desc: 'Compare lenders, maximise deductions under Section 24, and plan your EMI strategy.',     tag: 'Loan', href: '/goals/home' },
-  { icon: Heart, title: 'Retirement Planning',  desc: 'NPS, EPF, PPF and mutual fund strategies for a corpus that lasts 30+ years.',         tag: 'Essential', href: '/goals/retirement' },
-  { icon: Shield, title: 'Insurance Advisory',      desc: 'Term life, health insurance and critical illness cover tailored to your family&rsquo;s needs.',     tag: 'Cover', href: '/protection/term-life' },
-  { icon: TrendingUp, title: 'Tax Saving (80C/80D)', desc: 'Maximise deductions across ELSS, PPF, NSC, tax-saving FDs, and health insurance.',      tag: 'Seasonal', href: '/protection/tax-saving' },
-  { icon: BarChart3, title: 'Fixed Deposits & Bonds',   desc: 'Compare FD rates, corporate bonds, and debt instruments for stable returns.',        tag: 'Stable', href: '/investments/fixed-deposits' },
-  { icon: Target, title: 'Wealth Management',          desc: 'Portfolio rebalancing, goal-based asset allocation, and expert-reviewed strategies.',     tag: 'Premium', href: '/goals/wealth' },
+  { icon: Users, title: 'Client Onboarding', desc: 'Structured client intake, KYC capture, and mandate setup without back-and-forth emails.', tag: 'Core', href: '/advisor-dashboard/clients' },
+  { icon: BarChart3, title: 'Portfolio Oversight', desc: 'Unified view of client holdings, allocations, drift, and action items across asset classes.', tag: 'Core', href: '/advisor-dashboard/portfolio' },
+  { icon: Target, title: 'Review Workflows', desc: 'Quarterly review templates, report generation, and client communication in one workspace.', tag: 'Operations', href: '/advisor-dashboard/reports' },
+  { icon: FileText, title: 'Document Hub', desc: 'Centralised access to KYC, agreements, mandates, and statements with audited retrieval.', tag: 'Core', href: '/advisor-dashboard/documents' },
+  { icon: Shield, title: 'Role-Based Access', desc: 'Advisor and client logins with strict data separation and access control.', tag: 'Security', href: '/login' },
+  { icon: CheckCircle2, title: 'Compliance Ready', desc: 'SEBI-compliant workflows, record keeping, and client consent management built in.', tag: 'Operations', href: '/contact' },
 ];
 
 export default function Services() {
   return (
     <section id="solutions" className="hairline-b" data-testid="services-section">
-      <div className="px-6 lg:px-10 py-16 lg:py-20 grid grid-cols-12 gap-6 hairline-b">
+      <SectionContainer className="py-16 lg:py-24 grid grid-cols-12 gap-6 hairline-b">
         <div className="col-span-12 lg:col-span-4">
           <div className="label-mono text-ash mb-3">&mdash; 002 &middot; Services</div>
-          <h2 className="display text-[44px] lg:text-[64px]">
-            Eight ways.<br/>One <em>purpose</em>.
-          </h2>
+              <h2 className="display text-[44px] lg:text-[64px]">
+              Advisor workflows,<br/>one <em>purpose</em>.
+            </h2>
         </div>
         <div className="col-span-12 lg:col-span-6 lg:col-start-7 flex items-end">
-          <p className="text-ash text-[16px] lg:text-[18px] leading-[1.6]">
-            Every service is designed around your life goals, not products. Our experts analyse
-            your situation and recommend strategies that align with your dreams and risk appetite.
-          </p>
+              <p className="text-ash text-[16px] lg:text-[18px] leading-[1.6]">
+              Every service is designed for advisor operations: onboarding, oversight, reviews, and compliance.
+            </p>
         </div>
-      </div>
+      </SectionContainer>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+      <SectionContainer className="pb-16 lg:pb-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         {services.map((s, i) => {
           const Icon = s.icon;
           return (
@@ -72,7 +71,8 @@ export default function Services() {
             </motion.a>
           );
         })}
-      </div>
+        </div>
+      </SectionContainer>
     </section>
   );
 }

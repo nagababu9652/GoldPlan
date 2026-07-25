@@ -10,47 +10,45 @@ const plans = [
     name: 'Starter',
     price: 'Free',
     period: '',
-    description: 'Perfect for getting started with basic financial planning.',
+    description: 'For advisors getting started with basic client onboarding and oversight.',
     features: [
-      'Basic SIP Calculator',
-      'Goal Tracker (3 goals)',
-      'Portfolio Review (1x per quarter)',
+      '1 Client Profile',
+      'Basic Portfolio View',
+      'Standard Documents',
       'Email Support',
     ],
     cta: 'Get Started',
-    href: '/signup',
+    href: '/contact',
     featured: false,
   },
   {
     name: 'Professional',
-    price: '₹999',
+    price: '₹2,999',
     period: '/month',
-    description: 'For serious investors who want comprehensive planning tools.',
+    description: 'For practicing advisors managing multiple client relationships.',
     features: [
-      'All Calculators (10+ tools)',
-      'Unlimited Goal Tracking',
-      'Portfolio Review (Monthly)',
-      'SEBI Advisor Consultation (1x/month)',
+      '25 Client Profiles',
+      'Advanced Portfolio Oversight',
+      'Review Workflows',
+      'Report Generation',
       'Priority Support',
-      'Tax Optimization Reports',
     ],
-    cta: 'Start Free Trial',
-    href: '/signup',
+    cta: 'Request Demo',
+    href: '/contact',
     featured: true,
   },
   {
     name: 'Premium',
-    price: '₹2,499',
+    price: '₹6,999',
     period: '/month',
-    description: 'Complete wealth management with dedicated advisor support.',
+    description: 'For established advisory teams with advanced compliance needs.',
     features: [
-      'Everything in Professional',
-      'Dedicated SEBI Registered Advisor',
-      'Unlimited Consultations',
-      'Custom Financial Plan',
-      'Family Portfolio Management',
-      'Estate Planning Assistance',
-      '24/7 Priority Support',
+      'Unlimited Client Profiles',
+      'Team & Group Management',
+      'Custom Workflows',
+      'Dedicated Onboarding',
+      'Compliance Tools',
+      'Priority Support',
     ],
     cta: 'Contact Sales',
     href: '/contact',
@@ -71,7 +69,7 @@ export default function PricingPage() {
                 Simple, <em>transparent</em> pricing
               </h1>
               <p className="text-ash text-[16px] lg:text-[18px] leading-[1.6] mt-6 max-w-2xl">
-                Start free, upgrade when you need more. All plans include access to our core calculators and tools.
+                Advisor-first pricing designed for client onboarding, portfolio oversight, and review workflows.
               </p>
             </div>
           </div>
@@ -138,9 +136,9 @@ export default function PricingPage() {
                   q: 'Can I switch plans later?',
                   a: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and we prorate any differences.',
                 },
-                {
-                  q: 'Is there a free trial?',
-                  a: 'Yes, all new users get 14 days free trial of the Professional plan. No credit card required to start.',
+                 {
+                  q: 'How do I get started?',
+                  a: 'Request a demo or contact sales. We will onboard your team, set up workflows, and help you invite your first clients.',
                 },
                 {
                   q: 'What payment methods do you accept?',

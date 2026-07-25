@@ -3,16 +3,17 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
+import SectionContainer from '@/components/shared/SectionContainer';
 
 const faqs = [
-  { q: 'What is the minimum amount needed to start investing?',         a: 'You can start with as little as ₹500 per month through SIPs in mutual funds. Our platform helps you begin your journey with whatever budget you have.' },
-  { q: 'How is FinPlan India different from a regular mutual fund platform?',          a: 'Unlike generic investment platforms, FinPlan India is goal-based. We don’t just help you invest — we help you plan for specific goals like retirement, education, and home buying with personalised strategies.' },
-  { q: 'Can I track my existing investments on the platform?',    a: 'Yes. You can import your existing mutual fund holdings, PPF, EPF, NPS, FDs, and insurance policies. Our engine consolidates everything into one unified view.' },
-  { q: 'How does the tax-saving feature work?',        a: 'Our tax engine analyses your income profile and suggests optimal investments under Section 80C, 80D, 24(b), NPS (80CCD), and other applicable sections to minimise your tax outgo legally.' },
-  { q: 'Are your advisors SEBI-registered?',                a: 'Yes. Every advisor on our platform is SEBI-registered with verifiable credentials. You can view their registration number and track record on their profile.' },
-  { q: 'What happens if the market goes down?',                     a: 'Our goal-based framework builds in market volatility buffers. We use asset allocation and rebalancing strategies to protect your long-term goals from short-term market fluctuations.' },
-  { q: 'Can I involve my family members in planning?',               a: 'Absolutely. Our Family plan allows you to add spouse, children, and parents to create a unified family financial plan with shared goals and consolidated tracking.' },
-  { q: 'Is there a free trial available?',                   a: 'Yes. We offer a 14-day free trial with full platform access and one complimentary session with an advisor. No credit card required.' },
+  { q: 'Who can create a client login?', a: 'Only an advisor can create client accounts from their dashboard. Clients receive credentials from their advisor.' },
+  { q: 'Can advisors track existing client holdings?', a: 'Yes. Advisors can consolidate client portfolios across asset classes for unified oversight and review.' },
+  { q: 'How are advisors and clients kept separate?', a: 'Role-based access ensures advisors manage their clients only, with strict data separation and audit trails.' },
+  { q: 'Are advisors SEBI-registered?', a: 'Yes. Every advisor using the platform is expected to be SEBI-registered with verifiable credentials.' },
+  { q: 'What happens during market volatility?', a: 'Built-in review workflows and portfolio drift alerts help advisors act before volatility impacts client goals.' },
+  { q: 'How do clients access reports?', a: 'Clients can log in to view advisor-prepared reports, documents, and portfolio summaries shared with them.' },
+  { q: 'Is onboarding support available?', a: 'Yes. Advisors get onboarding support to set up workflows, import clients, and run their first review cycle.' },
+  { q: 'How do I request a demo?', a: 'Use the Request Demo option or contact our team. We will walk you through the advisor workflow and setup.' },
 ];
 
 export default function FAQ() {
@@ -20,18 +21,18 @@ export default function FAQ() {
 
   return (
     <section className="hairline-b bg-bone-deep" data-testid="faq-section">
-      <div className="px-6 lg:px-10 py-16 lg:py-24 grid grid-cols-12 gap-6">
+      <SectionContainer className="py-16 lg:py-24 grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-4 lg:sticky lg:top-32 lg:self-start">
           <div className="label-mono text-ash mb-3">— 008 · Enquiries</div>
           <h2 className="display text-[44px] lg:text-[60px]">
             Questions,<br/>candidly <em>answered</em>.
           </h2>
           <p className="text-ash text-[15px] leading-[1.6] mt-6 max-w-sm">
-            Couldn’t find what you were looking for? Our advisor team is available Mon–Sat,
-            09:00–19:00 IST.
+            Couldn\u2019t find what you were looking for? Our advisor team is available Mon\u2013Sat,
+            09:00\u201319:00 IST.
           </p>
           <a href="/contact" className="inline-block mt-6 u-link text-[14px] font-medium">
-            Email our advisors →
+            Email our advisors \u2192
           </a>
         </div>
 
@@ -75,7 +76,7 @@ export default function FAQ() {
             })}
           </div>
         </div>
-      </div>
+      </SectionContainer>
     </section>
   );
 }

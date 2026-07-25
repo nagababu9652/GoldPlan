@@ -8,17 +8,17 @@ import Link from 'next/link';
 const sections = [
   {
     title: 'Our Firm',
-    description: 'A research house, not a SaaS. We provide institutional-grade financial planning to individuals and families.',
+    description: 'A research house, not a SaaS. We build advisor operating systems for modern advisory practices.',
     href: '/company/our-story',
     icon: Building2,
-    items: ['Founded 2026', 'SEBI-Registered', 'Research-Driven', 'Client-First Approach'],
+    items: ['Founded 2026', 'SEBI-Registered', 'Research-Driven', 'Advisor-First Approach'],
   },
   {
-    title: 'Advisors & Clients',
-    description: 'Allocators, family offices, treasuries, and individual investors trust our methodology.',
+    title: 'Advisors & Teams',
+    description: 'Advisory practices across India trust our methodology for onboarding, reviews, and portfolio oversight.',
     href: '/company/advisors',
     icon: Users,
-    items: ['50,000+ Families', '200+ HNIs', '40+ Corporate Clients', 'PAN India Presence'],
+    items: ['500+ Advisors', 'Advisory Teams', 'SEBI-Registered Practices', 'PAN India Presence'],
   },
   {
     title: 'Careers',
@@ -63,8 +63,8 @@ export default function CompanyPage() {
                 Built for the <em>long run</em>
               </h1>
               <p className="text-ash text-[16px] lg:text-[18px] leading-[1.6] mt-6 max-w-2xl">
-                We are a Hyderabad-based financial research house. Our mission is to make 
-                institutional-quality financial planning accessible to every Indian family.
+                We are a Hyderabad-based financial research house. Our mission is to make
+                institutional-quality advisory workflows accessible to every Indian advisor.
               </p>
             </div>
             <div className="col-span-12 lg:col-span-3 lg:col-start-10 flex items-end">

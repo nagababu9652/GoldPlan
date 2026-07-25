@@ -1,21 +1,22 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import SectionContainer from '@/components/shared/SectionContainer';
 
 const steps = [
-  { n: '01', t: 'Set Your Goal',           d: 'Define what matters — retirement corpus, child education, dream home, or wealth building.' },
-  { n: '02', t: 'Assess Risk & Timeline',            d: 'Our engine evaluates your risk appetite, time horizon, and income profile.' },
-  { n: '03', t: 'Build a Strategy',             d: 'Get a personalised plan with mutual funds, PPF, NPS, FDs, and insurance mapped to each goal.' },
-  { n: '04', t: 'Start Investing',  d: 'Set up SIPs, make lump-sum investments, and activate tax-saving strategies — all in one place.' },
-  { n: '05', t: 'Track Progress',           d: 'Monitor goal progress, portfolio performance, and get rebalancing alerts monthly.' },
-  { n: '06', t: 'Review & Optimise',          d: 'Annual reviews with expert advisors to realign your plan with life changes and market conditions.' },
+  { n: '01', t: 'Onboard Clients', d: 'Capture client goals, KYC, risk profile, and mandates in structured advisor workflows.' },
+  { n: '02', t: 'Assign Portfolios', d: 'Review client holdings, asset allocation, and risk exposure in one advisor dashboard.' },
+  { n: '03', t: 'Run Reviews', d: 'Schedule and execute quarterly reviews with templated reports and client communication.' },
+  { n: '04', t: 'Share Documents', d: 'Upload and share KYC, agreements, and statements with audited access logs.' },
+  { n: '05', t: 'Monitor Drift', d: 'Track portfolio drift, rebalancing needs, and goal progress across client segments.' },
+  { n: '06', t: 'Optimize Outcomes', d: 'Use compliance-ready workflows and advisor coordination to improve client outcomes.' },
 ];
 
 export default function Process() {
   return (
     <section className="hairline-b bg-bone" data-testid="process-section">
-      <div className="px-6 lg:px-10 py-16 lg:py-24">
-        <div className="grid grid-cols-12 gap-6 mb-16">
+      <SectionContainer className="py-16 lg:py-24">
+        <div className="grid grid-cols-12 gap-6 mb-14">
           <div className="col-span-12 lg:col-span-5">
             <div className="label-mono text-ash mb-3">— 005 · Method</div>
             <h2 className="display text-[44px] lg:text-[64px]">
@@ -23,9 +24,8 @@ export default function Process() {
             </h2>
           </div>
           <div className="col-span-12 lg:col-span-6 lg:col-start-7 flex items-end">
-            <p className="text-ash text-[16px] lg:text-[18px] leading-[1.6]">
-              We don’t sell products. We build a financial roadmap for your life — mapped
-              to your income, your dreams, and the real India you live in.
+          <p className="text-ash text-[16px] lg:text-[18px] leading-[1.6]">
+              We don’t sell products. We give advisors the infrastructure to onboard, review, and grow client portfolios without operational chaos.
             </p>
           </div>
         </div>
@@ -52,7 +52,7 @@ export default function Process() {
             </motion.div>
           ))}
         </div>
-      </div>
+      </SectionContainer>
     </section>
   );
 }

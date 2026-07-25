@@ -4,10 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { sendOTP, verifyOTP, registerUser } from '@/lib/api';
 
-// Floating goal icons for individual investors
-const userGoals = [
+// Floating goal icons
+const goals = [
   { icon: '🏠', label: 'Dream Home' },
   { icon: '🎓', label: 'Education' },
   { icon: '✈️', label: 'Travel' },
@@ -18,21 +17,10 @@ const userGoals = [
   { icon: '💍', label: 'Wedding' },
 ];
 
-// Professional icons for advisors
-const advisorGoals = [
-  { icon: '📊', label: 'Analytics' },
-  { icon: '💼', label: 'Business' },
-  { icon: '📈', label: 'Growth' },
-  { icon: '🎯', label: 'Strategy' },
-  { icon: '💰', label: 'Wealth Mgmt' },
-  { icon: '🤝', label: 'Relationships' },
-  { icon: '📋', label: 'Reports' },
-  { icon: '🏆', label: 'Excellence' },
-];
-
 // Reduce particles for better performance
 const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 const particleCount = isMobile ? 4 : 6;
+const displayGoals = goals.slice(0, particleCount);
 
 interface FloatingParticle {
   id: number;
@@ -45,6 +33,18 @@ interface FloatingParticle {
 
 type Step = 'email' | 'otp' | 'details';
 
+async function handleApiError(response: Response): Promise<string> {
+  try {
+    const data = await response.json();
+    if (typeof data.detail === 'string') return data.detail;
+    if (Array.isArray(data.detail)) return data.detail.map((e: any) => e.msg || JSON.stringify(e)).join('; ');
+    if (typeof data.detail === 'object') return JSON.stringify(data.detail);
+    return 'Request failed';
+  } catch {
+    return `Request failed with status ${response.status}`;
+  }
+}
+
 export default function RegisterPage() {
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
@@ -55,27 +55,21 @@ export default function RegisterPage() {
     first_name: '',
     last_name: '',
     phone: '',
-    firm_name: '', // Advisor-specific
-    registration_number: '', // Advisor-specific
-    experience_years: '', // Advisor-specific
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [particles, setParticles] = useState<FloatingParticle[]>([]);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [successMessage, setSuccessMessage] = useState('');
   const [isResending, setIsResending] = useState(false);
-  const [registerRole, setRegisterRole] = useState<'individual' | 'advisor'>('individual');
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize floating particles based on role
+  // Initialize floating particles
   useEffect(() => {
-    const goals = registerRole === 'advisor' ? advisorGoals : userGoals;
-    const initialParticles = goals.slice(0, particleCount).map((goal, i) => ({
+    const initialParticles = goals.map((goal, i) => ({
       id: i,
       x: 5 + Math.random() * 90,
       y: 5 + Math.random() * 90,
@@ -84,7 +78,7 @@ export default function RegisterPage() {
       rotation: Math.random() * 360,
     }));
     setParticles(initialParticles);
-  }, [registerRole]);
+  }, []);
 
   // Animate particles
   useEffect(() => {
@@ -101,21 +95,6 @@ export default function RegisterPage() {
       }));
     }, 800);
     return () => clearInterval(interval);
-  }, []);
-
-  // Track mouse position
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setMousePos({
-          x: ((e.clientX - rect.left) / rect.width) * 100,
-          y: ((e.clientY - rect.top) / rect.height) * 100,
-        });
-      }
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   // Countdown timer for OTP resend
@@ -139,31 +118,34 @@ export default function RegisterPage() {
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Prevent multiple clicks
-    if (loading || isResending || countdown > 0) {
-      return;
-    }
+    if (loading || isResending || countdown > 0) return;
     
     setError('');
     setIsResending(true);
     setLoading(true);
 
     try {
-      const data = await sendOTP(email, 'registration');
+      const response = await fetch('http://localhost:8000/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, purpose: 'registration' }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await handleApiError(response));
+      }
+
+      const data = await response.json();
       
-      // Show OTP in development mode
       if (data.otp_code) {
-        const otpMsg = `✅ OTP sent to ${email}\n\nYour OTP is: ${data.otp_code}\n\n(Valid for 10 minutes)`;
-        setSuccessMessage(otpMsg);
-        console.log('OTP Response:', data); // Debug log
+        setSuccessMessage(`✅ OTP sent to ${email}\n\nYour OTP is: ${data.otp_code}\n\n(Valid for 10 minutes)`);
       } else {
         setSuccessMessage('OTP sent successfully! Please check your email.');
       }
       
       setOtpSent(true);
       setStep('otp');
-      setCountdown(60); // 60 second countdown for resend
+      setCountdown(60);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send OTP. Please try again.');
     } finally {
@@ -178,7 +160,16 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await verifyOTP(email, otp, 'registration');
+      const response = await fetch('http://localhost:8000/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp_code: otp, purpose: 'registration' }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await handleApiError(response));
+      }
+
       setStep('details');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'OTP verification failed. Please try again.');
@@ -187,13 +178,8 @@ export default function RegisterPage() {
     }
   };
 
-  const handleFieldFocus = (fieldName: string) => {
-    setFocusedField(fieldName);
-  };
-
-  const handleFieldBlur = () => {
-    setFocusedField(null);
-  };
+  const handleFieldFocus = (fieldName: string) => setFocusedField(fieldName);
+  const handleFieldBlur = () => setFocusedField(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -219,22 +205,18 @@ export default function RegisterPage() {
 
     try {
       const { confirmPassword, ...userData } = formData;
-      const result = await registerUser({
-        ...userData,
-        email,
-        role: registerRole === 'advisor' ? 'advisor' : 'user',
+      const response = await fetch('http://localhost:8000/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...userData, email, role: 'advisor' }),
       });
-      
-      localStorage.setItem('finplan_token', result.access_token);
-      localStorage.setItem('finplan_refresh_token', result.refresh_token);
-      localStorage.setItem('finplan_user', JSON.stringify(result.user));
-      
-      // Redirect based on role
-      if (result.user.role === 'advisor') {
-        router.push('/advisor-dashboard');
-      } else {
-        router.push('/dashboard');
+
+      if (!response.ok) {
+        throw new Error(await handleApiError(response));
       }
+
+      setSuccessMessage('Account created successfully! Please login with your credentials.');
+      setTimeout(() => router.push('/login'), 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
@@ -243,7 +225,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-bone text-obsidian overflow-hidden" ref={containerRef}>
+    <div className="min-h-screen bg-bone text-obsidian overflow-hidden" ref={containerRef}>
       {/* Floating Goals Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         {particles.map((particle, index) => (
@@ -301,47 +283,15 @@ export default function RegisterPage() {
             >
               Create your account
             </motion.h1>
-            
-            {/* Role Toggle */}
-            <motion.div
-              className="flex border border-[#C9A227] mb-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.25 }}
-            >
-              <button
-                type="button"
-                onClick={() => setRegisterRole('individual')}
-                className={`flex-1 py-2 px-4 text-[12px] font-mono uppercase tracking-wider2 transition-colors ${
-                  registerRole === 'individual'
-                    ? 'bg-[#C9A227] text-[#0C0B0A]'
-                    : 'bg-transparent text-[#C9A227] hover:bg-[#1C1A19]'
-                }`}
-              >
-                Individual Investor
-              </button>
-              <button
-                type="button"
-                onClick={() => setRegisterRole('advisor')}
-                className={`flex-1 py-2 px-4 text-[12px] font-mono uppercase tracking-wider2 transition-colors ${
-                  registerRole === 'advisor'
-                    ? 'bg-[#C9A227] text-[#0C0B0A]'
-                    : 'bg-transparent text-[#C9A227] hover:bg-[#1C1A19]'
-                }`}
-              >
-                Advisor Portal
-              </button>
-            </motion.div>
-            
             <motion.p
               className="text-ash text-[15px]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              {step === 'email' && (registerRole === 'individual' ? 'Enter your email to manage your personal finances' : 'Enter your email to join India\'s leading investment advisory platform')}
+              {step === 'email' && 'Enter your email to get started'}
               {step === 'otp' && 'Verify your email address'}
-              {step === 'details' && (registerRole === 'individual' ? 'Complete your profile' : 'Tell us about your advisory practice')}
+              {step === 'details' && 'Complete your profile'}
             </motion.p>
           </div>
 
@@ -374,42 +324,10 @@ export default function RegisterPage() {
               {step === 'email' && (
                 <form onSubmit={handleSendOTP} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label htmlFor="email" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
-                      Email Address
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        border: '1px solid #C9A227',
-                        background: '#1C1A19',
-                        color: '#F8F6F0',
-                        fontSize: '14px',
-                        outline: 'none',
-                      }}
-                      placeholder="you@example.com"
-                    />
+                    <label htmlFor="email" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Email Address</label>
+                    <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="you@example.com" />
                   </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                      width: '100%',
-                      padding: '12px 20px',
-                      background: '#C9A227',
-                      color: '#0C0B0A',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      border: 'none',
-                      cursor: loading ? 'not-allowed' : 'pointer',
-                      opacity: loading ? '0.5' : '1',
-                    }}
-                  >
+                  <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px 20px', background: '#C9A227', color: '#0C0B0A', fontSize: '14px', fontWeight: '600', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? '0.5' : '1' }}>
                     {loading ? 'Sending OTP...' : 'Send OTP'}
                   </button>
                 </form>
@@ -418,70 +336,17 @@ export default function RegisterPage() {
               {step === 'otp' && (
                 <form onSubmit={handleVerifyOTP} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label htmlFor="otp" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
-                      Enter 6-digit OTP
-                    </label>
-                    <input
-                      id="otp"
-                      type="text"
-                      required
-                      maxLength={6}
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        border: '1px solid #C9A227',
-                        background: '#1C1A19',
-                        color: '#F8F6F0',
-                        fontSize: '14px',
-                        outline: 'none',
-                        letterSpacing: '8px',
-                        textAlign: 'center',
-                      }}
-                      placeholder="000000"
-                    />
-                    <p style={{ fontSize: '12px', color: '#A8A29E', marginTop: '6px' }}>
-                      OTP sent to {email}. Valid for 10 minutes.
-                    </p>
+                    <label htmlFor="otp" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Enter 6-digit OTP</label>
+                    <input id="otp" type="text" required maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none', letterSpacing: '8px', textAlign: 'center' }} placeholder="000000" />
+                    <p style={{ fontSize: '12px', color: '#A8A29E', marginTop: '6px' }}>OTP sent to {email}. Valid for 10 minutes.</p>
                   </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                      width: '100%',
-                      padding: '12px 20px',
-                      background: '#C9A227',
-                      color: '#0C0B0A',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      border: 'none',
-                      cursor: loading ? 'not-allowed' : 'pointer',
-                      opacity: loading ? '0.5' : '1',
-                    }}
-                  >
+                  <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px 20px', background: '#C9A227', color: '#0C0B0A', fontSize: '14px', fontWeight: '600', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? '0.5' : '1' }}>
                     {loading ? 'Verifying...' : 'Verify OTP'}
                   </button>
                   {countdown > 0 ? (
-                    <p style={{ fontSize: '12px', color: '#A8A29E', textAlign: 'center' }}>
-                      Resend OTP in {countdown}s
-                    </p>
+                    <p style={{ fontSize: '12px', color: '#A8A29E', textAlign: 'center' }}>Resend OTP in {countdown}s</p>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleSendOTP({ preventDefault: () => {} } as React.FormEvent)}
-                      disabled={loading || isResending || countdown > 0}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#C9A227',
-                        fontSize: '13px',
-                        cursor: (loading || isResending || countdown > 0) ? 'not-allowed' : 'pointer',
-                        textAlign: 'center',
-                        width: '100%',
-                        opacity: (loading || isResending || countdown > 0) ? '0.5' : '1',
-                      }}
-                    >
+                    <button type="button" onClick={() => handleSendOTP({ preventDefault: () => {} } as React.FormEvent)} disabled={loading || isResending || countdown > 0} style={{ background: 'none', border: 'none', color: '#C9A227', fontSize: '13px', cursor: (loading || isResending || countdown > 0) ? 'not-allowed' : 'pointer', textAlign: 'center', width: '100%', opacity: (loading || isResending || countdown > 0) ? '0.5' : '1' }}>
                       Resend OTP
                     </button>
                   )}
@@ -492,236 +357,28 @@ export default function RegisterPage() {
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <div>
-                      <label htmlFor="first_name" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
-                        First Name
-                      </label>
-                      <input
-                        id="first_name"
-                        name="first_name"
-                        type="text"
-                        required
-                        value={formData.first_name}
-                        onChange={handleChange}
-                        onFocus={() => handleFieldFocus('first_name')}
-                        onBlur={handleFieldBlur}
-                        style={{
-                          width: '100%',
-                          padding: '10px 14px',
-                          border: '1px solid #C9A227',
-                          background: '#1C1A19',
-                          color: '#F8F6F0',
-                          fontSize: '14px',
-                          outline: 'none',
-                        }}
-                        placeholder="John"
-                      />
+                      <label htmlFor="first_name" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>First Name</label>
+                      <input id="first_name" name="first_name" type="text" required value={formData.first_name} onChange={handleChange} onFocus={() => handleFieldFocus('first_name')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="John" />
                     </div>
                     <div>
-                      <label htmlFor="last_name" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
-                        Last Name
-                      </label>
-                      <input
-                        id="last_name"
-                        name="last_name"
-                        type="text"
-                        required
-                        value={formData.last_name}
-                        onChange={handleChange}
-                        onFocus={() => handleFieldFocus('last_name')}
-                        onBlur={handleFieldBlur}
-                        style={{
-                          width: '100%',
-                          padding: '10px 14px',
-                          border: '1px solid #C9A227',
-                          background: '#1C1A19',
-                          color: '#F8F6F0',
-                          fontSize: '14px',
-                          outline: 'none',
-                        }}
-                        placeholder="Doe"
-                      />
+                      <label htmlFor="last_name" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Last Name</label>
+                      <input id="last_name" name="last_name" type="text" required value={formData.last_name} onChange={handleChange} onFocus={() => handleFieldFocus('last_name')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="Doe" />
                     </div>
                   </div>
-
-                  {/* Advisor-specific fields */}
-                  {registerRole === 'advisor' && (
-                    <>
-                      <div>
-                        <label htmlFor="firm_name" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
-                          Firm/Legal Name
-                        </label>
-                        <input
-                          id="firm_name"
-                          name="firm_name"
-                          type="text"
-                          required={registerRole === 'advisor'}
-                          value={formData.firm_name}
-                          onChange={handleChange}
-                          onFocus={() => handleFieldFocus('firm_name')}
-                          onBlur={handleFieldBlur}
-                          style={{
-                            width: '100%',
-                            padding: '10px 14px',
-                            border: '1px solid #C9A227',
-                            background: '#1C1A19',
-                            color: '#F8F6F0',
-                            fontSize: '14px',
-                            outline: 'none',
-                          }}
-                          placeholder="Your Advisory Firm Pvt. Ltd."
-                        />
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                        <div>
-                          <label htmlFor="registration_number" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
-                            SEBI/AMFI Reg. No.
-                          </label>
-                          <input
-                            id="registration_number"
-                            name="registration_number"
-                            type="text"
-                            required={registerRole === 'advisor'}
-                            value={formData.registration_number}
-                            onChange={handleChange}
-                            onFocus={() => handleFieldFocus('registration_number')}
-                            onBlur={handleFieldBlur}
-                            style={{
-                              width: '100%',
-                              padding: '10px 14px',
-                              border: '1px solid #C9A227',
-                              background: '#1C1A19',
-                              color: '#F8F6F0',
-                              fontSize: '14px',
-                              outline: 'none',
-                            }}
-                            placeholder="REG123456"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="experience_years" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
-                            Years of Experience
-                          </label>
-                          <input
-                            id="experience_years"
-                            name="experience_years"
-                            type="number"
-                            min="0"
-                            max="50"
-                            required={registerRole === 'advisor'}
-                            value={formData.experience_years}
-                            onChange={handleChange}
-                            onFocus={() => handleFieldFocus('experience_years')}
-                            onBlur={handleFieldBlur}
-                            style={{
-                              width: '100%',
-                              padding: '10px 14px',
-                              border: '1px solid #C9A227',
-                              background: '#1C1A19',
-                              color: '#F8F6F0',
-                              fontSize: '14px',
-                              outline: 'none',
-                            }}
-                            placeholder="5"
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )}
-
                   <div>
-                    <label htmlFor="phone" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
-                      Phone Number (Optional)
-                    </label>
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      onFocus={() => handleFieldFocus('phone')}
-                      onBlur={handleFieldBlur}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        border: '1px solid #C9A227',
-                        background: '#1C1A19',
-                        color: '#F8F6F0',
-                        fontSize: '14px',
-                        outline: 'none',
-                      }}
-                      placeholder="+91 9876543210"
-                    />
+                    <label htmlFor="phone" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Phone Number (Optional)</label>
+                    <input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} onFocus={() => handleFieldFocus('phone')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="+91 9876543210" />
                   </div>
-
                   <div>
-                    <label htmlFor="password" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
-                      Password
-                    </label>
-                    <input
-                      id="password"
-                      name="password"
-                      type="password"
-                      required
-                      value={formData.password}
-                      onChange={handleChange}
-                      onFocus={() => handleFieldFocus('password')}
-                      onBlur={handleFieldBlur}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        border: '1px solid #C9A227',
-                        background: '#1C1A19',
-                        color: '#F8F6F0',
-                        fontSize: '14px',
-                        outline: 'none',
-                      }}
-                      placeholder="••••••••"
-                    />
+                    <label htmlFor="password" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Password</label>
+                    <input id="password" name="password" type="password" required value={formData.password} onChange={handleChange} onFocus={() => handleFieldFocus('password')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="••••••••" />
                     <p style={{ fontSize: '12px', color: '#A8A29E', marginTop: '6px' }}>Must be at least 8 characters long</p>
                   </div>
-
                   <div>
-                    <label htmlFor="confirmPassword" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>
-                      Confirm Password
-                    </label>
-                    <input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type="password"
-                      required
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      onFocus={() => handleFieldFocus('confirmPassword')}
-                      onBlur={handleFieldBlur}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        border: '1px solid #C9A227',
-                        background: '#1C1A19',
-                        color: '#F8F6F0',
-                        fontSize: '14px',
-                        outline: 'none',
-                      }}
-                      placeholder="••••••••"
-                    />
+                    <label htmlFor="confirmPassword" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Confirm Password</label>
+                    <input id="confirmPassword" name="confirmPassword" type="password" required value={formData.confirmPassword} onChange={handleChange} onFocus={() => handleFieldFocus('confirmPassword')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="••••••••" />
                   </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                      width: '100%',
-                      padding: '12px 20px',
-                      background: '#C9A227',
-                      color: '#0C0B0A',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      border: 'none',
-                      cursor: loading ? 'not-allowed' : 'pointer',
-                      opacity: loading ? '0.5' : '1',
-                    }}
-                  >
+                  <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px 20px', background: '#C9A227', color: '#0C0B0A', fontSize: '14px', fontWeight: '600', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? '0.5' : '1' }}>
                     {loading ? 'Creating Account...' : 'Create Account'}
                   </button>
                 </form>
@@ -737,13 +394,11 @@ export default function RegisterPage() {
           >
             <p className="text-[14px] text-ash">
               Already have an account?{' '}
-              <Link href="/login" className="text-obsidian font-medium hover:text-[#C9A227] transition-colors">
-                Sign in
-              </Link>
+              <Link href="/login" className="text-obsidian font-medium hover:text-[#C9A227] transition-colors">Sign in</Link>
             </p>
           </motion.div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

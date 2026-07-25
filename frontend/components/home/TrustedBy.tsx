@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import SectionContainer from '@/components/shared/SectionContainer';
 
 const companies = [
   'SBI Mutual Fund',
@@ -15,8 +16,8 @@ const companies = [
 
 export default function TrustedBy() {
   return (
-    <section className="px-6 lg:px-10 py-14 hairline-b" data-testid="trusted-section">
-      <div className="grid grid-cols-12 gap-6 items-center">
+    <section className="hairline-b" data-testid="trusted-section">
+      <SectionContainer className="py-16 lg:py-24 grid grid-cols-12 gap-6 items-center">
         <div className="col-span-12 lg:col-span-3">
           <div className="label-mono text-ash mb-2">&mdash; 001</div>
           <h3 className="font-serif text-[26px] leading-tight">
@@ -38,7 +39,7 @@ export default function TrustedBy() {
             ))}
           </motion.div>
         </div>
-      </div>
+      </SectionContainer>
     </section>
   );
 }

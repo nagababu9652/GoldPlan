@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Outfit, IBM_Plex_Mono } from "next/font/google";
+import { Playfair_Display, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const serif = Cormorant_Garamond({
+const serif = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
@@ -10,14 +10,14 @@ const serif = Cormorant_Garamond({
   display: "swap",
 });
 
-const sans = Outfit({
+const sans = Inter({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
   variable: "--font-sans",
   display: "swap",
 });
 
-const mono = IBM_Plex_Mono({
+const mono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
   variable: "--font-mono",
@@ -26,36 +26,34 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "GoldPlan AI \u2014 Editorial Intelligence for Gold & Capital",
+    default: "FinPlan India — Advisor Operating System",
     template: "%s | FinPlan India",
   },
   description:
-    "India's most trusted financial planning platform. Goal-based planning for retirement, education, home, tax saving, and wealth creation. SEBI-registered advisors.",
+    "Client onboarding, portfolio oversight, and review workflows for modern advisory practices.",
   keywords: [
-    "financial planning india",
-    "goal planning",
-    "mutual fund advisor",
-    "SIP calculator",
-    "retirement planning india",
-    "tax saving 80C",
-    "NPS India",
-    "PPF",
-    "investment advisor india",
+    "advisor platform india",
+    "client onboarding",
+    "portfolio management",
     "SEBI registered advisor",
+    "financial advisory software",
+    "client management",
+    "advisor dashboard",
+    "review workflows",
   ],
   metadataBase: new URL("https://finplan.in"),
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: "https://finplan.in",
-    title: "GoldPlan AI \u2014 Editorial Intelligence for Gold & Capital",
-    description: "Plan your financial goals with India's most trusted advisory platform.",
+    title: "FinPlan India — Advisor Operating System",
+    description: "Client onboarding, portfolio oversight, and review workflows for modern advisory practices.",
     siteName: "FinPlan India",
   },
   twitter: {
     card: "summary_large_image",
-    title: "FinPlan India",
-    description: "Smart financial planning & goal planning for every Indian family.",
+    title: "FinPlan India — Advisor Operating System",
+    description: "Modern advisory platform for client onboarding, portfolio oversight, and review workflows.",
   },
 };
 
