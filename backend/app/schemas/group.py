@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 from datetime import datetime
 
@@ -33,6 +33,8 @@ class GroupUpdate(BaseModel):
 
 
 class GroupResponse(GroupBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     advisor_id: int
     is_active: bool
@@ -41,9 +43,6 @@ class GroupResponse(GroupBase):
     head_client_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class GroupListResponse(BaseModel):

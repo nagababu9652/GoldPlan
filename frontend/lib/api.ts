@@ -4,14 +4,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export interface User {
   id: number;
+  party_id: number;
+  username: string;
   email: string;
-  first_name: string;
-  last_name: string;
-  phone?: string;
-  role: string;
+  display_name?: string;
+  role?: string;
   is_active: boolean;
-  is_verified: boolean;
-  last_login?: string;
+  account_status: string;
   created_at: string;
 }
 
@@ -33,8 +32,18 @@ export interface RegisterData {
   password: string;
   first_name: string;
   last_name: string;
+  mobile_number?: string;
   phone?: string;
   role?: string;
+  address_line1?: string;
+  address_line2?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  pan_number?: string;
+  aadhaar_number?: string;
+  legal_name?: string;
+  remarks?: string;
 }
 
 export interface RegisterResponse {
@@ -48,13 +57,18 @@ export interface RegisterResponse {
 // ==================== AUTH API ====================
 
 export async function registerUser(data: RegisterData): Promise<RegisterResponse> {
+  const payload = {
+    ...data,
+    mobile_number: data.mobile_number || data.phone,
+  };
+
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {

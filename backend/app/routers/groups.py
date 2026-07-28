@@ -4,11 +4,9 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 from ..database.session import get_db
-from ..models.group import Group
-from ..models.client import Client
 from ..schemas.group import GroupCreate, GroupUpdate, GroupResponse, GroupListResponse, GroupMemberAction
 from .advisors import get_current_advisor
-from ..models.user import User
+from ..models.identity.auth import User
 
 router = APIRouter(prefix="/advisors/groups", tags=["advisor-groups"])
 

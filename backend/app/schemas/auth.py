@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from typing import Optional
 
 
@@ -36,6 +36,9 @@ class TokenPayload(BaseModel):
     email: Optional[str] = None
     role: Optional[str] = None
     party_id: Optional[int] = None
+    session_uuid: Optional[str] = None
+    exp: Optional[int] = None
+    type: Optional[str] = None
 
 
 class UserRegister(BaseModel):
@@ -58,6 +61,8 @@ class UserRegister(BaseModel):
     # Optional org/branch assignment
     organization_id: Optional[int] = None
     branch_id: Optional[int] = None
+    organization_name: Optional[str] = None
+    branch_name: Optional[str] = None
 
     # Advisor-specific
     firm_name: Optional[str] = None
@@ -71,6 +76,8 @@ class UserLogin(BaseModel):
 
 
 class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     party_id: int
     username: str
@@ -80,9 +87,6 @@ class UserResponse(BaseModel):
     is_active: bool
     account_status: str
     created_at: str
-
-    class Config:
-        from_attributes = True
 
 
 class PasswordResetRequest(BaseModel):

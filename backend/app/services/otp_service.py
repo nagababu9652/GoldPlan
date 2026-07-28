@@ -1,23 +1,40 @@
+"""
+OTP Service - handles OTP generation, hashing, sending, and verification.
+Uses identity.otp_requests table with bcrypt-hashed OTP codes.
+"""
 import random
 import string
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
+from typing import Optional
+
+import bcrypt
 from sqlalchemy.orm import Session
 from fastapi import BackgroundTasks, HTTPException
 
-from ..models.identity.otp_request import OTPRequest
+from ..models.identity.auth import OTPRequest
 from ..core.config import settings
 
 OTP_EXPIRY_MINUTES = 10
 OTP_LENGTH = 6
-MAX_OTP_PER_HOUR = 3  # Rate limiting: max 3 OTPs per hour per email
+MAX_OTP_PER_HOUR = 3  # Rate limiting: max 3 OTPs per hour per destination
 
 
 def generate_otp() -> str:
     """Generate a 6-digit OTP code."""
     return ''.join(random.choices(string.digits, k=OTP_LENGTH))
+
+
+def hash_otp(otp_code: str) -> str:
+    """Hash OTP code using bcrypt before storage."""
+    return bcrypt.hashpw(otp_code.encode('utf-8'), bcrypt.gensalt(rounds=10)).decode('utf-8')
+
+
+def verify_otp_hash(otp_code: str, otp_code_hash: str) -> bool:
+    """Verify OTP code against stored hash."""
+    return bcrypt.checkpw(otp_code.encode('utf-8'), otp_code_hash.encode('utf-8'))
 
 
 def send_otp_email(email: str, otp_code: str, purpose: str) -> bool:
@@ -111,8 +128,14 @@ def send_otp_email(email: str, otp_code: str, purpose: str) -> bool:
         return False
 
 
-def create_otp(db: Session, email: str, purpose: str = "registration", background_tasks: BackgroundTasks = None) -> OTP:
-    """Create a new OTP record and send it via email."""
+def create_otp(
+    db: Session,
+    destination: str,
+    purpose: str = "registration",
+    user_id: Optional[int] = None,
+    background_tasks: Optional[BackgroundTasks] = None
+) -> OTPRequest:
+    """Create a new OTP record, hash the code, and send via email."""
     # Rate limiting: Check if user has exceeded max OTPs per hour
     one_hour_ago = datetime.utcnow() - timedelta(hours=1)
     recent_otp_count = db.query(OTPRequest).filter(
@@ -139,11 +162,13 @@ def create_otp(db: Session, email: str, purpose: str = "registration", backgroun
     
     # Generate new OTP
     otp_code = generate_otp()
+    otp_code_hash = hash_otp(otp_code)
     expires_at = datetime.utcnow() + timedelta(minutes=OTP_EXPIRY_MINUTES)
     
     otp_record = OTPRequest(
+        user_id=user_id,
         destination=destination,
-        otp_code_hash=otp_code,  # Will be hashed in commit
+        otp_code_hash=otp_code_hash,
         purpose=purpose,
         expires_at=expires_at,
         created_at=datetime.utcnow()
@@ -153,18 +178,20 @@ def create_otp(db: Session, email: str, purpose: str = "registration", backgroun
     db.commit()
     db.refresh(otp_record)
     
-    # Send OTP via email in background if background_tasks is provided
+    # Store plain OTP temporarily for email sending
+    otp_record._plain_otp = otp_code
+    
+    # Send OTP via email
     if background_tasks:
         background_tasks.add_task(send_otp_email, destination, otp_code, purpose)
     else:
-        # Fallback to synchronous sending
         send_otp_email(destination, otp_code, purpose)
     
     return otp_record
 
 
 def verify_otp(db: Session, destination: str, otp_code: str, purpose: str = "registration") -> bool:
-    """Verify an OTP code. Returns True if valid, False otherwise."""
+    """Verify an OTP code against stored hash. Returns True if valid."""
     now = datetime.utcnow()
     
     # Find the OTP record
@@ -178,20 +205,28 @@ def verify_otp(db: Session, destination: str, otp_code: str, purpose: str = "reg
     if not otp_record:
         return False
     
-    # Mark as used
-    otp_record.is_used = True
-    otp_record.verified_at = now
-    db.commit()
+    # Verify the OTP code against stored hash
+    if verify_otp_hash(otp_code, otp_record.otp_code_hash):
+        otp_record.is_used = True
+        otp_record.verified_at = now
+        db.commit()
+        return True
     
-    return True
+    # Increment failed attempts
+    otp_record.failed_attempts += 1
+    db.commit()
+    return False
 
 
 def cleanup_expired_otps(db: Session) -> int:
-    """Cleanup expired OTP records. Returns count of deleted records."""
+    """Mark expired OTP records as used. Returns count of expired records."""
     now = datetime.utcnow()
-    expired = db.query(OTP).filter(OTP.expires_at <= now).all()
+    expired = db.query(OTPRequest).filter(
+        OTPRequest.expires_at <= now,
+        OTPRequest.is_used == False
+    ).all()
     count = len(expired)
     for otp in expired:
-        db.delete(otp)
+        otp.is_used = True
     db.commit()
     return count

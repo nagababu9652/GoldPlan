@@ -29,7 +29,12 @@ class CustomerKYC(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=True)
 
-    customer = relationship("Customer", back_populates="kyc", foreign_keys=[customer_id], lazy="selectin")
+    customer = relationship(
+        "Customer",
+        back_populates="kyc",
+        foreign_keys=[customer_id],
+        lazy="selectin",
+    )
     guardian = relationship("Customer", foreign_keys=[guardian_customer_id], lazy="selectin")
 
 

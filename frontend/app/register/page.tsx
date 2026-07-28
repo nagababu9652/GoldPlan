@@ -55,6 +55,15 @@ export default function RegisterPage() {
     first_name: '',
     last_name: '',
     phone: '',
+    address_line1: '',
+    address_line2: '',
+    city: '',
+    state: '',
+    pincode: '',
+    pan_number: '',
+    aadhaar_number: '',
+    legal_name: '',
+    remarks: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -204,11 +213,17 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const { confirmPassword, ...userData } = formData;
+      const { confirmPassword, phone, ...rest } = formData;
+      const userData = {
+        ...rest,
+        email,
+        mobile_number: phone || undefined,
+        role: 'advisor',
+      };
       const response = await fetch('http://localhost:8000/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...userData, email, role: 'advisor' }),
+        body: JSON.stringify(userData),
       });
 
       if (!response.ok) {
@@ -368,6 +383,48 @@ export default function RegisterPage() {
                   <div>
                     <label htmlFor="phone" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Phone Number (Optional)</label>
                     <input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} onFocus={() => handleFieldFocus('phone')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="+91 9876543210" />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label htmlFor="pan_number" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>PAN</label>
+                      <input id="pan_number" name="pan_number" type="text" value={formData.pan_number} onChange={handleChange} onFocus={() => handleFieldFocus('pan_number')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="ABCDE1234F" />
+                    </div>
+                    <div>
+                      <label htmlFor="aadhaar_number" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Aadhaar</label>
+                      <input id="aadhaar_number" name="aadhaar_number" type="text" value={formData.aadhaar_number} onChange={handleChange} onFocus={() => handleFieldFocus('aadhaar_number')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="1234 5678 9012" />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="legal_name" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Legal Name (Optional)</label>
+                    <input id="legal_name" name="legal_name" type="text" value={formData.legal_name} onChange={handleChange} onFocus={() => handleFieldFocus('legal_name')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="Business or legal name" />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label htmlFor="address_line1" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Address Line 1</label>
+                      <input id="address_line1" name="address_line1" type="text" value={formData.address_line1} onChange={handleChange} onFocus={() => handleFieldFocus('address_line1')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="Flat / House / Building" />
+                    </div>
+                    <div>
+                      <label htmlFor="address_line2" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Address Line 2</label>
+                      <input id="address_line2" name="address_line2" type="text" value={formData.address_line2} onChange={handleChange} onFocus={() => handleFieldFocus('address_line2')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="Area / Landmark" />
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label htmlFor="city" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>City</label>
+                      <input id="city" name="city" type="text" value={formData.city} onChange={handleChange} onFocus={() => handleFieldFocus('city')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="Mumbai" />
+                    </div>
+                    <div>
+                      <label htmlFor="state" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>State</label>
+                      <input id="state" name="state" type="text" value={formData.state} onChange={handleChange} onFocus={() => handleFieldFocus('state')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="Maharashtra" />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="pincode" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>PIN Code</label>
+                    <input id="pincode" name="pincode" type="text" value={formData.pincode} onChange={handleChange} onFocus={() => handleFieldFocus('pincode')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="400001" />
+                  </div>
+                  <div>
+                    <label htmlFor="remarks" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Notes (Optional)</label>
+                    <input id="remarks" name="remarks" type="text" value={formData.remarks} onChange={handleChange} onFocus={() => handleFieldFocus('remarks')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="Additional context" />
                   </div>
                   <div>
                     <label htmlFor="password" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Password</label>

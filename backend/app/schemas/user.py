@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from typing import Optional
 
 
@@ -23,15 +23,14 @@ class UserLogin(BaseModel):
 
 
 class UserResponse(UserBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     is_active: bool
     is_verified: bool
     role: str
     created_at: str
     last_login: Optional[str] = None
-
-    class Config:
-        from_attributes = True
 
 
 class Token(BaseModel):
@@ -102,6 +101,8 @@ class ClientLogin(BaseModel):
 
 
 class ClientResponse(ClientBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     advisor_id: int
     group_id: Optional[int] = None
@@ -110,6 +111,3 @@ class ClientResponse(ClientBase):
     assigned_date: str
     created_at: str
     updated_at: str
-
-    class Config:
-        from_attributes = True

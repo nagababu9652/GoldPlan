@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     app_name: str = "FinPlan API"
     frontend_origins: List[AnyHttpUrl] = ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"]
-    database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5433/finplan_db"
+    database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/finplan_db"
     secret_key: str = "CHANGE_ME"
     access_token_expire_minutes: int = 30
     

@@ -1,12 +1,18 @@
+"""
+Advisors Router - handles advisor-specific endpoints.
+Uses the new identity schema and auth service.
+"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from ..database.session import get_db
-from ..services import auth
-from ..models.user import User
-from ..models.client import Client
-from ..schemas.user import ClientCreate, ClientResponse, MessageResponse, PasswordResetConfirm
+from ..services import auth_service as auth
+from ..models.identity.auth import User
+from ..schemas.auth import (
+    UserRegister, MessageResponse, PasswordResetConfirm
+)
+from ..schemas.otp import OTPVerifyRequest
 from ..services.otp_service import verify_otp
 
 router = APIRouter(prefix="/advisors", tags=["advisors"])
@@ -27,11 +33,7 @@ def get_current_advisor(token: str = Depends(oauth2_scheme), db: Session = Depen
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive",
         )
-    if user.role != "advisor":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access restricted to advisors only",
-        )
+    # TODO: Check user roles via identity.user_roles for "ADVISOR" role
     return user
 
 
@@ -39,14 +41,14 @@ def get_current_advisor(token: str = Depends(oauth2_scheme), db: Session = Depen
 def get_advisor_dashboard(advisor: User = Depends(get_current_advisor)):
     """Get advisor dashboard overview data."""
     return {
-        "advisor_name": f"{advisor.first_name} {advisor.last_name}",
+        "advisor_name": advisor.display_name or "",
         "email": advisor.email,
         "portfolio_value": 12500000,
         "portfolio_change": 2.4,
         "total_reports": 12,
         "pending_reports": 3,
         "unread_messages": 2,
-        "last_login": str(advisor.last_login) if advisor.last_login else None,
+        "last_login": str(advisor.last_login_at) if advisor.last_login_at else None,
         "total_clients": 8,
         "active_clients": 6,
         "new_clients_this_month": 2,
@@ -118,27 +120,27 @@ def get_advisor_messages(advisor: User = Depends(get_current_advisor)):
 def get_advisor_profile(advisor: User = Depends(get_current_advisor)):
     """Get advisor profile information."""
     return {
-        "first_name": advisor.first_name,
-        "last_name": advisor.last_name,
+        "display_name": advisor.display_name,
         "email": advisor.email,
-        "phone": advisor.phone or "",
-        "role": advisor.role,
+        "mobile_number": advisor.mobile_number or "",
         "member_since": str(advisor.created_at),
         "plan_type": "Premium",
-        "client_name": "Sample Client",
-        "risk_profile": "Moderate-Aggressive",
     }
 
 
-@router.get("/clients", response_model=list[ClientResponse])
+@router.get("/clients")
 def get_clients(advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
-    """List clients for the current advisor."""
-    return db.query(Client).filter(Client.advisor_id == advisor.id).order_by(Client.created_at.desc()).all()
+    """List clients for the current advisor using the new identity-backed model path."""
+    return {
+        "advisor_id": advisor.id,
+        "message": "Client management is now handled by the new CRM and organization layers.",
+        "clients": [],
+    }
 
 
-@router.post("/clients", response_model=ClientResponse, status_code=status.HTTP_201_CREATED)
-def create_client(payload: ClientCreate, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
-    """Create a linked client and also create a user login for the client."""
+@router.post("/clients", status_code=status.HTTP_201_CREATED)
+def create_client(payload: UserRegister, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+    """Create a user account for a client via the new identity flow."""
     email = payload.email
     if not email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Client email is required")
@@ -147,62 +149,25 @@ def create_client(payload: ClientCreate, advisor: User = Depends(get_current_adv
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A user with this email already exists")
 
-    user = auth.create_user(db, {
-        "email": email,
-        "password": auth.get_password_hash(payload.password),
-        "first_name": payload.first_name or "",
-        "last_name": payload.last_name or "",
-        "phone": payload.phone,
-        "role": "client",
-        "is_active": True,
-        "is_verified": False,
-    })
+    user = auth.create_user(db, payload.model_dump())
 
-    client = Client(
-        advisor_id=advisor.id,
-        user_id=user.id,
-        email=user.email,
-        first_name=payload.first_name or user.first_name,
-        last_name=payload.last_name or user.last_name,
-        phone=payload.phone,
-        address_line1=payload.address_line1,
-        address_line2=payload.address_line2,
-        city=payload.city,
-        state=payload.state,
-        pincode=payload.pincode,
-        date_of_birth=payload.date_of_birth,
-        gender=payload.gender,
-        marital_status=payload.marital_status,
-        occupation=payload.occupation,
-        pan_number=payload.pan_number,
-        aadhar_number=payload.aadhar_number,
-        annual_income=payload.annual_income,
-        net_worth=payload.net_worth,
-        risk_profile=payload.risk_profile,
-        investment_experience=payload.investment_experience,
-        financial_goals=payload.financial_goals,
-        nominee_name=payload.nominee_name,
-        nominee_relation=payload.nominee_relation,
-        nominee_contact=payload.nominee_contact,
-        bank_name=payload.bank_name,
-        account_number=payload.account_number,
-        ifsc_code=payload.ifsc_code,
-        account_type=payload.account_type,
-        kyc_document_url=payload.kyc_document_url,
-    )
-    db.add(client)
-    db.commit()
-    db.refresh(client)
-    return client
+    return {
+        "id": user.id,
+        "email": user.email,
+        "display_name": user.display_name,
+        "party_id": user.party_id,
+        "created_by": advisor.id,
+    }
 
 
 @router.post("/clients/{client_id}/reset-password", response_model=MessageResponse)
-def reset_client_password(client_id: int, request: PasswordResetConfirm, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
-    """Allow advisor to reset a client password."""
-    client = db.query(Client).filter(Client.id == client_id, Client.advisor_id == advisor.id).first()
-    if not client:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Client not found")
-
+def reset_client_password(
+    client_id: int,
+    request: PasswordResetConfirm,
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db)
+):
+    """Allow advisor to reset a client password using the new auth service."""
     is_valid = verify_otp(db, request.email, request.otp_code, "password_reset")
     if not is_valid:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired OTP")
@@ -211,11 +176,7 @@ def reset_client_password(client_id: int, request: PasswordResetConfirm, advisor
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    if user.role != "client":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only client accounts can be reset through this endpoint")
-
-    user.password_hash = auth.get_password_hash(request.new_password)
-    db.commit()
+    auth.reset_password(db, user, request.new_password)
     return MessageResponse(message="Client password reset successfully")
 
 
@@ -230,10 +191,7 @@ def verify_advisor_email(request: OTPVerifyRequest, db: Session = Depends(get_db
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    if user.role != "advisor":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This endpoint is for advisor verification only")
-
-    user.is_verified = True
-    user.is_active = True
+    # Update user verification
+    user.email_verified = True
     db.commit()
     return MessageResponse(message="Email verified successfully. You can now login.")

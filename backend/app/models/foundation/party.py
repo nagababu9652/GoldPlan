@@ -1,7 +1,7 @@
 """
 Party models: parties, party_addresses, party_contacts, party_bank_accounts.
 """
-from sqlalchemy import Column, BigInteger, Boolean, Date, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.orm import relationship
 
 from ..base import Base, AuditMixin
@@ -73,7 +73,7 @@ class PartyContact(AuditMixin, Base):
     contact_value = Column(String(200), nullable=False)
     is_primary = Column(Boolean, default=False)
     is_verified = Column(Boolean, default=False)
-    verified_at = Column(Boolean, nullable=True)
+    verified_at = Column(DateTime, nullable=True)
     remarks = Column(Text, nullable=True)
 
     party = relationship("Party", back_populates="contacts", lazy="selectin")

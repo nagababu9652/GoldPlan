@@ -46,7 +46,13 @@ class Customer(AuditMixin, Base):
     remarks = Column(Text, nullable=True)
 
     group_members = relationship("GroupMember", back_populates="customer", lazy="selectin")
-    kyc = relationship("CustomerKYC", back_populates="customer", uselist=False, lazy="selectin")
+    kyc = relationship(
+        "CustomerKYC",
+        back_populates="customer",
+        uselist=False,
+        foreign_keys="[CustomerKYC.customer_id]",
+        lazy="selectin",
+    )
     risk_profiles = relationship("CustomerRiskProfile", back_populates="customer", lazy="selectin")
 
 

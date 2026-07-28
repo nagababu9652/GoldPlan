@@ -1284,6 +1284,10 @@ CREATE INDEX idx_group_org ON crm.customer_groups(organization_id);
 CREATE INDEX idx_group_branch ON crm.customer_groups(primary_branch_id);
 CREATE INDEX idx_group_advisor ON crm.customer_groups(primary_advisor_employee_id);
 
+ALTER TABLE crm.customer_groups
+    ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS deleted_by BIGINT;
+
 CREATE TABLE crm.customers
 (
     id                          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -1303,6 +1307,8 @@ CREATE TABLE crm.customers
     created_by                  BIGINT,
     updated_at                  TIMESTAMP,
     updated_by                  BIGINT,
+    deleted_at                  TIMESTAMP,
+    deleted_by                  BIGINT,
     version_no                  INTEGER DEFAULT 1,
     is_active                   BOOLEAN DEFAULT TRUE,
     CONSTRAINT fk_customer_org FOREIGN KEY(organization_id) REFERENCES organization.organizations(id),

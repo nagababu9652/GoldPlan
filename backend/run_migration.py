@@ -5,10 +5,24 @@ Properly handles dollar-quoted function bodies.
 """
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).parent))
 
 from app.core.config import settings
+
+
+def get_db_connection_params():
+    db_url = settings.database_url
+    parsed = urlparse(db_url)
+
+    return {
+        "user": parsed.username or "postgres",
+        "password": parsed.password or "postgres",
+        "host": parsed.hostname or "localhost",
+        "port": str(parsed.port or 5432),
+        "dbname": parsed.path.lstrip("/") or "postgres",
+    }
 
 
 def split_sql_statements(sql_content: str):
@@ -70,12 +84,13 @@ def split_sql_statements(sql_content: str):
 def run_migration():
     db_url = settings.database_url
     print(f"Database: {db_url}")
-    
-    user = "postgres"
-    password = "postgres"
-    host = "localhost"
-    port = "5433"
-    dbname = "finplan_db"
+
+    params = get_db_connection_params()
+    user = params["user"]
+    password = params["password"]
+    host = params["host"]
+    port = params["port"]
+    dbname = params["dbname"]
     
     try:
         import psycopg2

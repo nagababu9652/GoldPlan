@@ -73,7 +73,7 @@ class SecurityEvent(Base):
     device_id = Column(BigInteger, ForeignKey("identity.devices.id"), nullable=True)
     session_id = Column(BigInteger, ForeignKey("identity.user_sessions.id"), nullable=True)
     description = Column(Text, nullable=True)
-    metadata = Column(JSONB, nullable=True)
+    event_metadata = Column(JSONB, nullable=True)
 
     user = relationship("User", lazy="selectin")
     device = relationship("Device", lazy="selectin")
