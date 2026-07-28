@@ -1,3 +1,6 @@
-from sqlalchemy.orm import declarative_base
+"""
+Database base - re-exports Base from models for convenience.
+"""
+from ..models.base import Base
 
-Base = declarative_base()
+__all__ = ["Base"]

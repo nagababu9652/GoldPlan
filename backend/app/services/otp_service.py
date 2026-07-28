@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from fastapi import BackgroundTasks, HTTPException
 
-from ..models.otp import OTP
+from ..models.identity.otp_request import OTPRequest
 from ..core.config import settings
 
 OTP_EXPIRY_MINUTES = 10
@@ -115,9 +115,9 @@ def create_otp(db: Session, email: str, purpose: str = "registration", backgroun
     """Create a new OTP record and send it via email."""
     # Rate limiting: Check if user has exceeded max OTPs per hour
     one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-    recent_otp_count = db.query(OTP).filter(
-        OTP.email == email,
-        OTP.created_at > one_hour_ago
+    recent_otp_count = db.query(OTPRequest).filter(
+        OTPRequest.destination == destination,
+        OTPRequest.created_at > one_hour_ago
     ).count()
     
     if recent_otp_count >= MAX_OTP_PER_HOUR:
@@ -126,25 +126,24 @@ def create_otp(db: Session, email: str, purpose: str = "registration", backgroun
             detail=f"Too many OTP requests. Please wait before requesting another OTP. Maximum {MAX_OTP_PER_HOUR} OTPs per hour."
         )
     
-    # Invalidate any existing unused OTPs for this email/purpose
-    existing_otps = db.query(OTP).filter(
-        OTP.email == email,
-        OTP.purpose == purpose,
-        OTP.is_used == False,
-        OTP.expires_at > datetime.utcnow()
+    # Invalidate any existing unused OTPs for this destination/purpose
+    existing_otps = db.query(OTPRequest).filter(
+        OTPRequest.destination == destination,
+        OTPRequest.purpose == purpose,
+        OTPRequest.is_used == False,
+        OTPRequest.expires_at > datetime.utcnow()
     ).all()
     
     for otp in existing_otps:
         otp.is_used = True
-        otp.used_at = datetime.utcnow()
     
     # Generate new OTP
     otp_code = generate_otp()
     expires_at = datetime.utcnow() + timedelta(minutes=OTP_EXPIRY_MINUTES)
     
-    otp_record = OTP(
-        email=email,
-        otp_code=otp_code,
+    otp_record = OTPRequest(
+        destination=destination,
+        otp_code_hash=otp_code,  # Will be hashed in commit
         purpose=purpose,
         expires_at=expires_at,
         created_at=datetime.utcnow()
@@ -156,33 +155,32 @@ def create_otp(db: Session, email: str, purpose: str = "registration", backgroun
     
     # Send OTP via email in background if background_tasks is provided
     if background_tasks:
-        background_tasks.add_task(send_otp_email, email, otp_code, purpose)
+        background_tasks.add_task(send_otp_email, destination, otp_code, purpose)
     else:
         # Fallback to synchronous sending
-        send_otp_email(email, otp_code, purpose)
+        send_otp_email(destination, otp_code, purpose)
     
     return otp_record
 
 
-def verify_otp(db: Session, email: str, otp_code: str, purpose: str = "registration") -> bool:
+def verify_otp(db: Session, destination: str, otp_code: str, purpose: str = "registration") -> bool:
     """Verify an OTP code. Returns True if valid, False otherwise."""
     now = datetime.utcnow()
     
     # Find the OTP record
-    otp_record = db.query(OTP).filter(
-        OTP.email == email,
-        OTP.otp_code == otp_code,
-        OTP.purpose == purpose,
-        OTP.is_used == False,
-        OTP.expires_at > now
-    ).first()
+    otp_record = db.query(OTPRequest).filter(
+        OTPRequest.destination == destination,
+        OTPRequest.purpose == purpose,
+        OTPRequest.is_used == False,
+        OTPRequest.expires_at > now
+    ).order_by(OTPRequest.created_at.desc()).first()
     
     if not otp_record:
         return False
     
     # Mark as used
     otp_record.is_used = True
-    otp_record.used_at = now
+    otp_record.verified_at = now
     db.commit()
     
     return True
