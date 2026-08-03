@@ -11,7 +11,11 @@ export default function AdvisorDashboardPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('finplan_token');
-    if (!token) return;
+    if (!token) {
+      setLoading(false);
+      setError('Please login to access the advisor dashboard');
+      return;
+    }
 
     getAdvisorDashboard(token)
       .then(setData)

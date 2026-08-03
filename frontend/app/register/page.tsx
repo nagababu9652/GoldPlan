@@ -137,7 +137,7 @@ export default function RegisterPage() {
       const response = await fetch('http://localhost:8000/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, purpose: 'registration' }),
+        body: JSON.stringify({ destination: email, purpose: 'registration' }),
       });
 
       if (!response.ok) {
@@ -172,7 +172,7 @@ export default function RegisterPage() {
       const response = await fetch('http://localhost:8000/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp_code: otp, purpose: 'registration' }),
+        body: JSON.stringify({ destination: email, otp_code: otp, purpose: 'registration' }),
       });
 
       if (!response.ok) {

@@ -102,7 +102,7 @@ export async function sendOTP(email: string, purpose: string = 'registration'): 
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: JSON.stringify({ email, purpose }),
+    body: JSON.stringify({ destination: email, purpose }),
   });
 
   if (!response.ok) {
@@ -120,7 +120,7 @@ export async function verifyOTP(email: string, otpCode: string, purpose: string 
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: JSON.stringify({ email, otp_code: otpCode, purpose }),
+    body: JSON.stringify({ destination: email, otp_code: otpCode, purpose: purpose || 'registration' }),
   });
 
   if (!response.ok) {
