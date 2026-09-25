@@ -14,6 +14,8 @@ import {
     mutualFundActions,
 } from "./mutual-fund.actions";
 
+import { MutualFund } from "@/components/data-table/examples/mutual-fund.types";
+
 export const mutualFundColumns: ColumnDef<MutualFund>[] = [
 
 {

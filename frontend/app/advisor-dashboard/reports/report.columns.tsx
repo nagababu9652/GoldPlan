@@ -11,6 +11,8 @@ import {
     reportActions,
 } from "./report.actions";
 
+import { Report } from "@/components/data-table/examples/report.types";
+
 export const reportColumns: ColumnDef<Report>[] = [
 
 {

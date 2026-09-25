@@ -6,6 +6,8 @@ import ProspectTable from "./ProspectTable";
 
 import { getProspects } from "./prospect.service";
 
+import { Prospect } from "@/components/data-table/examples/prospect.types";
+
 export default function ProspectsPage() {
 
   const [prospects, setProspects] = useState<Prospect[]>([]);

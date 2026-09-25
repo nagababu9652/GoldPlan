@@ -1,43 +1,53 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { useMemo } from "react";
 
-import {
-transactionColumns,
-} from "./transaction.columns";
+import { DataTable } from "@/components/data-table";
 
-interface Props{
+import { createTransactionActions } from "./transaction.actions";
+import { transactionColumns } from "./transaction.columns";
+import { AdvisorTransaction } from "./transaction.service";
 
-transactions:Transaction[];
-
+interface Props {
+  transactions: AdvisorTransaction[];
+  onView?: (transaction: AdvisorTransaction) => void;
+  onEdit?: (transaction: AdvisorTransaction) => void;
+  onHistory?: (transaction: AdvisorTransaction) => void;
+  onDelete?: (transaction: AdvisorTransaction) => void;
 }
 
 export default function TransactionTable({
+  transactions,
+  onView,
+  onEdit,
+  onHistory,
+  onDelete,
+}: Props) {
+  const actions = useMemo(
+    () =>
+      createTransactionActions({
+        onView: onView ?? (() => {}),
+        onEdit: onEdit ?? (() => {}),
+        onHistory: onHistory ?? (() => {}),
+        onDelete: onDelete ?? (() => {}),
+      }),
+    [onView, onEdit, onHistory, onDelete]
+  );
 
-transactions,
+  const columns = useMemo(
+    () => transactionColumns(actions),
+    [actions]
+  );
 
-}:Props){
-
-return(
-
-<DataTable
-
-columns={transactionColumns}
-
-data={transactions}
-
-searchable
-
-filterable
-
-selectable
-
-pagination
-
-exportable
-
-/>
-
-);
-
+  return (
+    <DataTable
+      columns={columns}
+      data={transactions}
+      searchable
+      filterable
+      selectable
+      pagination
+      exportable
+    />
+  );
 }

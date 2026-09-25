@@ -13,6 +13,8 @@ import {
     swpActions,
 } from "./swp.actions";
 
+import { SWP } from "@/components/data-table/examples/swp.types";
+
 export const swpColumns: ColumnDef<SWP>[] = [
 
 {

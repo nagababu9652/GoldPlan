@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 swpColumns,
 } from "./swp.columns";
+
+import { SWP } from "@/components/data-table/examples/swp.types";
 
 interface Props{
 

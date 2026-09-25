@@ -1,72 +1,70 @@
-import {
-    ColumnDef,
-} from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 
 import {
-    AvatarColumn,
-    StatusColumn,
-    CurrencyColumn,
-    DateColumn,
-    ActionColumn,
+  CurrencyColumn,
+  DateColumn,
+  StatusColumn,
+  ActionColumn,
 } from "@/components/data-table";
 
-import {
-    transactionActions,
-} from "./transaction.actions";
+import { RowAction } from "@/components/data-table/actions";
+import { AdvisorTransaction } from "./transaction.service";
 
-export const transactionColumns: ColumnDef<Transaction>[] = [
+export const transactionColumns = (
+  actions: RowAction<AdvisorTransaction>[]
+): ColumnDef<AdvisorTransaction>[] => [
+  {
+    accessorKey: "customer_id",
+    header: "Customer ID",
+  },
 
-{
-    accessorKey:"type",
+  {
+    accessorKey: "transaction_type",
+    header: "Type",
+    cell: ({ row }) => (
+      <span className="capitalize">
+        {row.original.transaction_type.toLowerCase()}
+      </span>
+    ),
+  },
 
-    header:"Type",
-},
+  {
+    accessorKey: "amount",
+    header: "Amount",
+    cell: ({ row }) => (
+      <CurrencyColumn
+        value={Number(row.original.amount)}
+      />
+    ),
+  },
 
-{
-    accessorKey:"amount",
+  {
+    accessorKey: "transaction_date",
+    header: "Date",
+    cell: ({ row }) => (
+      <DateColumn
+        value={row.original.transaction_date}
+      />
+    ),
+  },
 
-    header:"Amount",
-
-    cell:({row})=>
-
-    <CurrencyColumn
-        value={row.original.amount}
-    />
-},
-
-{
-    accessorKey:"date",
-
-    header:"Date",
-
-    cell:({row})=>
-
-    <DateColumn
-        value={row.original.date}
-    />
-},
-
-{
-    accessorKey:"status",
-
-    header:"Status",
-
-    cell:({row})=>
-
-    <StatusColumn
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <StatusColumn
         value={row.original.status}
-    />
-},
+      />
+    ),
+  },
 
-{
-    id:"actions",
-
-    cell:({row})=>
-
+  {
+  id: "actions",
+  cell: ({ row }) => (
     <ActionColumn
-        row={row.original}
-        actions={transactionActions}
+      row={row.original}
+      actions={actions}
     />
-}
-
+  ),
+},
 ];

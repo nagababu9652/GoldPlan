@@ -4,27 +4,22 @@ import { Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-interface BulkExportProps {
-  disabled?: boolean;
-
-  onExport?: () => void;
+interface Props {
+  onClick: () => void;
 }
 
 export default function BulkExport({
-  disabled,
-  onExport,
-}: BulkExportProps) {
+  onClick,
+}: Props) {
   return (
     <Button
       size="sm"
       variant="outline"
-      disabled={disabled}
-      onClick={onExport}
+      onClick={onClick}
     >
       <Download className="mr-2 h-4 w-4" />
 
       Export
-
     </Button>
   );
 }

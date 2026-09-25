@@ -7,9 +7,10 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.gzip import GZipMiddleware
 
 from .core.config import settings
-from .database.base import Base
-from .database.session import engine
 from .middleware.cors import setup_cors
+
+
+from .routers.meetings import router as meetings_router
 
 # Import all new models to register them with Base metadata
 # Foundation
@@ -43,6 +44,7 @@ from .models.crm import (
     CustomerMergeHistory, GroupMemberOrder,
     CustomerKYC, CustomerFATCA, CustomerRiskProfile,
     CustomerCommunicationPreference, CustomerKYCHistory,
+    Transaction,transaction_history 
 )
 
 # Routers
@@ -79,9 +81,8 @@ def create_app() -> FastAPI:
     app.include_router(clients_router)
     app.include_router(groups_router)
     app.include_router(onboarding_router)
+    app.include_router(meetings_router)
 
-    # Create all tables
-    Base.metadata.create_all(bind=engine)
 
     @app.get("/health")
     def health_check():

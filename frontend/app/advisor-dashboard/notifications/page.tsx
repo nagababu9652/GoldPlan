@@ -6,6 +6,8 @@ import NotificationTable from "./NotificationTable";
 
 import { getNotifications } from "./notification.service";
 
+import { Notification } from "@/components/data-table/examples/notification.types";
+
 export default function NotificationsPage() {
 
   const [notifications, setNotifications] = useState<Notification[]>([]);

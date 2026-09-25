@@ -27,7 +27,7 @@ export function exportPDF<T>({
         (c) =>
           row[c.key as keyof T]
       )
-    ),
+    ) as any,
 
     startY: 28,
   });

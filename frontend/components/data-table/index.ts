@@ -3,7 +3,7 @@ export * from "./constants";
 export * from "./core";
 export * from "./hooks";
 export * from "./columns";
-export * from "./row-actions";
+export * from "./actions";
 export * from "./core";
 export * from "./toolbar";
 export * from "./pagination";

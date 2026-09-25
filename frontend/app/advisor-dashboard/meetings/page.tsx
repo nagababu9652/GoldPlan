@@ -6,6 +6,8 @@ import MeetingTable from "./MeetingTable";
 
 import { getMeetings } from "./meeting.service";
 
+import { Meeting } from "@/components/data-table/examples/meeting.types";
+
 export default function MeetingsPage() {
 
   const [meetings, setMeetings] = useState<Meeting[]>([]);

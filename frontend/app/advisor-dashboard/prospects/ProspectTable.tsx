@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 prospectColumns,
 } from "./prospect.columns";
+
+import { Prospect } from "@/components/data-table/examples/prospect.types";
 
 interface Props{
 
@@ -16,7 +18,7 @@ export default function ProspectTable({
 
 prospects,
 
-}:ProspectTableProps){
+}:Props){
 
 return(
 

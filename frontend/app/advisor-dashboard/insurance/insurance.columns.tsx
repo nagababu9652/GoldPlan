@@ -14,6 +14,8 @@ import {
     insuranceActions,
 } from "./insurance.actions";
 
+import { Insurance } from "@/components/data-table/examples/insurance.types";
+
 export const insuranceColumns: ColumnDef<Insurance>[] = [
 
 {

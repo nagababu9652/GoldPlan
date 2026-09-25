@@ -6,6 +6,8 @@ import UserTable from "./UserTable";
 
 import { getUsers } from "./user.service";
 
+import { User } from "@/components/data-table/examples/user.types";
+
 export default function UsersPage() {
 
   const [users, setUsers] = useState<User[]>([]);

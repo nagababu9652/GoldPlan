@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 auditColumns,
 } from "./audit.columns";
+
+import { Audit } from "./audit.types";
 
 interface Props{
 

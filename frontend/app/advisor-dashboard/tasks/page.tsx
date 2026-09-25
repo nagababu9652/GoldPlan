@@ -6,6 +6,8 @@ import TaskTable from "./TaskTable";
 
 import { getTasks } from "./task.service";
 
+import { Task } from "@/components/data-table/examples/task.types";
+
 export default function TasksPage() {
 
   const [tasks, setTasks] = useState<Task[]>([]);

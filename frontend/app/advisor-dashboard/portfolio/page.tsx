@@ -6,6 +6,8 @@ import PortfolioTable from "./PortfolioTable";
 
 import { getPortfolios } from "./portfolio.service";
 
+import { Portfolio } from "@/components/data-table/examples/portfolio.types";
+
 export default function PortfolioPage() {
 
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);

@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 stpColumns,
 } from "./stp.columns";
+
+import { STP } from "@/components/data-table/examples/stp.types";
 
 interface Props{
 

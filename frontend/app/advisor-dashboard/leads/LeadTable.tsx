@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 leadColumns,
 } from "./lead.columns";
+
+import { Lead } from "@/components/data-table/examples/lead.types";
 
 interface Props{
 

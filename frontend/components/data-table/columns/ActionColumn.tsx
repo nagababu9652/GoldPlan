@@ -1,7 +1,7 @@
 "use client";
 
-import DataTableRowActions from "../row-actions/DataTableRowActions";
-import { RowAction } from "../row-actions";
+import DataTableRowActions from "../actions/DataTableRowActions";
+import { RowAction } from "../actions";
 
 interface Props<T> {
   row: T;

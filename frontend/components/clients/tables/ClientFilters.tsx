@@ -1,6 +1,6 @@
 "use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select } from "@/components/ui/select";
 
 interface ClientFiltersProps {
   advisor: string;
@@ -23,44 +23,41 @@ export default function ClientFilters({
   return (
     <div className="flex flex-wrap gap-3">
 
-      <Select value={advisor} onValueChange={onAdvisorChange}>
-        <SelectTrigger className="w-48">
-          <SelectValue placeholder="Advisor" />
-        </SelectTrigger>
+      <Select
+        className="w-48"
+        value={advisor}
+        onChange={(e) => onAdvisorChange(e.target.value)}
+        options={[
+          { value: "all", label: "All Advisors" },
+          { value: "Naga", label: "Naga" },
+          { value: "Suresh", label: "Suresh" },
+        ]}
+      />
 
-        <SelectContent>
-          <SelectItem value="all">All Advisors</SelectItem>
-          <SelectItem value="Naga">Naga</SelectItem>
-          <SelectItem value="Suresh">Suresh</SelectItem>
-        </SelectContent>
-      </Select>
+      <Select
+        className="w-40"
+        value={status}
+        onChange={(e) => onStatusChange(e.target.value)}
+        options={[
+          { value: "all", label: "All" },
+          { value: "ACTIVE", label: "Active" },
+          { value: "PROSPECT", label: "Prospect" },
+          { value: "INACTIVE", label: "Inactive" },
+          { value: "BLOCKED", label: "Blocked" },
+        ]}
+      />
 
-      <Select value={status} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-40">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-
-        <SelectContent>
-          <SelectItem value="all">All</SelectItem>
-          <SelectItem value="ACTIVE">Active</SelectItem>
-          <SelectItem value="PROSPECT">Prospect</SelectItem>
-          <SelectItem value="INACTIVE">Inactive</SelectItem>
-          <SelectItem value="BLOCKED">Blocked</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Select value={risk} onValueChange={onRiskChange}>
-        <SelectTrigger className="w-40">
-          <SelectValue placeholder="Risk" />
-        </SelectTrigger>
-
-        <SelectContent>
-          <SelectItem value="all">All</SelectItem>
-          <SelectItem value="Low">Low</SelectItem>
-          <SelectItem value="Moderate">Moderate</SelectItem>
-          <SelectItem value="High">High</SelectItem>
-        </SelectContent>
-      </Select>
+      <Select
+        className="w-40"
+        value={risk}
+        onChange={(e) => onRiskChange(e.target.value)}
+        options={[
+          { value: "all", label: "All" },
+          { value: "Low", label: "Low" },
+          { value: "Moderate", label: "Moderate" },
+          { value: "High", label: "High" },
+        ]}
+      />
 
     </div>
   );

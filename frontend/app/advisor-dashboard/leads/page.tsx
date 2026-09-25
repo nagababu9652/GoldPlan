@@ -6,6 +6,8 @@ import LeadTable from "./LeadTable";
 
 import { getLeads } from "./lead.service";
 
+import { Lead } from "@/components/data-table/examples/lead.types";
+
 export default function LeadsPage() {
 
   const [leads, setLeads] = useState<Lead[]>([]);

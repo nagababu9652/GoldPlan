@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -52,7 +52,7 @@ def create_organization_onboarding(db: Session, organization_name: str, branch_n
         organization_id=organization.id,
         party_id=party.id,
         customer_code=build_customer_code(organization.id, party.id),
-        onboarding_date=datetime.utcnow().date(),
+        onboarding_date=datetime.now(timezone.utc).replace(tzinfo=None).date(),
         customer_status="ACTIVE",
         created_by=user_id,
         updated_by=user_id,

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { Card } from "@/app/advisor-dashboard/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const StatCard = React.forwardRef<

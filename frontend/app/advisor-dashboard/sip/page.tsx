@@ -6,6 +6,8 @@ import SipTable from "./SipTable";
 
 import { getSips } from "./sip.service";
 
+import { SIP } from "@/components/data-table/examples/sip.types";
+
 export default function SipPage() {
 
   const [sips, setSips] = useState<SIP[]>([]);

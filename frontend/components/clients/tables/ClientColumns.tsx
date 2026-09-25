@@ -4,11 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { Client } from "./types";
 
-import ClientAvatarCell from "./ClientAvatarCell";
-
-import ClientStatusBadge from "./ClientStatusBadge";
-
-import ClientRowActions from "./ClientRowActions";
+import { ClientAvatarCell, ClientStatusBadge, ClientRowActions } from ".";
 
 export const clientColumns:ColumnDef<Client>[]=[
 

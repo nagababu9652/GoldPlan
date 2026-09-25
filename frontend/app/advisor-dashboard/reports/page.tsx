@@ -6,6 +6,8 @@ import ReportTable from "./ReportTable";
 
 import { getReports } from "./report.service";
 
+import { Report } from "@/components/data-table/examples/report.types";
+
 export default function ReportsPage() {
 
   const [reports, setReports] = useState<Report[]>([]);

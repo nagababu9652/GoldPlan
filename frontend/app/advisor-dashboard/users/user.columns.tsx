@@ -12,6 +12,8 @@ import {
     userActions,
 } from "./user.actions";
 
+import { User } from "@/components/data-table/examples/user.types";
+
 export const userColumns: ColumnDef<User>[] = [
 
 {

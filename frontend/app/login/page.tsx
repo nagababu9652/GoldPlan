@@ -18,7 +18,7 @@ export default function LoginPage() {
   useEffect(() => {
     const token = localStorage.getItem('finplan_token');
     if (token) {
-      router.push('/dashboard');
+      router.push('/advisor-dashboard');
     }
   }, [router]);
 
@@ -64,8 +64,8 @@ export default function LoginPage() {
         expires_in: response.expires_in
       }));
 
-      // Redirect to dashboard
-      router.push('/dashboard');
+      // Redirect to advisor dashboard
+      router.push('/advisor-dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
       setLoading(false);

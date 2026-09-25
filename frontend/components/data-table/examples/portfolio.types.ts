@@ -10,4 +10,6 @@ export interface Portfolio {
   status: "active" | "inactive" | "closed";
   createdAt?: string;
   updatedAt?: string;
+  image: string;
+  value: number;
 }

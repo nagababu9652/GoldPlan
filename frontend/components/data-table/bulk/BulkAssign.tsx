@@ -4,30 +4,22 @@ import { UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-interface BulkAssignProps {
-  disabled?: boolean;
-
-  label?: string;
-
-  onAssign?: () => void;
+interface Props {
+  onClick: () => void;
 }
 
 export default function BulkAssign({
-  disabled,
-  label = "Assign",
-  onAssign,
-}: BulkAssignProps) {
+  onClick,
+}: Props) {
   return (
     <Button
       size="sm"
-      variant="secondary"
-      disabled={disabled}
-      onClick={onAssign}
+      variant="outline"
+      onClick={onClick}
     >
       <UserPlus className="mr-2 h-4 w-4" />
 
-      {label}
-
+      Assign
     </Button>
   );
 }

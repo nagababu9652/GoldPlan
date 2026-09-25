@@ -11,6 +11,8 @@ import {
     meetingActions,
 } from "./meeting.actions";
 
+import { Meeting } from "@/components/data-table/examples/meeting.types";
+
 export const meetingColumns: ColumnDef<Meeting>[] = [
 
 {

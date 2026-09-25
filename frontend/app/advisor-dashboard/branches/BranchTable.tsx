@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 branchColumns,
 } from "./branch.columns";
+
+import { Branch } from "@/components/data-table/examples/branch.types";
 
 interface Props{
 

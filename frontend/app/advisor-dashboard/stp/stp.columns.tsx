@@ -13,6 +13,8 @@ import {
     stpActions,
 } from "./stp.actions";
 
+import { STP } from "@/components/data-table/examples/stp.types";
+
 export const stpColumns: ColumnDef<STP>[] = [
 
 {

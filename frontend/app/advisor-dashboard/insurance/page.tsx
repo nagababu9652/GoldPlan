@@ -6,6 +6,8 @@ import InsuranceTable from "./InsuranceTable";
 
 import { getInsurancePolicies } from "./insurance.service";
 
+import { Insurance } from "@/components/data-table/examples/insurance.types";
+
 export default function InsurancePage() {
 
   const [insurancePolicies, setInsurancePolicies] = useState<Insurance[]>([]);

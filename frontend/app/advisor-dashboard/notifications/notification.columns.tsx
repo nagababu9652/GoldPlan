@@ -11,6 +11,8 @@ import {
     notificationActions,
 } from "./notification.actions";
 
+import { Notification } from "@/components/data-table/examples/notification.types";
+
 export const notificationColumns: ColumnDef<Notification>[] = [
 
 {

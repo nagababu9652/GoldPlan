@@ -192,16 +192,33 @@ export async function refreshToken(): Promise<TokenResponse> {
   const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
+      Accept: 'application/json',
     },
     credentials: 'include',
   });
 
   if (!response.ok) {
-    throw new Error('Token refresh failed');
+    let errorMessage = 'Token refresh failed';
+
+    try {
+      const error = await response.json();
+      errorMessage = error.detail || errorMessage;
+    } catch {
+      // Ignore JSON parsing errors
+    }
+
+    throw new Error(errorMessage);
   }
 
-  return response.json();
+  const data: TokenResponse = await response.json();
+
+  localStorage.setItem('finplan_token', data.access_token);
+
+  if (data.refresh_token) {
+    localStorage.setItem('finplan_refresh_token', data.refresh_token);
+  }
+
+  return data;
 }
 
 // ==================== PASSWORD RESET API ====================
@@ -332,34 +349,59 @@ export interface AdvisorProfile {
   risk_profile: string;
 }
 
-async function advisorFetch(endpoint: string, token: string) {
-  const response = await fetch(`${API_BASE_URL}/advisors${endpoint}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/json',
-    },
-  });
+export async function advisorFetch(endpoint: string, token: string) {
+  const makeRequest = async (accessToken: string) => {
+    return fetch(`${API_BASE_URL}/advisors${endpoint}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/json',
+      },
+      credentials: 'include',
+    });
+  };
+
+  let response = await makeRequest(token);
+
+  // Access token expired/invalid → refresh and retry once
+  if (response.status === 401) {
+
+
+    try {
+      const refreshed = await refreshToken();
+
+      response = await makeRequest(refreshed.access_token);
+    } catch (error) {
+      console.error('Automatic token refresh failed:', error);
+
+      localStorage.removeItem('finplan_token');
+      localStorage.removeItem('finplan_refresh_token');
+      localStorage.removeItem('finplan_user');
+
+      window.location.href = '/login';
+
+      throw new Error('Session expired. Please log in again.');
+    }
+  }
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Request failed');
+    let errorMessage = 'Request failed';
+
+    try {
+      const error = await response.json();
+      errorMessage = error.detail || errorMessage;
+    } catch {
+      // Ignore JSON parsing errors
+    }
+
+    throw new Error(errorMessage);
   }
 
   return response.json();
 }
 
 export function getAdvisorDashboard(token: string): Promise<AdvisorDashboard> {
-  return advisorFetch('/dashboard', token).catch((error) => {
-    if (error.message.includes('Could not validate credentials')) {
-      // Clear invalid token and redirect to login
-      localStorage.removeItem('finplan_token');
-      localStorage.removeItem('finplan_refresh_token');
-      localStorage.removeItem('finplan_user');
-      window.location.href = '/login';
-    }
-    throw error;
-  });
+  return advisorFetch('/dashboard', token);
 }
 
 export function getAdvisorPortfolio(token: string): Promise<AdvisorPortfolio> {
@@ -386,46 +428,23 @@ export function getAdvisorProfile(token: string): Promise<AdvisorProfile> {
 
 export interface Client {
   id: number;
-  advisor_id: number;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  phone?: string;
-  alternate_phone?: string;
-  date_of_birth?: string;
-  age?: number;
-  gender?: string;
-  marital_status?: string;
-  occupation?: string;
-  pan_number?: string;
-  aadhar_number?: string;
-  address_line1?: string;
-  address_line2?: string;
-  city?: string;
-  state?: string;
-  pincode?: string;
-  country?: string;
-  annual_income?: number;
-  net_worth?: number;
-  risk_profile?: string;
-  investment_experience?: string;
-  financial_goals?: string;
-  nominee_name?: string;
-  nominee_relation?: string;
-  nominee_contact?: string;
-  bank_name?: string;
-  account_number?: string;
-  ifsc_code?: string;
-  account_type?: string;
-  kyc_status?: string;
-  kyc_document_url?: string;
-  notes?: string;
-  group_id?: number;
-  group_name?: string;
-  is_active: boolean;
-  assigned_date?: string;
-  created_at: string;
-  updated_at: string;
+  customer_code: string;
+  name: string;
+  status: string;
+  occupation?: string | null;
+  annual_income?: number | null;
+  net_worth?: number | null;
+  risk_profile?: string | null;
+  resident_status?: string | null;
+  onboarding_date?: string | null;
+  first_name?: string;
+  last_name?: string;
+  email?: string | null;
+  phone?: string | null;
+  alternate_phone?: string | null;
+  pan_number?: string | null;
+  group_id?: number | null;
+  is_active?: boolean;
 }
 
 export interface ClientCreate {
@@ -465,10 +484,13 @@ export interface ClientCreate {
 }
 
 export interface ClientListResponse {
+  advisor_id: number;
+  employee_id: number | null;
   clients: Client[];
   total: number;
-  page: number;
-  page_size: number;
+  page?: number;
+  page_size?: number;
+  total_pages?: number;
 }
 
 export interface Group {
@@ -508,7 +530,7 @@ export interface GroupListResponse {
   total: number;
 }
 
-async function advisorPost(endpoint: string, token: string, body: any) {
+export async function advisorPost(endpoint: string, token: string, body: any) {
   const response = await fetch(`${API_BASE_URL}/advisors${endpoint}`, {
     method: 'POST',
     headers: {
@@ -527,7 +549,7 @@ async function advisorPost(endpoint: string, token: string, body: any) {
   return response.json();
 }
 
-async function advisorPut(endpoint: string, token: string, body: any) {
+export async function advisorPut(endpoint: string, token: string, body: any) {
   const response = await fetch(`${API_BASE_URL}/advisors${endpoint}`, {
     method: 'PUT',
     headers: {
@@ -546,7 +568,7 @@ async function advisorPut(endpoint: string, token: string, body: any) {
   return response.json();
 }
 
-async function advisorDelete(endpoint: string, token: string) {
+export async function advisorDelete(endpoint: string, token: string) {
   const response = await fetch(`${API_BASE_URL}/advisors${endpoint}`, {
     method: 'DELETE',
     headers: {
@@ -564,16 +586,22 @@ async function advisorDelete(endpoint: string, token: string) {
 }
 
 // Client API functions
-export function getClients(token: string, params?: { search?: string; group_id?: number; kyc_status?: string; risk_profile?: string; page?: number; page_size?: number }): Promise<ClientListResponse> {
+export function getClients(
+  token: string,
+  params?: { page_size?: number; page?: number }
+): Promise<ClientListResponse> {
   const queryParams = new URLSearchParams();
-  if (params?.search) queryParams.set('search', params.search);
-  if (params?.group_id) queryParams.set('group_id', String(params.group_id));
-  if (params?.kyc_status) queryParams.set('kyc_status', params.kyc_status);
-  if (params?.risk_profile) queryParams.set('risk_profile', params.risk_profile);
   if (params?.page) queryParams.set('page', String(params.page));
   if (params?.page_size) queryParams.set('page_size', String(params.page_size));
   const qs = queryParams.toString();
   return advisorFetch(`/clients${qs ? '?' + qs : ''}`, token);
+}
+
+export function getClientById(
+  token: string,
+  id: string
+): Promise<Client> {
+  return advisorFetch(`/clients/${id}`, token);
 }
 
 export function createClient(token: string, data: ClientCreate): Promise<Client> {
@@ -675,4 +703,37 @@ export async function fetchMarketData(): Promise<MarketData> {
       last_updated: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ' IST'
     };
   }
+  
+}
+
+export interface AdvisorMeeting {
+  id: number;
+  advisor_id: number;
+  client_id: number;
+  client_name: string;
+  title: string;
+  meeting_date: string;
+  meeting_time: string;
+  meeting_type: "virtual" | "in_person" | "phone";
+  status: "scheduled" | "completed" | "cancelled";
+  notes?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface AdvisorMeetingsResponse {
+  meetings: AdvisorMeeting[];
+  total: number;
+}
+
+export async function getAdvisorMeetings(
+  token: string
+): Promise<AdvisorMeetingsResponse> {
+  return advisorFetch("/meetings", token);
+}
+
+export async function getAdvisorTodayMeetings(
+  token: string
+): Promise<AdvisorMeetingsResponse> {
+  return advisorFetch("/meetings/today", token);
 }

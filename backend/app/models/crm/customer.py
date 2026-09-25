@@ -46,6 +46,7 @@ class Customer(AuditMixin, Base):
     remarks = Column(Text, nullable=True)
 
     group_members = relationship("GroupMember", back_populates="customer", lazy="selectin")
+
     kyc = relationship(
         "CustomerKYC",
         back_populates="customer",
@@ -53,8 +54,19 @@ class Customer(AuditMixin, Base):
         foreign_keys="[CustomerKYC.customer_id]",
         lazy="selectin",
     )
+    
     risk_profiles = relationship("CustomerRiskProfile", back_populates="customer", lazy="selectin")
 
+    transactions = relationship(
+        "Transaction",
+        back_populates="customer",
+        lazy="selectin",
+    )
+    party = relationship(
+    "Party",
+    foreign_keys=[party_id],
+    lazy="selectin",
+)
 
 class GroupMember(Base):
     __tablename__ = "group_members"
@@ -86,3 +98,5 @@ class CustomerStatusHistory(Base):
     reason = Column(Text, nullable=True)
 
     customer = relationship("Customer", lazy="selectin")
+
+    

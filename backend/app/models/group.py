@@ -10,7 +10,7 @@ class Group(Base):
     __tablename__ = "groups"
 
     id = Column(Integer, primary_key=True, index=True)
-    advisor_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    advisor_id = Column(Integer, ForeignKey("identity.users.id"), nullable=False, index=True)
     head_client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
 
     # Group Information

@@ -6,6 +6,8 @@ import StpTable from "./StpTable";
 
 import { getStps } from "./stp.service";
 
+import { STP } from "@/components/data-table/examples/stp.types";
+
 export default function StpPage() {
 
   const [stps, setStps] = useState<STP[]>([]);

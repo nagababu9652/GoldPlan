@@ -1,0 +1,1069 @@
+
+> financial-plan-frontend@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.19
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings in 6.0s
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenu' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenu').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuTrigger' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuTrigger').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuContent' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuContent').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Badge/Badge.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Badge\Badge.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Badge\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\badge\Badge.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\badge\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Badge/Badge.tsx
+./components/ui/Badge/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Badge/badge.variants.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Badge\badge.variants.ts|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Badge\Badge.tsx|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\badge\badge.variants.ts|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\badge\Badge.tsx|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Badge/badge.variants.ts
+./components/ui/Badge/Badge.tsx
+./components/ui/Badge/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Badge/index.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Badge\index.ts|app-pages-browser
+    Used by 6 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\common\ClientHeader.tsx|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\badge\index.ts|app-pages-browser
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\data-table\columns\StatusColumn.tsx|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Badge/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Button/Button.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\Button.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\Button.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Button/Button.tsx
+./components/ui/Button/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Button/IconButton.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\IconButton.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\IconButton.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Button/IconButton.tsx
+./components/ui/Button/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Button/button.variants.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\button.variants.ts|app-pages-browser
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\Button.tsx|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\button.variants.ts|app-pages-browser
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\Button.tsx|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Button/button.variants.ts
+./components/ui/Button/Button.tsx
+./components/ui/Button/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Button/index.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\index.ts|app-pages-browser
+    Used by 6 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\common\ClientHeader.tsx|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\index.ts|app-pages-browser
+    Used by 12 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\notes\NoteEditor.tsx|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Button/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Card/Card.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\Card.tsx|app-pages-browser
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=false!|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\Card.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Card/Card.tsx
+
+./components/ui/Card/CardActions.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardActions.tsx|app-pages-browser
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=false!|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardActions.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Card/CardActions.tsx
+
+./components/ui/Card/CardContent.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardContent.tsx|app-pages-browser
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=false!|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardContent.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Card/CardContent.tsx
+
+./components/ui/Card/CardDescription.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardDescription.tsx|app-pages-browser
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=false!|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardDescription.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Card/CardDescription.tsx
+
+./components/ui/Card/CardFooter.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardFooter.tsx|app-pages-browser
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=false!|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardFooter.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Card/CardFooter.tsx
+
+./components/ui/Card/CardHeader.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardHeader.tsx|app-pages-browser
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=false!|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardHeader.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Card/CardHeader.tsx
+
+./components/ui/Card/CardTitle.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardTitle.tsx|app-pages-browser
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=false!|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardTitle.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Card/CardTitle.tsx
+
+./components/ui/Card/index.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\index.ts|app-pages-browser
+    Used by 9 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\common\ClientSummaryCards.tsx|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\notes\NoteEditor.tsx|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Card/index.ts
+./components/clients/common/ClientSummaryCards.tsx
+
+./components/ui/Dropdown/Dropdown.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\Dropdown.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\Dropdown.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Dropdown/Dropdown.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/DropdownContent.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownContent.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownContent.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Dropdown/DropdownContent.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/DropdownDivider.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownDivider.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownDivider.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Dropdown/DropdownDivider.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/DropdownItem.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownItem.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownItem.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Dropdown/DropdownItem.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/DropdownLabel.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownLabel.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownLabel.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Dropdown/DropdownLabel.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/DropdownTrigger.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownTrigger.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownTrigger.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Dropdown/DropdownTrigger.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/dropdown.variants.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\dropdown.variants.ts|app-pages-browser
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownContent.tsx|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\dropdown.variants.ts|app-pages-browser
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownContent.tsx|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Dropdown/dropdown.variants.ts
+./components/ui/Dropdown/DropdownContent.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/index.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\list\ClientRowActions.tsx|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\data-table\actions\DataTableRowActions.tsx|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Input/Input.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\Input.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\Input.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Input/Input.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/InputError.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\InputError.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\InputError.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Input/InputError.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/InputGroup.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\InputGroup.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\InputGroup.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Input/InputGroup.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/InputHelper.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\InputHelper.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\InputHelper.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Input/InputHelper.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/InputLabel.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\InputLabel.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\InputLabel.tsx|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Input/InputLabel.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/index.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|app-pages-browser
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\list\ClientToolbar.tsx|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|app-pages-browser
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\notes\NoteEditor.tsx|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/input.variants.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\input.variants.ts|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\Input.tsx|app-pages-browser
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\input.variants.ts|app-pages-browser
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[6].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\Input.tsx|app-pages-browser
+
+Import trace for requested module:
+./components/ui/Input/input.variants.ts
+./components/ui/Input/Input.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenu' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenu').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuTrigger' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuTrigger').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuContent' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuContent').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/clients/list/ClientRowActions.tsx
+Attempted import error: 'DropdownMenuItem' is not exported from '@/components/ui/Dropdown' (imported as 'DropdownMenuItem').
+
+Import trace for requested module:
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Badge/Badge.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Badge\Badge.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Badge\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\badge\Badge.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\badge\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Badge/Badge.tsx
+./components/ui/Badge/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Badge/badge.variants.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Badge\badge.variants.ts|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Badge\Badge.tsx|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\badge\badge.variants.ts|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\badge\Badge.tsx|ssr
+
+Import trace for requested module:
+./components/ui/Badge/badge.variants.ts
+./components/ui/Badge/Badge.tsx
+./components/ui/Badge/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Badge/index.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Badge\index.ts|ssr
+    Used by 6 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\common\ClientHeader.tsx|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\badge\index.ts|ssr
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\data-table\columns\StatusColumn.tsx|ssr
+
+Import trace for requested module:
+./components/ui/Badge/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Button/Button.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\Button.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\Button.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Button/Button.tsx
+./components/ui/Button/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Button/IconButton.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\IconButton.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\IconButton.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Button/IconButton.tsx
+./components/ui/Button/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Button/button.variants.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\button.variants.ts|ssr
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\Button.tsx|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\button.variants.ts|ssr
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\Button.tsx|ssr
+
+Import trace for requested module:
+./components/ui/Button/button.variants.ts
+./components/ui/Button/Button.tsx
+./components/ui/Button/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Button/index.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Button\index.ts|ssr
+    Used by 6 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\common\ClientHeader.tsx|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\button\index.ts|ssr
+    Used by 12 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\notes\NoteEditor.tsx|ssr
+
+Import trace for requested module:
+./components/ui/Button/index.ts
+./components/clients/common/ClientHeader.tsx
+
+./components/ui/Card/Card.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\Card.tsx|ssr
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=true!|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\Card.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Card/Card.tsx
+
+./components/ui/Card/CardActions.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardActions.tsx|ssr
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=true!|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardActions.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Card/CardActions.tsx
+
+./components/ui/Card/CardContent.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardContent.tsx|ssr
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=true!|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardContent.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Card/CardContent.tsx
+
+./components/ui/Card/CardDescription.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardDescription.tsx|ssr
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=true!|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardDescription.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Card/CardDescription.tsx
+
+./components/ui/Card/CardFooter.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardFooter.tsx|ssr
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=true!|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardFooter.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Card/CardFooter.tsx
+
+./components/ui/Card/CardHeader.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardHeader.tsx|ssr
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=true!|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardHeader.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Card/CardHeader.tsx
+
+./components/ui/Card/CardTitle.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\CardTitle.tsx|ssr
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cclients%5C%5Csettings%5C%5CDangerZoneCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCard.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardActions.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardContent.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardDescription.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardFooter.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardHeader.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22C%3A%5C%5CUsers%5C%5Cnagab%5C%5COneDrive%5C%5CDesktop%5C%5Cfinalcial_plan%5C%5Cfrontend%5C%5Ccomponents%5C%5Cui%5C%5CCard%5C%5CCardTitle.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=true!|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\CardTitle.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Card/CardTitle.tsx
+
+./components/ui/Card/index.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Card\index.ts|ssr
+    Used by 9 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\common\ClientSummaryCards.tsx|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\card\index.ts|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\notes\NoteEditor.tsx|ssr
+
+Import trace for requested module:
+./components/ui/Card/index.ts
+./components/clients/common/ClientSummaryCards.tsx
+
+./components/ui/Dropdown/Dropdown.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\Dropdown.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\Dropdown.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Dropdown/Dropdown.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/DropdownContent.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownContent.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownContent.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Dropdown/DropdownContent.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/DropdownDivider.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownDivider.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownDivider.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Dropdown/DropdownDivider.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/DropdownItem.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownItem.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownItem.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Dropdown/DropdownItem.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/DropdownLabel.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownLabel.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownLabel.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Dropdown/DropdownLabel.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/DropdownTrigger.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownTrigger.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownTrigger.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Dropdown/DropdownTrigger.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/dropdown.variants.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\dropdown.variants.ts|ssr
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\DropdownItem.tsx|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\dropdown.variants.ts|ssr
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\DropdownItem.tsx|ssr
+
+Import trace for requested module:
+./components/ui/Dropdown/dropdown.variants.ts
+./components/ui/Dropdown/DropdownItem.tsx
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Dropdown/index.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Dropdown\index.ts|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\list\ClientRowActions.tsx|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\dropdown\index.ts|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\data-table\actions\DataTableRowActions.tsx|ssr
+
+Import trace for requested module:
+./components/ui/Dropdown/index.ts
+./components/clients/list/ClientRowActions.tsx
+
+./components/ui/Input/Input.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\Input.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\Input.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Input/Input.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/InputError.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\InputError.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\InputError.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Input/InputError.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/InputGroup.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\InputGroup.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\InputGroup.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Input/InputGroup.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/InputHelper.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\InputHelper.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\InputHelper.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Input/InputHelper.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/InputLabel.tsx
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\InputLabel.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\InputLabel.tsx|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|ssr
+
+Import trace for requested module:
+./components/ui/Input/InputLabel.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/index.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\index.ts|ssr
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\list\ClientToolbar.tsx|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\index.ts|ssr
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\clients\notes\NoteEditor.tsx|ssr
+
+Import trace for requested module:
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./components/ui/Input/input.variants.ts
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\input.variants.ts|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\Input\Input.tsx|ssr
+* javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\input.variants.ts|ssr
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-flight-client-module-loader.js!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[7].use[1]!C:\Users\nagab\OneDrive\Desktop\finalcial_plan\frontend\components\ui\input\Input.tsx|ssr
+
+Import trace for requested module:
+./components/ui/Input/input.variants.ts
+./components/ui/Input/Input.tsx
+./components/ui/Input/index.ts
+./components/clients/list/ClientToolbar.tsx
+
+./app/advisor-dashboard/clients/[id]/page.tsx
+Attempted import error: 'ClientHeader' is not exported from '@/components/clients/portfolio' (imported as 'ClientHeader').
+
+Import trace for requested module:
+./app/advisor-dashboard/clients/[id]/page.tsx
+
+./app/advisor-dashboard/clients/[id]/page.tsx
+Attempted import error: 'ClientSummaryCards' is not exported from '@/components/clients/portfolio' (imported as 'ClientSummaryCards').
+
+Import trace for requested module:
+./app/advisor-dashboard/clients/[id]/page.tsx
+
+./app/advisor-dashboard/clients/[id]/page.tsx
+Attempted import error: 'ClientOverview' is not exported from '@/components/clients/portfolio' (imported as 'ClientOverview').
+
+Import trace for requested module:
+./app/advisor-dashboard/clients/[id]/page.tsx
+
+   Linting and checking validity of types ...
+Terminate batch job (Y/N)? 
+^C

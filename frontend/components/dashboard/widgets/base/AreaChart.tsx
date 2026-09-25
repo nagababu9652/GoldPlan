@@ -12,13 +12,13 @@ import {
 import {
   BaseChartProps,
   ChartData,
-} from "./base/types";
+} from "../../charts/base/types";
 
-import ChartContainer from "./base/ChartContainer";
+import ChartContainer from "../../charts/base/ChartContainer";
 
-import ChartTooltip from "./base/ChartTooltip";
+import ChartTooltip from "../../charts/base/ChartTooltip";
 
-import { CHART_COLORS } from "./base/ChartColors";
+import { CHART_COLORS } from "../../charts/base/ChartColors";
 
 interface Props extends BaseChartProps {
   data: ChartData[];

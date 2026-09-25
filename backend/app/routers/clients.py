@@ -8,6 +8,13 @@ from ..database.session import get_db
 from ..schemas.client import ClientCreate, ClientUpdate, ClientResponse, ClientListResponse
 from .advisors import get_current_advisor
 from ..models.identity.auth import User
+from datetime import date
+
+from ..models.crm.customer import Customer
+from ..models.client import Client
+from ..models.group import Group
+from ..models.organization.employee import Employee
+from ..models.organization.assignment import EmployeeAssignment
 
 router = APIRouter(prefix="/advisors/clients", tags=["advisor-clients"])
 
@@ -191,72 +198,89 @@ def create_client(
     )
 
 
-@router.get("/{client_id}", response_model=ClientResponse)
+@router.get("/{client_id}")
 def get_client(
     client_id: int,
     db: Session = Depends(get_db),
     advisor: User = Depends(get_current_advisor),
 ):
-    """Get a single client by ID."""
-    client = db.query(Client).filter(
-        Client.id == client_id,
-        Client.advisor_id == advisor.id
-    ).first()
+    """Get a single CRM client assigned to the current advisor."""
+
+    today = date.today()
+
+    # Find the employee record belonging to the logged-in advisor.
+    employee = (
+        db.query(Employee)
+        .filter(Employee.party_id == advisor.party_id)
+        .first()
+    )
+
+    if not employee:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Advisor employee record not found",
+        )
+
+    # Verify that this client is actually assigned to this advisor.
+    assignment = (
+        db.query(EmployeeAssignment)
+        .filter(
+            EmployeeAssignment.employee_id == employee.id,
+            EmployeeAssignment.entity_type == "CUSTOMER",
+            EmployeeAssignment.assignment_type == "ADVISOR",
+            EmployeeAssignment.entity_id == client_id,
+            EmployeeAssignment.effective_from <= today,
+            (
+                (EmployeeAssignment.effective_to.is_(None))
+                | (EmployeeAssignment.effective_to >= today)
+            ),
+        )
+        .first()
+    )
+
+    if not assignment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Client not found",
+        )
+
+    # Load the CRM customer.
+    client = (
+        db.query(Customer)
+        .filter(Customer.id == client_id)
+        .first()
+    )
+
     if not client:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Client not found",
         )
 
-    group_name = None
-    if client.group_id:
-        group = db.query(Group).filter(Group.id == client.group_id).first()
-        if group:
-            group_name = group.name
-
-    return ClientResponse(
-        id=client.id,
-        advisor_id=client.advisor_id,
-        first_name=client.first_name,
-        last_name=client.last_name,
-        email=client.email,
-        phone=client.phone,
-        alternate_phone=client.alternate_phone,
-        date_of_birth=client.date_of_birth,
-        age=client.age,
-        gender=client.gender,
-        marital_status=client.marital_status,
-        occupation=client.occupation,
-        pan_number=client.pan_number,
-        aadhar_number=client.aadhar_number,
-        address_line1=client.address_line1,
-        address_line2=client.address_line2,
-        city=client.city,
-        state=client.state,
-        pincode=client.pincode,
-        country=client.country,
-        annual_income=client.annual_income,
-        net_worth=client.net_worth,
-        risk_profile=client.risk_profile,
-        investment_experience=client.investment_experience,
-        financial_goals=client.financial_goals,
-        nominee_name=client.nominee_name,
-        nominee_relation=client.nominee_relation,
-        nominee_contact=client.nominee_contact,
-        bank_name=client.bank_name,
-        account_number=client.account_number,
-        ifsc_code=client.ifsc_code,
-        account_type=client.account_type,
-        kyc_status=client.kyc_status,
-        kyc_document_url=client.kyc_document_url,
-        notes=client.notes,
-        group_id=client.group_id,
-        is_active=client.is_active,
-        assigned_date=client.assigned_date,
-        created_at=client.created_at,
-        updated_at=client.updated_at,
-        group_name=group_name,
-    )
+    return {
+        "id": client.id,
+        "customer_code": client.customer_code,
+        "name": client.party.display_name if client.party else "",
+        "status": client.customer_status,
+        "occupation": client.occupation,
+        "annual_income": (
+            float(client.annual_income)
+            if client.annual_income is not None
+            else None
+        ),
+        "net_worth": (
+            float(client.net_worth)
+            if client.net_worth is not None
+            else None
+        ),
+        "risk_profile": client.risk_profile,
+        "resident_status": client.resident_status,
+        "onboarding_date": (
+            client.onboarding_date.isoformat()
+            if client.onboarding_date
+            else None
+        ),
+    }
 
 
 @router.put("/{client_id}", response_model=ClientResponse)

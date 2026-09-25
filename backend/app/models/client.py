@@ -10,8 +10,8 @@ class Client(Base):
     __tablename__ = "clients"
 
     id = Column(Integer, primary_key=True, index=True)
-    advisor_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    advisor_id = Column(Integer, ForeignKey("identity.users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("identity.users.id"), nullable=False, index=True)
     group_id = Column(Integer, ForeignKey("groups.id"), nullable=True, index=True)
 
     # Personal Information

@@ -13,6 +13,8 @@ import {
     sipActions,
 } from "./sip.actions";
 
+import { SIP } from "@/components/data-table/examples/sip.types";
+
 export const sipColumns: ColumnDef<SIP>[] = [
 
 {

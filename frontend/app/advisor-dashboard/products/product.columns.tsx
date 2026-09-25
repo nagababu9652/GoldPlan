@@ -12,6 +12,8 @@ import {
     productActions,
 } from "./product.actions";
 
+import { Product } from "@/components/data-table/examples/product.types";
+
 export const productColumns: ColumnDef<Product>[] = [
 
 {

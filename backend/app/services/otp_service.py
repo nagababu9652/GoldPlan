@@ -7,7 +7,7 @@ import string
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import bcrypt
@@ -137,7 +137,7 @@ def create_otp(
 ) -> OTPRequest:
     """Create a new OTP record, hash the code, and send via email."""
     # Rate limiting: Check if user has exceeded max OTPs per hour
-    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+    one_hour_ago = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=1)
     recent_otp_count = db.query(OTPRequest).filter(
         OTPRequest.destination == destination,
         OTPRequest.created_at > one_hour_ago
@@ -154,7 +154,7 @@ def create_otp(
         OTPRequest.destination == destination,
         OTPRequest.purpose == purpose,
         OTPRequest.is_used == False,
-        OTPRequest.expires_at > datetime.utcnow()
+        OTPRequest.expires_at > datetime.now(timezone.utc).replace(tzinfo=None)
     ).all()
     
     for otp in existing_otps:
@@ -163,7 +163,7 @@ def create_otp(
     # Generate new OTP
     otp_code = generate_otp()
     otp_code_hash = hash_otp(otp_code)
-    expires_at = datetime.utcnow() + timedelta(minutes=OTP_EXPIRY_MINUTES)
+    expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(minutes=OTP_EXPIRY_MINUTES)
     
     otp_record = OTPRequest(
         user_id=user_id,
@@ -171,7 +171,7 @@ def create_otp(
         otp_code_hash=otp_code_hash,
         purpose=purpose,
         expires_at=expires_at,
-        created_at=datetime.utcnow()
+        created_at=datetime.now(timezone.utc).replace(tzinfo=None)
     )
     
     db.add(otp_record)
@@ -192,7 +192,7 @@ def create_otp(
 
 def verify_otp(db: Session, destination: str, otp_code: str, purpose: str = "registration") -> bool:
     """Verify an OTP code against stored hash. Returns True if valid."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     
     # Find the OTP record
     otp_record = db.query(OTPRequest).filter(
@@ -220,7 +220,7 @@ def verify_otp(db: Session, destination: str, otp_code: str, purpose: str = "reg
 
 def cleanup_expired_otps(db: Session) -> int:
     """Mark expired OTP records as used. Returns count of expired records."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     expired = db.query(OTPRequest).filter(
         OTPRequest.expires_at <= now,
         OTPRequest.is_used == False

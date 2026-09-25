@@ -11,6 +11,8 @@ import {
     taskActions,
 } from "./task.actions";
 
+import { Task } from "@/components/data-table/examples/task.types";
+
 export const taskColumns: ColumnDef<Task>[] = [
 
 {

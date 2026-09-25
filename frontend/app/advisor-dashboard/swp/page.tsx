@@ -6,6 +6,8 @@ import SwpTable from "./SwpTable";
 
 import { getSwps } from "./swp.service";
 
+import { SWP } from "@/components/data-table/examples/swp.types";
+
 export default function SwpPage() {
 
   const [swps, setSwps] = useState<SWP[]>([]);

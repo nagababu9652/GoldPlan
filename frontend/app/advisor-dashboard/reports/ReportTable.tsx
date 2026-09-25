@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 reportColumns,
 } from "./report.columns";
+
+import { Report } from "@/components/data-table/examples/report.types";
 
 interface Props{
 

@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 sipColumns,
 } from "./sip.columns";
+
+import { SIP } from "@/components/data-table/examples/sip.types";
 
 interface Props{
 

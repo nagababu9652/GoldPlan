@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-import AuditTable from "./AuditTable";
-
-import { getAuditLogs } from "./audit.service";
+import { AuditTable, getAuditLogs } from ".";
 
 export default function AuditPage() {
 
-  const [auditLogs, setAuditLogs] = useState<Audit[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
 
   const [loading, setLoading] = useState(true);
 

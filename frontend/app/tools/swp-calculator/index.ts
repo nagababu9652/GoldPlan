@@ -1,0 +1,1 @@
+export { default as SwpCalculatorPage } from './page';

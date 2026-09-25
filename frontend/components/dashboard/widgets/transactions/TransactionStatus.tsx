@@ -8,9 +8,9 @@ interface Props {
 }
 
 const STATUS_VARIANTS = {
-  SUCCESS: "default",
-  PENDING: "secondary",
-  FAILED: "destructive",
+  SUCCESS: "success",
+  PENDING: "warning",
+  FAILED: "danger",
   CANCELLED: "outline",
 } as const;
 

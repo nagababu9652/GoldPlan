@@ -4,5 +4,6 @@ export { default as DashboardBarChart } from "./BarChart";
 export { default as DashboardPieChart } from "./PieChart";
 export { default as DashboardDonutChart } from "./DonutChart";
 export { default as Sparkline } from "./Sparkline";
+export { default as PortfolioPerformance } from "./PortfolioPerformance";
 
 export * from "./base";

@@ -11,6 +11,8 @@ import {
     leadActions,
 } from "./lead.actions";
 
+import { Lead } from "@/components/data-table/examples/lead.types";
+
 export const leadColumns: ColumnDef<Lead>[] = [
 
 {

@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 taskColumns,
 } from "./task.columns";
+
+import { Task } from "@/components/data-table/examples/task.types";
 
 interface Props{
 

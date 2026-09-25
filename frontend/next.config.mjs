@@ -1,5 +1,13 @@
+import path from "path";
+import { fileURLToPath } from "url";
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Pin the workspace root so Next.js doesn't infer it from duplicate lockfiles
+  outputFileTracingRoot: dirname,
+
   // Performance optimizations
   compress: true,
   productionBrowserSourceMaps: false,

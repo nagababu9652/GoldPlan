@@ -11,6 +11,8 @@ import {
     prospectActions,
 } from "./prospect.actions";
 
+import { Prospect } from "@/components/data-table/examples/prospect.types";
+
 export const prospectColumns: ColumnDef<Prospect>[] = [
 
 {

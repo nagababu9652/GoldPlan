@@ -11,6 +11,8 @@ import {
     auditActions,
 } from "./audit.actions";
 
+import { Audit } from "./audit.types";
+
 export const auditColumns: ColumnDef<Audit>[] = [
 
 {

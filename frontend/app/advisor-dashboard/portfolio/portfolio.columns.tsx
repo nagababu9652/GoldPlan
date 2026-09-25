@@ -14,6 +14,8 @@ import {
     portfolioActions,
 } from "./portfolio.actions";
 
+import { Portfolio } from "@/components/data-table/examples/portfolio.types";
+
 export const portfolioColumns: ColumnDef<Portfolio>[] = [
 
 {

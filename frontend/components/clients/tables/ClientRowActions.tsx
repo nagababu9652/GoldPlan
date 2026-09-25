@@ -1,91 +1,54 @@
 "use client";
 
 import {
-
-Eye,
-
-Pencil,
-
-Trash,
-
+  Eye,
+  Pencil,
+  Trash,
 } from "lucide-react";
 
 import {
-
-DropdownMenu,
-
-DropdownMenuContent,
-
-DropdownMenuItem,
-
-DropdownMenuTrigger,
-
-} from "@/components/ui/dropdown-menu";
+  Dropdown,
+  DropdownTrigger,
+  DropdownContent,
+  DropdownItem,
+} from "@/components/ui/dropdown";
 
 import { Button } from "@/components/ui/button";
 
-interface Props{
-
-clientId:string;
-
+interface Props {
+  clientId: string;
 }
 
 export default function ClientRowActions({
+  clientId,
+}: Props) {
+  return (
+    <Dropdown>
+      <DropdownTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+        >
+          •••
+        </Button>
+      </DropdownTrigger>
 
-clientId,
+      <DropdownContent align="end">
+        <DropdownItem>
+          <Eye className="mr-2 h-4 w-4" />
+          View
+        </DropdownItem>
 
-}:Props){
+        <DropdownItem>
+          <Pencil className="mr-2 h-4 w-4" />
+          Edit
+        </DropdownItem>
 
-return(
-
-<DropdownMenu>
-
-<DropdownMenuTrigger asChild>
-
-<Button
-
-variant="ghost"
-
-size="icon"
-
->
-
-•••
-
-</Button>
-
-</DropdownMenuTrigger>
-
-<DropdownMenuContent align="end">
-
-<DropdownMenuItem>
-
-<Eye className="mr-2 h-4 w-4"/>
-
-View
-
-</DropdownMenuItem>
-
-<DropdownMenuItem>
-
-<Pencil className="mr-2 h-4 w-4"/>
-
-Edit
-
-</DropdownMenuItem>
-
-<DropdownMenuItem className="text-red-600">
-
-<Trash className="mr-2 h-4 w-4"/>
-
-Delete
-
-</DropdownMenuItem>
-
-</DropdownMenuContent>
-
-</DropdownMenu>
-
-);
-
+        <DropdownItem className="text-red-600">
+          <Trash className="mr-2 h-4 w-4" />
+          Delete
+        </DropdownItem>
+      </DropdownContent>
+    </Dropdown>
+  );
 }

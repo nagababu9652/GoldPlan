@@ -2,10 +2,29 @@
 Advisors Router - handles advisor-specific endpoints.
 Uses the new identity schema and auth service.
 """
+
+from datetime import date, datetime, timezone
+from typing import Optional
+
+from sqlalchemy import select
+
+from ..models.crm.transaction import Transaction
+from ..models.crm.transaction_history import TransactionHistory
+from ..models.crm.customer import Customer
+from ..models.organization.employee import Employee
+from ..models.organization.assignment import EmployeeAssignment
+from ..schemas.transaction import (
+    TransactionCreate,
+    TransactionUpdate,
+    TransactionResponse,
+    TransactionHistoryResponse,
+)
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-
+from datetime import datetime, timezone, date
+from ..models.meeting import Meeting
 from ..database.session import get_db
 from ..services import auth_service as auth
 from ..models.identity.auth import User
@@ -14,51 +33,174 @@ from ..schemas.auth import (
 )
 from ..schemas.otp import OTPVerifyRequest
 from ..services.otp_service import verify_otp
+from ..models.crm.customer import Customer
+from ..models.organization.assignment import EmployeeAssignment
+from ..models.organization.employee import Employee
 
 router = APIRouter(prefix="/advisors", tags=["advisors"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-def get_current_advisor(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    """Verify the token belongs to an advisor user."""
+def get_current_advisor(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> User:
+    """Verify the token belongs to an active advisor user."""
     payload = auth.decode_token(token)
+
     if payload is None or payload.sub is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
+
     user = auth.get_user_by_id(db, int(payload.sub))
+
     if not user or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive",
         )
-    # TODO: Check user roles via identity.user_roles for "ADVISOR" role
+
+    has_advisor_role = any(
+        user_role.role
+        and user_role.role.is_active
+        and user_role.role.role_code == "ADVISOR"
+        and user_role.effective_from <= datetime.now(timezone.utc).replace(tzinfo=None)
+        and (
+            user_role.effective_to is None
+            or user_role.effective_to > datetime.now(timezone.utc).replace(tzinfo=None)
+        )
+        for user_role in user.roles
+    )
+
+    if not has_advisor_role:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Advisor role required",
+        )
+
     return user
 
 
 @router.get("/dashboard")
-def get_advisor_dashboard(advisor: User = Depends(get_current_advisor)):
-    """Get advisor dashboard overview data."""
+def get_advisor_dashboard(
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    """Get real advisor dashboard overview data."""
+
+    today = date.today()
+
+    # Find the employee record belonging to the logged-in advisor.
+    employee = (
+        db.query(Employee)
+        .filter(Employee.party_id == advisor.party_id)
+        .first()
+    )
+
+    total_clients = 0
+    active_clients = 0
+    new_clients_this_month = 0
+
+    if employee:
+        # Find customers assigned to this advisor.
+        client_ids_query = (
+            db.query(EmployeeAssignment.entity_id)
+            .filter(
+                EmployeeAssignment.employee_id == employee.id,
+                EmployeeAssignment.entity_type == "CUSTOMER",
+                EmployeeAssignment.assignment_type == "ADVISOR",
+                EmployeeAssignment.effective_from <= today,
+                (
+                    (EmployeeAssignment.effective_to.is_(None))
+                    | (EmployeeAssignment.effective_to >= today)
+                ),
+            )
+        )
+
+        client_ids = [row[0] for row in client_ids_query.all()]
+
+        if client_ids:
+            total_clients = (
+                db.query(Customer)
+                .filter(Customer.id.in_(client_ids))
+                .count()
+            )
+
+            active_clients = (
+                db.query(Customer)
+                .filter(
+                    Customer.id.in_(client_ids),
+                    Customer.customer_status == "ACTIVE",
+                )
+                .count()
+            )
+
+            first_day_of_month = today.replace(day=1)
+
+            new_clients_this_month = (
+                db.query(Customer)
+                .filter(
+                    Customer.id.in_(client_ids),
+                    Customer.onboarding_date >= first_day_of_month,
+                    Customer.onboarding_date <= today,
+                )
+                .count()
+            )
+
+    # Real meeting data
+    today_meetings = (
+        db.query(Meeting)
+        .filter(
+            Meeting.advisor_id == advisor.id,
+            Meeting.meeting_date == today,
+            Meeting.status == "scheduled",
+        )
+        .order_by(Meeting.meeting_time.asc())
+        .all()
+    )
+
+    upcoming_meetings = (
+        db.query(Meeting)
+        .filter(
+            Meeting.advisor_id == advisor.id,
+            Meeting.meeting_date >= today,
+            Meeting.status == "scheduled",
+        )
+        .count()
+    )
+
     return {
         "advisor_name": advisor.display_name or "",
         "email": advisor.email,
-        "portfolio_value": 12500000,
-        "portfolio_change": 2.4,
-        "total_reports": 12,
-        "pending_reports": 3,
-        "unread_messages": 2,
-        "last_login": str(advisor.last_login_at) if advisor.last_login_at else None,
-        "total_clients": 8,
-        "active_clients": 6,
-        "new_clients_this_month": 2,
-        "total_aum": 12500000,
-        "avg_portfolio_size": 1562500,
-        "client_satisfaction": 4.8,
-        "reviews_completed": 45,
-        "upcoming_reviews": 3,
-    }
 
+        # Client data — now real
+        "total_clients": total_clients,
+        "active_clients": active_clients,
+        "new_clients_this_month": new_clients_this_month,
+
+        # Meeting data — real
+        "upcoming_reviews": upcoming_meetings,
+        "today_meetings": len(today_meetings),
+
+        # Not implemented yet
+        "portfolio_value": None,
+        "portfolio_change": None,
+        "total_reports": None,
+        "pending_reports": None,
+        "unread_messages": None,
+        "total_aum": None,
+        "avg_portfolio_size": None,
+        "client_satisfaction": None,
+        "reviews_completed": None,
+
+        "last_login": (
+            advisor.last_login_at.isoformat()
+            if advisor.last_login_at
+            else None
+        ),
+    }
 
 @router.get("/portfolio")
 def get_advisor_portfolio(advisor: User = Depends(get_current_advisor)):
@@ -128,13 +270,144 @@ def get_advisor_profile(advisor: User = Depends(get_current_advisor)):
     }
 
 
+
+def get_advisor_employee(
+    advisor: User,
+    db: Session,
+) -> Employee:
+    employee = (
+        db.query(Employee)
+        .filter(
+            Employee.party_id == advisor.party_id,
+            Employee.is_active.is_(True),
+        )
+        .first()
+    )
+
+    if not employee:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Advisor employee record not found",
+        )
+
+    return employee
+
+
+def get_advisor_customer_ids(
+    advisor: User,
+    db: Session,
+) -> list[int]:
+    employee = get_advisor_employee(advisor, db)
+
+    today = date.today()
+
+    assignments = (
+        db.query(EmployeeAssignment.entity_id)
+        .filter(
+            EmployeeAssignment.employee_id == employee.id,
+            EmployeeAssignment.assignment_type == "ADVISOR",
+            EmployeeAssignment.entity_type == "CUSTOMER",
+            EmployeeAssignment.effective_from <= today,
+            (
+                (EmployeeAssignment.effective_to.is_(None))
+                | (EmployeeAssignment.effective_to >= today)
+            ),
+            EmployeeAssignment.is_active.is_(True),
+        )
+        .all()
+    )
+
+    return [row.entity_id for row in assignments]
+
+
 @router.get("/clients")
-def get_clients(advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
-    """List clients for the current advisor using the new identity-backed model path."""
+def get_clients(
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    """List customers assigned to the current advisor."""
+
+    today = date.today()
+
+    # Find the employee record for the logged-in advisor.
+    employee = (
+        db.query(Employee)
+        .filter(Employee.party_id == advisor.party_id)
+        .first()
+    )
+
+    if not employee:
+        return {
+            "advisor_id": advisor.id,
+            "employee_id": None,
+            "total": 0,
+            "clients": [],
+        }
+
+    # Get currently active CUSTOMER assignments for this advisor.
+    assignments = (
+        db.query(EmployeeAssignment)
+        .filter(
+            EmployeeAssignment.employee_id == employee.id,
+            EmployeeAssignment.entity_type == "CUSTOMER",
+            EmployeeAssignment.assignment_type == "ADVISOR",
+            EmployeeAssignment.effective_from <= today,
+            (
+                (EmployeeAssignment.effective_to.is_(None))
+                | (EmployeeAssignment.effective_to >= today)
+            ),
+        )
+        .all()
+    )
+
+    client_ids = [assignment.entity_id for assignment in assignments]
+
+    if not client_ids:
+        return {
+            "advisor_id": advisor.id,
+            "employee_id": employee.id,
+            "total": 0,
+            "clients": [],
+        }
+
+    clients = (
+        db.query(Customer)
+        .filter(Customer.id.in_(client_ids))
+        .order_by(Customer.id.desc())
+        .all()
+    )
+
     return {
         "advisor_id": advisor.id,
-        "message": "Client management is now handled by the new CRM and organization layers.",
-        "clients": [],
+        "employee_id": employee.id,
+        "total": len(clients),
+        "clients": [
+            {
+                "id": client.id,
+                "customer_code": client.customer_code,
+                "name": client.party.display_name if client.party else "",
+                "status": client.customer_status,
+                "occupation": client.occupation,
+                "annual_income": (
+                    float(client.annual_income)
+                    if client.annual_income is not None
+                    else None
+                ),
+                "net_worth": (
+                    float(client.net_worth)
+                    if client.net_worth is not None
+                    else None
+                ),
+                "risk_profile": client.risk_profile,
+                "resident_status": client.resident_status,
+                "onboarding_date": (
+                    client.onboarding_date.isoformat()
+                    if client.onboarding_date
+                    else None
+                ),
+            }
+            for client in clients
+        ],
     }
 
 
@@ -179,6 +452,317 @@ def reset_client_password(
     auth.reset_password(db, user, request.new_password)
     return MessageResponse(message="Client password reset successfully")
 
+@router.get(
+    "/transactions",
+    response_model=list[TransactionResponse],
+)
+def get_advisor_transactions(
+    limit: int = 50,
+    customer_id: Optional[int] = None,
+    transaction_type: Optional[str] = None,
+    transaction_status: Optional[str] = None,
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    """List transactions belonging only to customers assigned to the advisor."""
+
+    if limit < 1 or limit > 100:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Limit must be between 1 and 100",
+        )
+
+    customer_ids = get_advisor_customer_ids(advisor, db)
+
+    if not customer_ids:
+        return []
+
+    query = (
+        db.query(Transaction)
+        .filter(
+            Transaction.customer_id.in_(customer_ids),
+            Transaction.is_active.is_(True),
+        )
+    )
+
+    if customer_id is not None:
+        if customer_id not in customer_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not authorized to access this customer",
+            )
+
+        query = query.filter(Transaction.customer_id == customer_id)
+
+    if transaction_type:
+        query = query.filter(
+            Transaction.transaction_type == transaction_type.upper()
+        )
+
+    if transaction_status:
+        query = query.filter(
+            Transaction.status == transaction_status.upper()
+        )
+
+    return (
+        query
+        .order_by(
+            Transaction.transaction_date.desc(),
+            Transaction.id.desc(),
+        )
+        .limit(limit)
+        .all()
+    )
+
+
+@router.get(
+    "/transactions/{transaction_id}/history",
+    response_model=list[TransactionHistoryResponse],
+)
+def get_advisor_transaction_history(
+    transaction_id: int,
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    customer_ids = get_advisor_customer_ids(advisor, db)
+
+    transaction = (
+        db.query(Transaction)
+        .filter(
+            Transaction.id == transaction_id,
+            Transaction.customer_id.in_(customer_ids),
+        )
+        .first()
+    )
+
+    if not transaction:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transaction not found",
+        )
+
+    return (
+        db.query(TransactionHistory)
+        .filter(
+            TransactionHistory.transaction_id == transaction_id,
+        )
+        .order_by(
+            TransactionHistory.changed_at.desc(),
+            TransactionHistory.id.desc(),
+        )
+        .all()
+    )
+
+@router.get(
+    "/transactions/{transaction_id}",
+    response_model=TransactionResponse,
+)
+def get_advisor_transaction(
+    transaction_id: int,
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    """Get one transaction if it belongs to one of the advisor's customers."""
+
+    customer_ids = get_advisor_customer_ids(advisor, db)
+
+    transaction = (
+        db.query(Transaction)
+        .filter(
+            Transaction.id == transaction_id,
+            Transaction.customer_id.in_(customer_ids),
+            Transaction.is_active.is_(True),
+        )
+        .first()
+    )
+
+    if not transaction:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transaction not found",
+        )
+
+    return transaction
+
+
+
+def create_transaction_history(
+    db: Session,
+    transaction: Transaction,
+    action: str,
+    changed_by: int,
+    old_values: Optional[dict] = None,
+    new_values: Optional[dict] = None,
+) -> None:
+    history = TransactionHistory(
+        transaction_id=transaction.id,
+        action=action,
+        changed_by=changed_by,
+        changed_at=datetime.utcnow(),
+        old_values=old_values,
+        new_values=new_values,
+    )
+
+    db.add(history)
+
+@router.post(
+    "/transactions",
+    response_model=TransactionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_advisor_transaction(
+    payload: TransactionCreate,
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    customer_ids = get_advisor_customer_ids(advisor, db)
+
+    if payload.customer_id not in customer_ids:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not authorized to create transactions for this customer",
+        )
+
+    transaction = Transaction(
+        **payload.model_dump(),
+        created_by=advisor.id,
+    )
+
+    db.add(transaction)
+
+    # Generate the transaction ID before creating its history record.
+    db.flush()
+
+    new_values = TransactionResponse.model_validate(
+        transaction
+    ).model_dump(mode="json")
+
+    create_transaction_history(
+        db=db,
+        transaction=transaction,
+        action="CREATE",
+        changed_by=advisor.id,
+        old_values=None,
+        new_values=new_values,
+    )
+
+    db.commit()
+    db.refresh(transaction)
+
+    return transaction
+
+@router.put(
+    "/transactions/{transaction_id}",
+    response_model=TransactionResponse,
+)
+def update_advisor_transaction(
+    transaction_id: int,
+    payload: TransactionUpdate,
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    customer_ids = get_advisor_customer_ids(advisor, db)
+
+    transaction = (
+        db.query(Transaction)
+        .filter(
+            Transaction.id == transaction_id,
+            Transaction.customer_id.in_(customer_ids),
+            Transaction.is_active.is_(True),
+        )
+        .first()
+    )
+
+    if not transaction:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transaction not found",
+        )
+
+    # Capture the transaction before changes.
+    old_values = TransactionResponse.model_validate(
+        transaction
+    ).model_dump(mode="json")
+
+    updates = payload.model_dump(exclude_unset=True)
+
+    for field, value in updates.items():
+        setattr(transaction, field, value)
+
+    transaction.updated_by = advisor.id
+
+    # Apply the changes before capturing the new snapshot.
+    db.flush()
+
+    new_values = TransactionResponse.model_validate(
+        transaction
+    ).model_dump(mode="json")
+
+    create_transaction_history(
+        db=db,
+        transaction=transaction,
+        action="UPDATE",
+        changed_by=advisor.id,
+        old_values=old_values,
+        new_values=new_values,
+    )
+
+    db.commit()
+    db.refresh(transaction)
+
+    return transaction
+
+
+@router.delete(
+    "/transactions/{transaction_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_advisor_transaction(
+    transaction_id: int,
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    customer_ids = get_advisor_customer_ids(advisor, db)
+
+    transaction = (
+        db.query(Transaction)
+        .filter(
+            Transaction.id == transaction_id,
+            Transaction.customer_id.in_(customer_ids),
+            Transaction.is_active.is_(True),
+        )
+        .first()
+    )
+
+    if not transaction:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transaction not found",
+        )
+
+    # Capture the transaction before soft deletion.
+    old_values = TransactionResponse.model_validate(
+        transaction
+    ).model_dump(mode="json")
+
+    transaction.is_active = False
+    transaction.deleted_at = datetime.utcnow()
+    transaction.deleted_by = advisor.id
+
+    db.flush()
+
+    create_transaction_history(
+        db=db,
+        transaction=transaction,
+        action="DELETE",
+        changed_by=advisor.id,
+        old_values=old_values,
+        new_values=None,
+    )
+
+    db.commit()
+
+    return None
 
 @router.post("/verify-email", response_model=MessageResponse)
 def verify_advisor_email(request: OTPVerifyRequest, db: Session = Depends(get_db)):

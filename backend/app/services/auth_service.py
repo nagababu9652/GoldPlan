@@ -2,7 +2,7 @@
 Authentication Service - handles user creation, authentication, JWT tokens,
 session management, and password operations using the new identity schema.
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import ipaddress
 import uuid
@@ -11,6 +11,7 @@ import bcrypt
 from jose import JWTError, jwt
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+import hashlib
 
 from ..core.config import settings
 from ..models.foundation.party import Party, PartyAddress, PartyContact
@@ -32,6 +33,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     password = plain_password[:72] if len(plain_password.encode('utf-8')) > 72 else plain_password
     return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
+def hash_refresh_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 def get_password_hash(password: str) -> str:
     """Hash a password using bcrypt with 12 rounds."""
@@ -47,7 +50,7 @@ def get_password_hash(password: str) -> str:
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Create a JWT access token."""
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.access_token_expire_minutes))
+    expire = datetime.now(timezone.utc).replace(tzinfo=None) + (expires_delta or timedelta(minutes=settings.access_token_expire_minutes))
     to_encode.update({"exp": expire, "type": "access"})
     return jwt.encode(to_encode, settings.secret_key, algorithm="HS256")
 
@@ -55,7 +58,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def create_refresh_token(data: dict) -> str:
     """Create a JWT refresh token with 7-day expiry."""
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(days=7)
+    expire = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=7)
     to_encode.update({"exp": expire, "type": "refresh"})
     return jwt.encode(to_encode, settings.secret_key, algorithm="HS256")
 
@@ -63,9 +66,17 @@ def create_refresh_token(data: dict) -> str:
 def decode_token(token: str) -> Optional[TokenPayload]:
     """Decode and validate a JWT token. Returns TokenPayload or None."""
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+        payload = jwt.decode(
+            token,
+            settings.secret_key,
+            algorithms=["HS256"],
+        )
         return TokenPayload(**payload)
-    except JWTError:
+
+    except JWTError as e:
+        return None
+
+    except Exception as e:
         return None
 
 
@@ -221,7 +232,7 @@ def create_user(db: Session, user_data: dict) -> User:
 
         party = Party(
             organization_id=user_data.get("organization_id"),
-            party_code=f"P{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+            party_code=f"P{datetime.now(timezone.utc).replace(tzinfo=None).strftime('%Y%m%d%H%M%S')}",
             party_type_id=party_type_id,
             title=user_data.get("title"),
             first_name=user_data.get("first_name"),
@@ -299,7 +310,7 @@ def create_user(db: Session, user_data: dict) -> User:
         password_history = PasswordHistory(
             user_id=user.id,
             password_hash=hashed_password,
-            changed_at=datetime.utcnow()
+            changed_at=datetime.now(timezone.utc).replace(tzinfo=None)
         )
         db.add(password_history)
         
@@ -360,8 +371,8 @@ def create_session(
     session = UserSession(
         user_id=user.id,
         session_uuid=uuid.uuid4(),
-        login_time=datetime.utcnow(),
-        last_activity_at=datetime.utcnow(),
+        login_time=datetime.now(timezone.utc).replace(tzinfo=None),
+        last_activity_at=datetime.now(timezone.utc).replace(tzinfo=None),
         ip_address=normalized_ip,
         user_agent=user_agent,
         device_name=device_name,
@@ -392,27 +403,23 @@ def create_session(
     refresh_token_bytes = refresh_token_str.encode('utf-8')
     if len(refresh_token_bytes) > 72:
         refresh_token_bytes = refresh_token_bytes[:72]
-    refresh_token_hash = bcrypt.hashpw(
-        refresh_token_bytes,
-        bcrypt.gensalt(rounds=10)
-    ).decode('utf-8')
     
     # Store refresh token
     refresh_token = RefreshToken(
         session_id=session.id,
-        token_hash=refresh_token_hash,
-        expires_at=datetime.utcnow() + timedelta(days=7),
-        created_at=datetime.utcnow()
+        token_hash=hash_refresh_token(refresh_token_str),
+        expires_at=datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=7),
+        created_at=datetime.now(timezone.utc).replace(tzinfo=None)
     )
     db.add(refresh_token)
     
     # Update last login
-    user.last_login_at = datetime.utcnow()
+    user.last_login_at = datetime.now(timezone.utc).replace(tzinfo=None)
     
     # Record login history
     login_history = LoginHistory(
         user_id=user.id,
-        login_timestamp=datetime.utcnow(),
+        login_timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
         login_result="SUCCESS",
         ip_address=normalized_ip,
         user_agent=user_agent,
@@ -456,18 +463,18 @@ def refresh_session(db: Session, refresh_token_str: str) -> Optional[tuple[str, 
     stored_token = db.query(RefreshToken).filter(
         RefreshToken.session_id == session.id,
         RefreshToken.revoked_at.is_(None),
-        RefreshToken.expires_at > datetime.utcnow()
+        RefreshToken.expires_at > datetime.now(timezone.utc).replace(tzinfo=None)
     ).first()
     
     if not stored_token:
         return None
     
     # Verify the refresh token against stored hash
-    if not bcrypt.checkpw(refresh_token_str.encode('utf-8'), stored_token.token_hash.encode('utf-8')):
+    if hash_refresh_token(refresh_token_str) != stored_token.token_hash:
         return None
     
     # Revoke old refresh token (rotation)
-    stored_token.revoked_at = datetime.utcnow()
+    stored_token.revoked_at = datetime.now(timezone.utc).replace(tzinfo=None)
     
     # Create new tokens
     token_data = {
@@ -480,21 +487,18 @@ def refresh_session(db: Session, refresh_token_str: str) -> Optional[tuple[str, 
     new_refresh_token_str = create_refresh_token(data=token_data)
     
     # Hash and store new refresh token
-    new_refresh_hash = bcrypt.hashpw(
-        new_refresh_token_str.encode('utf-8'),
-        bcrypt.gensalt(rounds=10)
-    ).decode('utf-8')
+
     
     new_token = RefreshToken(
         session_id=session.id,
-        token_hash=new_refresh_hash,
-        expires_at=datetime.utcnow() + timedelta(days=7),
-        created_at=datetime.utcnow()
+        token_hash=hash_refresh_token(new_refresh_token_str),
+        expires_at=datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=7),
+        created_at=datetime.now(timezone.utc).replace(tzinfo=None)
     )
     db.add(new_token)
     
     # Update session activity
-    session.last_activity_at = datetime.utcnow()
+    session.last_activity_at = datetime.now(timezone.utc).replace(tzinfo=None)
     
     db.commit()
     
@@ -512,13 +516,13 @@ def logout_session(db: Session, session_uuid: str) -> bool:
         return False
     
     session.is_active = False
-    session.logout_time = datetime.utcnow()
+    session.logout_time = datetime.now(timezone.utc).replace(tzinfo=None)
     
     # Revoke all refresh tokens for this session
     db.query(RefreshToken).filter(
         RefreshToken.session_id == session.id,
         RefreshToken.revoked_at.is_(None)
-    ).update({"revoked_at": datetime.utcnow()})
+    ).update({"revoked_at": datetime.now(timezone.utc).replace(tzinfo=None)})
     
     db.commit()
     return True
@@ -573,11 +577,11 @@ def change_password(
     password_history = PasswordHistory(
         user_id=user.id,
         password_hash=new_hash,
-        changed_at=datetime.utcnow()
+        changed_at=datetime.now(timezone.utc).replace(tzinfo=None)
     )
     db.add(password_history)
     
-    user.last_password_change_at = datetime.utcnow()
+    user.last_password_change_at = datetime.now(timezone.utc).replace(tzinfo=None)
     
     db.commit()
     return True
@@ -601,11 +605,11 @@ def reset_password(db: Session, user: User, new_password: str) -> bool:
     password_history = PasswordHistory(
         user_id=user.id,
         password_hash=new_hash,
-        changed_at=datetime.utcnow()
+        changed_at=datetime.now(timezone.utc).replace(tzinfo=None)
     )
     db.add(password_history)
     
-    user.last_password_change_at = datetime.utcnow()
+    user.last_password_change_at = datetime.now(timezone.utc).replace(tzinfo=None)
     
     db.commit()
     return True
@@ -613,7 +617,7 @@ def reset_password(db: Session, user: User, new_password: str) -> bool:
 
 def update_last_login(db: Session, user: User) -> User:
     """Update the last_login_at timestamp for a user."""
-    user.last_login_at = datetime.utcnow()
+    user.last_login_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.commit()
     db.refresh(user)
     return user

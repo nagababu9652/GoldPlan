@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 roleColumns,
 } from "./role.columns";
+
+import { Role } from "@/components/data-table/examples/role.types";
 
 interface Props{
 

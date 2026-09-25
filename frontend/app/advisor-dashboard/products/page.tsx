@@ -6,6 +6,8 @@ import ProductTable from "./ProductTable";
 
 import { getProducts } from "./product.service";
 
+import { Product } from "@/components/data-table/examples/product.types";
+
 export default function ProductsPage() {
 
   const [products, setProducts] = useState<Product[]>([]);

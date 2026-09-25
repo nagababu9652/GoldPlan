@@ -13,6 +13,8 @@ import {
     customerActions,
 } from "./customer.actions";
 
+import { Customer } from "@/components/data-table/examples/customer.types";
+
 export const customerColumns: ColumnDef<Customer>[] = [
 
 {

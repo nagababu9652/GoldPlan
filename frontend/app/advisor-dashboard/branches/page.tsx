@@ -6,6 +6,8 @@ import BranchTable from "./BranchTable";
 
 import { getBranches } from "./branch.service";
 
+import { Branch } from "@/components/data-table/examples/branch.types";
+
 export default function BranchesPage() {
 
   const [branches, setBranches] = useState<Branch[]>([]);

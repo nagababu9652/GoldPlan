@@ -11,6 +11,8 @@ import {
     branchActions,
 } from "./branch.actions";
 
+import { Branch } from "@/components/data-table/examples/branch.types";
+
 export const branchColumns: ColumnDef<Branch>[] = [
 
 {

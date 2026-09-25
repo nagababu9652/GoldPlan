@@ -1,14 +1,15 @@
 "use client";
 
-import Widget from "../base/Widget";
-import WidgetBody from "../base/WidgetBody";
+import { Widget, WidgetBody } from "../base";
 
-import KPIIcon from "./KPIIcon";
-import KPIValue from "./KPIValue";
-import KPITrend from "./KPITrend";
-import KPISparkline from "./KPISparkline";
-import KPIFooter from "./KPIFooter";
-import KPILoading from "./KPILoading";
+import {
+  KPIIcon,
+  KPIValue,
+  KPITrend,
+  KPISparkline,
+  KPIFooter,
+  KPILoading,
+} from ".";
 
 import { KPIWidgetProps } from "./types";
 

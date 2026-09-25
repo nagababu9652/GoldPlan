@@ -8,7 +8,7 @@ import {
   WidgetMenu,
 } from "../base";
 
-import TransactionRow from "./TransactionRow";
+import { TransactionRow } from ".";
 import { recentTransactions } from "./mockData";
 
 import { Button } from "@/components/ui/button";

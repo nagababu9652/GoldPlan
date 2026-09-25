@@ -6,11 +6,14 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { cn } from "@/lib/utils";
 import { dropdownItemVariants } from "./dropdown.variants";
 
-interface Props
-  extends React.ComponentPropsWithoutRef<typeof DropdownMenu.Item> {
+interface Props {
+  className?: string;
   inset?: boolean;
   variant?: "default" | "danger";
-  className?: string;
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
+  onSelect?: (event: Event) => void;
+  disabled?: boolean;
+  children?: React.ReactNode;
 }
 
 const DropdownItem = React.forwardRef<

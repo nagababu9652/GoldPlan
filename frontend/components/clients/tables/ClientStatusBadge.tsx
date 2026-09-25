@@ -12,13 +12,13 @@ status:ClientStatus;
 
 const variants={
 
-ACTIVE:"default",
+ACTIVE:"success",
 
 INACTIVE:"secondary",
 
 PROSPECT:"outline",
 
-BLOCKED:"destructive",
+BLOCKED:"danger",
 
 } as const;
 

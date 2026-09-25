@@ -6,6 +6,8 @@ import RoleTable from "./RoleTable";
 
 import { getRoles } from "./role.service";
 
+import { Role } from "@/components/data-table/examples/role.types";
+
 export default function RolesPage() {
 
   const [roles, setRoles] = useState<Role[]>([]);

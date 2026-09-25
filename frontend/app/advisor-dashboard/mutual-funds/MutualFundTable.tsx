@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 mutualFundColumns,
 } from "./mutual-fund.columns";
+
+import { MutualFund } from "@/components/data-table/examples/mutual-fund.types";
 
 interface Props{
 

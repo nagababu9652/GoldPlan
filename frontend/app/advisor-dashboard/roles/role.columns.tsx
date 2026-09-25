@@ -11,6 +11,8 @@ import {
     roleActions,
 } from "./role.actions";
 
+import { Role } from "@/components/data-table/examples/role.types";
+
 export const roleColumns: ColumnDef<Role>[] = [
 
 {

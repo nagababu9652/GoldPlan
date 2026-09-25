@@ -4,10 +4,7 @@ import { useMemo, useState } from "react";
 
 import { DataTable } from "@/components/data-table";
 
-import ClientToolbar from "./ClientToolbar";
-import BulkActions from "./BulkActions";
-
-import { clientColumns } from "./ClientColumns";
+import { ClientToolbar, BulkActions, clientColumns } from ".";
 import { clients } from "./mockData";
 
 export default function ClientTable() {

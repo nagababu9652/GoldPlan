@@ -1,10 +1,12 @@
 "use client";
 
-import DataTable from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
 
 import {
 meetingColumns,
 } from "./meeting.columns";
+
+import { Meeting } from "@/components/data-table/examples/meeting.types";
 
 interface Props{
 

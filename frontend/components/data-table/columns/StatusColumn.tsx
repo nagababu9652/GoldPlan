@@ -10,7 +10,7 @@ const COLORS = {
   Active: "success",
   Pending: "warning",
   Inactive: "secondary",
-  Rejected: "destructive",
+  Rejected: "danger",
 };
 
 export default function StatusColumn({
@@ -19,9 +19,9 @@ export default function StatusColumn({
   return (
     <Badge
       variant={
-        COLORS[
+        (COLORS[
           value as keyof typeof COLORS
-        ] ?? "secondary"
+        ] ?? "secondary") as any
       }
     >
       {value}

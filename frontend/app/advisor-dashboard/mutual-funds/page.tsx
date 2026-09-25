@@ -6,6 +6,8 @@ import MutualFundTable from "./MutualFundTable";
 
 import { getMutualFunds } from "./mutual-fund.service";
 
+import { MutualFund } from "@/components/data-table/examples/mutual-fund.types";
+
 export default function MutualFundsPage() {
 
   const [mutualFunds, setMutualFunds] = useState<MutualFund[]>([]);

@@ -7,6 +7,8 @@ export { default as StatCardContent } from "./StatCardContent";
 export { default as StatCardFooter } from "./StatCardFooter";
 
 export { default as StatCardTrend } from "./StatCardTrend";
+export { default as KPIGrid } from "./KPIGrid";
+
 
 export type {
   StatCardProps,
