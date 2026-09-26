@@ -67,7 +67,7 @@ export default function PortfolioPerformance({
 
   if (loading) {
     return (
-      <section className="rounded-2xl border border-line bg-bone p-6 lg:p-7">
+      <section className="card-surface rounded-2xl border border-line bg-bone p-6 lg:p-7">
         <div className="mb-7">
           <div className="label-mono text-ash">
             PORTFOLIO
@@ -92,7 +92,7 @@ export default function PortfolioPerformance({
 
   if (error || !portfolio) {
     return (
-      <section className="rounded-2xl border border-line bg-bone p-6 lg:p-7">
+      <section className="card-surface rounded-2xl border border-line bg-bone p-6 lg:p-7">
         <div className="mb-7">
           <div className="label-mono text-ash">
             PORTFOLIO
@@ -114,7 +114,7 @@ export default function PortfolioPerformance({
     portfolio.returns_percentage >= 0;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-line bg-bone">
+    <section className="card-surface overflow-hidden rounded-2xl border border-line bg-bone">
       {/* Header */}
       <div className="border-b border-line p-6 lg:p-7">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">

@@ -35,7 +35,7 @@ export default function AdvisorSnapshot({
     0;
 
   return (
-    <section className="flex flex-col rounded-2xl border border-line bg-bone p-6 lg:p-7">
+    <section className="card-surface flex flex-col rounded-2xl border border-line bg-bone p-6 lg:p-7">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="label-mono text-ash">

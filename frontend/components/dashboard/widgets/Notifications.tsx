@@ -9,7 +9,7 @@ import {
 
 export default function Notifications() {
   return (
-    <section className="overflow-hidden rounded-2xl border border-line bg-bone">
+    <section className="card-surface overflow-hidden rounded-2xl border border-line bg-bone">
       {/* Header */}
       <div className="flex items-end justify-between border-b border-line p-6 lg:p-7">
         <div>

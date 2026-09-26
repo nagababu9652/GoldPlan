@@ -194,7 +194,7 @@ export default function Navigation() {
       onMouseLeave={() => setOpenMega(null)}
     >
       {/* Top utility bar */}
-      <div className="hidden lg:flex items-center justify-between border-b border-line/70 px-8 py-1.5 text-[11px] font-mono uppercase tracking-wider2 text-ash">
+      <div className="hidden lg:flex items-center justify-between border-b border-line/70 shell-gutter py-1.5 text-[11px] font-mono uppercase tracking-wider2 text-ash">
         <div className="flex items-center gap-6">
           <span className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full live-dot" />
@@ -210,7 +210,7 @@ export default function Navigation() {
       </div>
 
       {/* Main bar */}
-      <div className="flex items-center justify-between px-4 lg:px-8 h-14 lg:h-16">
+      <div className="flex items-center justify-between shell-gutter h-14 lg:h-16">
         {/* Brand */}
         <a href="/" className="flex items-center gap-2 lg:gap-3 shrink-0" data-testid="brand-logo">
           <div className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-antique bg-obsidian text-bone flex items-center justify-center">
@@ -296,7 +296,7 @@ export default function Navigation() {
             className="hidden lg:block absolute left-0 right-0 top-full bg-bone border-t border-b border-line shadow-[0_24px_40px_-24px_rgba(12,11,10,0.18)]"
             data-testid={`mega-menu-${openMega.toLowerCase()}`}
           >
-            <div className="max-w-[1440px] mx-auto px-8 py-10 grid grid-cols-12 gap-10">
+            <div className="shell-gutter py-10 grid grid-cols-12 gap-10">
               {(() => {
                 const current = navItems.find((i) => i.label === openMega) as Extract<NavItem, { columns: any }>;
                 const cols = current.columns;
@@ -362,7 +362,7 @@ export default function Navigation() {
             className="lg:hidden bg-bone border-t border-line overflow-hidden"
             data-testid="mobile-drawer"
           >
-            <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-6 space-y-1">
+            <div className="shell-gutter py-6 space-y-1">
                {navItems.map((item) => (
                  <a
                    key={item.label}

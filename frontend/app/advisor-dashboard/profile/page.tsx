@@ -36,7 +36,7 @@ export default function AdvisorProfilePage() {
 
   return (
     <div className="page-frame">
-      <section className="px-6 lg:px-10 py-8 lg:py-12">
+      <section className="shell-pad py-8 lg:py-12">
         <div className="mb-10">
           <div className="label-mono text-ash mb-3">&mdash; Profile</div>
           <h1 className="display text-[36px] lg:text-[48px]">

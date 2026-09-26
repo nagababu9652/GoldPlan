@@ -40,8 +40,9 @@ export default function KPIGrid({
     advisor.portfolio_change ?? 0;
 
   return (
-    <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+    <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
+        href="/advisor-dashboard/portfolio"
         title="Assets Under Management"
         value={formatCurrency(portfolioValue)}
         subtitle="Current portfolio value"
@@ -49,6 +50,7 @@ export default function KPIGrid({
       />
 
       <StatCard
+        href="/advisor-dashboard/clients"
         title="Total Clients"
         value={advisor.total_clients ?? 0}
         subtitle={`${advisor.active_clients ?? 0} active clients`}
@@ -56,6 +58,7 @@ export default function KPIGrid({
       />
 
       <StatCard
+        href="/advisor-dashboard/portfolio"
         title="Portfolio Return"
         value={`${portfolioChange >= 0 ? "+" : ""}${portfolioChange}%`}
         subtitle="vs last month"
@@ -64,6 +67,7 @@ export default function KPIGrid({
       />
 
       <StatCard
+        href="/advisor-dashboard/meetings"
         title="Upcoming Reviews"
         value={advisor.upcoming_reviews ?? 0}
         subtitle="Scheduled reviews"

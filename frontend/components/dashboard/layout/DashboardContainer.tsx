@@ -8,23 +8,20 @@ interface DashboardContainerProps {
   className?: string;
 }
 
+/**
+ * Page body column for the advisor dashboard.
+ *
+ * Spacing comes from `.shell-body` (centred, narrower than the chrome, with
+ * its own gutter and vertical rhythm) so the body never shares the header's
+ * scale. Rendered as a div — the dashboard layout already provides <main>.
+ */
 export default function DashboardContainer({
   children,
   className,
 }: DashboardContainerProps) {
   return (
-    <main
-      className={cn(
-        "mx-auto w-full max-w-[1480px]",
-        "px-4 py-7",
-        "sm:px-6 sm:py-8",
-        "lg:px-8",
-        "xl:px-10",
-        "space-y-8",
-        className
-      )}
-    >
+    <div className={cn("shell-body space-y-8", className)}>
       {children}
-    </main>
+    </div>
   );
 }

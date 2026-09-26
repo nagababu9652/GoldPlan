@@ -170,7 +170,7 @@ a, button { cursor: pointer; }
 }
 
 .page-frame {
-  max-width: 1440px;
+  max-width: 1320px;
   margin: 0 auto;
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
@@ -180,6 +180,132 @@ a, button { cursor: pointer; }
 }
 @media (max-width: 768px) {
   .page-frame { border-left: none; border-right: none; }
+}
+
+/* ===========================================================================
+   Application shell spacing
+   Chrome (top bar, module nav, breadcrumb) is full-bleed and uses .shell-gutter:
+   a tight, constant inset. Page bodies use .shell-body: a centred, narrower
+   column with a wider gutter and its own vertical rhythm. Keeping the two on
+   separate scales stops chrome and content reading as one stretched surface.
+   =========================================================================== */
+
+.shell-gutter {
+  width: 100%;
+  padding-inline: 16px;
+}
+
+@media (min-width: 640px) {
+  .shell-gutter { padding-inline: 24px; }
+}
+
+@media (min-width: 1024px) {
+  .shell-gutter { padding-inline: 30px; }
+}
+
+@media (min-width: 1440px) {
+  .shell-gutter { padding-inline: 44px; }
+}
+
+.shell-body {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: 20px;
+  padding-block: 26px;
+}
+
+@media (min-width: 640px) {
+  .shell-body { padding-inline: 32px; padding-block: 34px; }
+}
+
+@media (min-width: 1024px) {
+  .shell-body { padding-inline: 44px; }
+}
+
+@media (min-width: 1440px) {
+  .shell-body { padding-inline: 60px; padding-block: 42px; }
+}
+
+/* Horizontal inset for page bodies defined outside .shell-body (the framed
+   marketing column). Mirrors .shell-body's gutter scale so every page in
+   the site lines up on the same 20/32/44/60 rhythm. */
+.shell-pad {
+  padding-inline: 20px;
+}
+
+@media (min-width: 640px) {
+  .shell-pad { padding-inline: 32px; }
+}
+
+@media (min-width: 1024px) {
+  .shell-pad { padding-inline: 44px; }
+}
+
+@media (min-width: 1440px) {
+  .shell-pad { padding-inline: 60px; }
+}
+
+/* Interactive card surface — lifts, darkens its hairline and takes a
+   keyboard focus ring. Used when the whole card navigates somewhere. */
+.card-interactive {
+  transition:
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-interactive:hover {
+  transform: translateY(-3px);
+  border-color: rgb(12 11 10 / 0.28);
+  background-color: var(--bg-secondary);
+  box-shadow: 0 18px 34px -26px rgb(12 11 10 / 0.55);
+}
+
+.card-interactive:active {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px -18px rgb(12 11 10 / 0.5);
+}
+
+.card-interactive:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Passive card surface — responds to the pointer without implying a link. */
+.card-surface {
+  transition:
+    border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-surface:hover {
+  border-color: rgb(12 11 10 / 0.22);
+  box-shadow: 0 16px 30px -28px rgb(12 11 10 / 0.5);
+}
+
+/* Visible keyboard focus for every link and button in the shell. */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-interactive,
+  .card-surface { transition: none; }
+  .card-interactive:hover,
+  .card-interactive:active { transform: none; }
 }
 
 .display {

@@ -1,11 +1,15 @@
 "use client";
 
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+
 interface StatCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
   trend?: number;
   icon?: React.ReactNode;
+  href?: string;
 }
 
 export default function StatCard({
@@ -14,9 +18,15 @@ export default function StatCard({
   subtitle,
   trend,
   icon,
+  href,
 }: StatCardProps) {
-  return (
-    <section className="group rounded-2xl border border-line bg-bone p-5 transition-colors duration-200 hover:bg-bone-deep lg:p-6">
+  const cardClassName = cn(
+    "group block rounded-2xl border border-line bg-bone p-5 lg:p-6",
+    href ? "card-interactive" : "card-surface"
+  );
+
+  const content = (
+    <>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="label-mono text-ash">
@@ -55,6 +65,20 @@ export default function StatCard({
           </span>
         </div>
       )}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={cardClassName}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <section className={cardClassName}>
+      {content}
     </section>
   );
 }

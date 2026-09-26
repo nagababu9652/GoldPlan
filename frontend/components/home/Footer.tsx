@@ -20,7 +20,7 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-bone/10 bg-obsidian text-bone ">
-      <div className="border-10 border-black mx-auto max-w-7xl px-6 py-20">
+      <div className="shell-gutter py-20">
         <div
           className="grid gap-12"
           style={{gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))'}}

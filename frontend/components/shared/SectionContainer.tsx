@@ -12,7 +12,7 @@ export default function SectionContainer({
   ...props
 }: SectionContainerProps) {
   return (
-    <Tag className={`px-6 lg:px-10 ${className}`} {...props}>
+    <Tag className={`shell-pad ${className}`} {...props}>
       {children}
     </Tag>
   );

@@ -217,7 +217,7 @@ export default function AdvisorDashboardLayout({
       <div className="min-h-screen">
         {/* Top black header */}
         <header className="sticky top-0 z-50 bg-obsidian text-bone">
-            <div className="mx-auto flex min-h-[58px] w-full max-w-[1600px] items-center gap-5 px-5 sm:px-8 xl:px-10">
+            <div className="shell-gutter flex min-h-[58px] items-center gap-5">
             {/* Logo */}
             <Link
               href="/advisor-dashboard"
@@ -305,7 +305,7 @@ export default function AdvisorDashboardLayout({
 
         {/* Module navigation */}
         <nav className="relative z-40 hidden border-b border-line bg-bone lg:block">
-            <div className="mx-auto flex min-h-[76px] w-full max-w-[1600px] items-stretch overflow-visible px-5 sm:px-8 xl:px-10">
+            <div className="shell-gutter flex min-h-[76px] items-stretch overflow-visible">
             {navigation.map((module) => {
               const Icon = module.icon;
               const active = isModuleActive(
@@ -534,7 +534,7 @@ export default function AdvisorDashboardLayout({
 
         {/* Breadcrumb */}
         <div className="border-b border-line bg-bone-deep">
-          <div className="flex min-h-[38px] items-center px-4 text-[11px] text-ash sm:px-6 lg:px-8">
+          <div className="shell-gutter flex min-h-[38px] items-center text-[11px] text-ash">
             <Link
               href="/advisor-dashboard"
               className="hover:text-obsidian"
@@ -553,7 +553,7 @@ export default function AdvisorDashboardLayout({
         </div>
 
         {/* Page */}
-        <main className="mx-auto min-w-0 w-full max-w-[1600px]">
+        <main className="min-w-0 w-full">
           {children}
         </main>
       </div>

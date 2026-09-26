@@ -27,7 +27,7 @@ export default function DashboardPage() {
       <main className="min-h-screen bg-bone text-obsidian " data-testid="dashboard-page">
         <Navigation />
         <div className="page-frame grain">
-        <section className="px-6 lg:px-10 py-16 lg:py-24">
+        <section className="shell-pad py-16 lg:py-24">
           <div className="grid grid-cols-12 gap-6 mb-12">
             <div className="col-span-12 lg:col-span-8">
               <div className="label-mono text-ash mb-3">&mdash; 011 &middot; Dashboard</div>

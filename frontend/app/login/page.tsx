@@ -77,7 +77,7 @@ export default function LoginPage() {
       <Navigation />
 
       <div className="page-frame grain">
-        <section className="px-6 lg:px-10 py-20 lg:py-32">
+        <section className="shell-pad py-16 lg:py-24">
           <div className="grid grid-cols-12 gap-6 lg:gap-10">
             {/* Left: Form */}
             <div className="col-span-12 lg:col-span-5">
