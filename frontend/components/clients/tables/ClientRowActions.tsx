@@ -17,10 +17,12 @@ import { Button } from "@/components/ui/button";
 
 interface Props {
   clientId: string;
+  onView?: (clientId: string) => void;
 }
 
 export default function ClientRowActions({
   clientId,
+  onView,
 }: Props) {
   return (
     <Dropdown>
@@ -34,7 +36,9 @@ export default function ClientRowActions({
       </DropdownTrigger>
 
       <DropdownContent align="end">
-        <DropdownItem>
+        <DropdownItem
+          onClick={() => onView?.(clientId)}
+        >
           <Eye className="mr-2 h-4 w-4" />
           View
         </DropdownItem>

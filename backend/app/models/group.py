@@ -11,7 +11,17 @@ class Group(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     advisor_id = Column(Integer, ForeignKey("identity.users.id"), nullable=False, index=True)
-    head_client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
+    head_client_id = Column(
+        Integer,
+        ForeignKey("crm.customers.id"),
+        nullable=True,
+    )
+
+    head_client = relationship(
+    "Client",
+    foreign_keys=[head_client_id],
+    post_update=True,
+    )
 
     # Group Information
     name = Column(String(200), nullable=False, index=True)
@@ -37,9 +47,12 @@ class Group(Base):
 
     # Relationships
     advisor = relationship("User", backref="groups")
-    head_client = relationship("Client", foreign_keys=[head_client_id], post_update=True)
-    clients = relationship("Client", back_populates="group", foreign_keys="Client.group_id")
-
+    head_client = relationship(
+    "Customer",
+    foreign_keys=[head_client_id],
+    primaryjoin="Group.head_client_id == Customer.id",
+    post_update=True,
+)
     __table_args__ = (
         Index('idx_group_advisor_type', 'advisor_id', 'group_type'),
     )

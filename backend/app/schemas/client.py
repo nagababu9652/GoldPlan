@@ -87,10 +87,17 @@ class ClientResponse(ClientBase):
 
     id: int
     advisor_id: int
+
+    customer_code: Optional[str] = None
+    status: Optional[str] = None
+    resident_status: Optional[str] = None
+    onboarding_date: Optional[date] = None
+
     is_active: bool
     assigned_date: Optional[datetime] = None
     created_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime] = None
+    kyc_verified_date: Optional[date] = None
     group_name: Optional[str] = None
 
 

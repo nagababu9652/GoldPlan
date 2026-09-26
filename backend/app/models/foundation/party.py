@@ -25,6 +25,16 @@ class Party(AuditMixin, Base):
     date_of_incorporation = Column(Date, nullable=True)
     gender_id = Column(BigInteger, ForeignKey("foundation.lookup_values.id"), nullable=True)
     marital_status_id = Column(BigInteger, ForeignKey("foundation.lookup_values.id"), nullable=True)
+    gender = relationship(
+        "LookupValue",
+        foreign_keys=[gender_id],
+        lazy="selectin",
+    )
+    marital_status = relationship(
+        "LookupValue",
+        foreign_keys=[marital_status_id],
+        lazy="selectin",
+    )
     pan_number = Column(String(20), nullable=True)
     aadhaar_number = Column(String(20), nullable=True)
     gst_number = Column(String(20), nullable=True)
@@ -61,6 +71,9 @@ class PartyAddress(AuditMixin, Base):
     remarks = Column(Text, nullable=True)
 
     party = relationship("Party", back_populates="addresses", lazy="selectin")
+    city = relationship("City", foreign_keys=[city_id], lazy="selectin")
+    state = relationship("State", foreign_keys=[state_id], lazy="selectin")
+    country = relationship("Country", foreign_keys=[country_id], lazy="selectin")
 
 
 class PartyContact(AuditMixin, Base):

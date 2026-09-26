@@ -38,7 +38,9 @@ from ..models.organization.assignment import EmployeeAssignment
 from ..models.organization.employee import Employee
 
 router = APIRouter(prefix="/advisors", tags=["advisors"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/auth/swagger-login"
+)
 
 
 def get_current_advisor(
@@ -318,119 +320,6 @@ def get_advisor_customer_ids(
     )
 
     return [row.entity_id for row in assignments]
-
-
-@router.get("/clients")
-def get_clients(
-    advisor: User = Depends(get_current_advisor),
-    db: Session = Depends(get_db),
-):
-    """List customers assigned to the current advisor."""
-
-    today = date.today()
-
-    # Find the employee record for the logged-in advisor.
-    employee = (
-        db.query(Employee)
-        .filter(Employee.party_id == advisor.party_id)
-        .first()
-    )
-
-    if not employee:
-        return {
-            "advisor_id": advisor.id,
-            "employee_id": None,
-            "total": 0,
-            "clients": [],
-        }
-
-    # Get currently active CUSTOMER assignments for this advisor.
-    assignments = (
-        db.query(EmployeeAssignment)
-        .filter(
-            EmployeeAssignment.employee_id == employee.id,
-            EmployeeAssignment.entity_type == "CUSTOMER",
-            EmployeeAssignment.assignment_type == "ADVISOR",
-            EmployeeAssignment.effective_from <= today,
-            (
-                (EmployeeAssignment.effective_to.is_(None))
-                | (EmployeeAssignment.effective_to >= today)
-            ),
-        )
-        .all()
-    )
-
-    client_ids = [assignment.entity_id for assignment in assignments]
-
-    if not client_ids:
-        return {
-            "advisor_id": advisor.id,
-            "employee_id": employee.id,
-            "total": 0,
-            "clients": [],
-        }
-
-    clients = (
-        db.query(Customer)
-        .filter(Customer.id.in_(client_ids))
-        .order_by(Customer.id.desc())
-        .all()
-    )
-
-    return {
-        "advisor_id": advisor.id,
-        "employee_id": employee.id,
-        "total": len(clients),
-        "clients": [
-            {
-                "id": client.id,
-                "customer_code": client.customer_code,
-                "name": client.party.display_name if client.party else "",
-                "status": client.customer_status,
-                "occupation": client.occupation,
-                "annual_income": (
-                    float(client.annual_income)
-                    if client.annual_income is not None
-                    else None
-                ),
-                "net_worth": (
-                    float(client.net_worth)
-                    if client.net_worth is not None
-                    else None
-                ),
-                "risk_profile": client.risk_profile,
-                "resident_status": client.resident_status,
-                "onboarding_date": (
-                    client.onboarding_date.isoformat()
-                    if client.onboarding_date
-                    else None
-                ),
-            }
-            for client in clients
-        ],
-    }
-
-
-@router.post("/clients", status_code=status.HTTP_201_CREATED)
-def create_client(payload: UserRegister, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
-    """Create a user account for a client via the new identity flow."""
-    email = payload.email
-    if not email:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Client email is required")
-
-    existing = auth.get_user_by_email(db, email)
-    if existing:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A user with this email already exists")
-
-    user = auth.create_user(db, payload.model_dump())
-
-    return {
-        "id": user.id,
-        "email": user.email,
-        "display_name": user.display_name,
-        "party_id": user.party_id,
-        "created_by": advisor.id,
-    }
 
 
 @router.post("/clients/{client_id}/reset-password", response_model=MessageResponse)

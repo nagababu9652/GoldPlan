@@ -1,7 +1,6 @@
 "use client";
 
 import type { Client } from "@/lib/api";
-
 import { Card } from "@/components/ui/card";
 
 interface Props {
@@ -45,7 +44,7 @@ export default function ClientSummaryCards({
         </p>
 
         <h2 className="mt-2 text-xl font-semibold">
-          {client.risk_profile || "—"}
+          {client.risk_profile || "Not set"}
         </h2>
       </Card>
 
@@ -55,7 +54,7 @@ export default function ClientSummaryCards({
         </p>
 
         <h2 className="mt-2 text-xl font-semibold">
-          {client.occupation || "—"}
+          {client.occupation || "Not set"}
         </h2>
       </Card>
     </div>

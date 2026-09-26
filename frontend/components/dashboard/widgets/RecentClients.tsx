@@ -192,14 +192,14 @@ export default function RecentClients() {
                 {/* Avatar */}
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line bg-bone-deep transition-colors group-hover:border-obsidian/20">
                   <span className="font-serif text-sm text-obsidian">
-                    {getInitials(client.name)}
+                    {getInitials(`${client.first_name} ${client.last_name}`.trim())}
                   </span>
                 </div>
 
                 {/* Client */}
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium text-obsidian">
-                    {client.name || "Unnamed Client"}
+                    {`${client.first_name} ${client.last_name}`.trim() || "Unnamed Client"}
                   </div>
 
                   <div className="mt-1 truncate text-xs text-ash">

@@ -4,7 +4,7 @@ Uses the new identity schema with session management.
 """
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request, BackgroundTasks
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from ..database.session import get_db
@@ -20,7 +20,7 @@ from ..services.otp_service import create_otp, verify_otp
 from ..core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/swagger-login")
 
 
 @router.post("/send-otp", response_model=OTPResponse)
@@ -90,6 +90,58 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
 
+
+@router.post("/swagger-login", response_model=Token)
+def swagger_login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    response: Response = None,
+    request: Request = None,
+    db: Session = Depends(get_db),
+):
+    """OAuth2-compatible login endpoint for Swagger UI."""
+
+    user = auth.authenticate_user(
+        db,
+        form_data.username,
+        form_data.password,
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is deactivated",
+        )
+
+    session, access_token, refresh_token = auth.create_session(
+        db=db,
+        user=user,
+        ip_address=request.client.host if request and request.client else None,
+        user_agent=request.headers.get("user-agent") if request else None,
+    )
+
+    if response is not None:
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=False,
+            samesite="lax",
+            max_age=7 * 24 * 60 * 60,
+        )
+
+    return Token(
+        access_token=access_token,
+        token_type="bearer",
+        refresh_token=refresh_token,
+        expires_in=settings.access_token_expire_minutes * 60,
+    )
 
 @router.post("/login", response_model=Token)
 def login(

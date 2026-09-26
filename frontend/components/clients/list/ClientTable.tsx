@@ -53,12 +53,14 @@ export default function ClientTable() {
     if (!value) return true;
 
     return [
-      client.name,
-      client.customer_code,
+      client.first_name,
+      client.last_name,
+      client.email,
+      client.phone,
       client.occupation,
+      client.pan_number,
       client.risk_profile,
-      client.resident_status,
-      client.status,
+      client.kyc_status,
     ]
       .filter(Boolean)
       .join(" ")

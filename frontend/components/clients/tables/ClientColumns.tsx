@@ -2,88 +2,76 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 
-import { Client } from "./types";
+import { Client } from "@/lib/api";
 
-import { ClientAvatarCell, ClientStatusBadge, ClientRowActions } from ".";
+import {
+  ClientAvatarCell,
+  ClientStatusBadge,
+  ClientRowActions,
+} from ".";
 
-export const clientColumns:ColumnDef<Client>[]=[
+export const clientColumns = (
+  onView: (clientId: string) => void
+): ColumnDef<Client>[] => [
+  {
+    id: "name",
+    header: "Client",
+    cell: ({ row }) => {
+      const client = row.original;
 
-{
+      const name =
+        `${client.first_name} ${client.last_name}`.trim();
 
-accessorKey:"name",
+      return (
+        <ClientAvatarCell
+          name={name}
+          email={client.email ?? ""}
+        />
+      );
+    },
+  },
 
-header:"Client",
+  {
+    accessorKey: "phone",
+    header: "Phone",
+    cell: ({ row }) => row.original.phone ?? "—",
+  },
 
-cell:({row})=>(
+  {
+    accessorKey: "group_name",
+    header: "Group",
+    cell: ({ row }) => row.original.group_name ?? "—",
+  },
 
-<ClientAvatarCell
+  {
+    accessorKey: "risk_profile",
+    header: "Risk",
+    cell: ({ row }) => row.original.risk_profile ?? "—",
+  },
 
-name={row.original.name}
+  {
+    id: "kyc_status",
+    header: "KYC",
+    cell: ({ row }) => row.original.kyc_status ?? "—",
+  },
 
-email={row.original.email}
+  {
+    id: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <ClientStatusBadge
+        status={row.original.is_active ? "ACTIVE" : "INACTIVE"}
+      />
+    ),
+  },
 
-/>
-
-)
-
-},
-
-{
-
-accessorKey:"advisor",
-
-header:"Advisor",
-
-},
-
-{
-
-accessorKey:"aum",
-
-header:"AUM",
-
-cell:({row})=>
-
-`₹ ${row.original.aum.toLocaleString("en-IN")}`
-
-},
-
-{
-
-accessorKey:"risk",
-
-header:"Risk",
-
-},
-
-{
-
-accessorKey:"status",
-
-header:"Status",
-
-cell:({row})=>
-
-<ClientStatusBadge
-
-status={row.original.status}
-
-/>
-
-},
-
-{
-
-id:"actions",
-
-cell:({row})=>
-
-<ClientRowActions
-
-clientId={row.original.id}
-
-/>
-
-}
-
+  {
+    id: "actions",
+    cell: ({ row }) => (
+      <ClientRowActions
+        clientId={String(row.original.id)}
+        onView={onView}
+      />
+    ),
+  },
 ];

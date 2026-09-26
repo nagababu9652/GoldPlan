@@ -69,19 +69,31 @@ export const clientColumns: ColumnDef<Client>[] = [
   },
 
   {
-    accessorKey: "name",
+    id: "client",
+    accessorKey: "first_name",
     header: "Client",
-    cell: ({ row }) => (
-      <div className="min-w-[180px]">
-        <div className="font-medium text-obsidian">
-          {row.original.name || "Unnamed Client"}
-        </div>
+    cell: ({ row }) => {
+      const client = row.original;
 
-        <div className="mt-1 text-xs text-ash">
-          {row.original.customer_code}
+      const fullName = [
+        client.first_name,
+        client.last_name,
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      return (
+        <div className="min-w-[200px]">
+          <div className="font-medium text-obsidian">
+            {fullName || "Unnamed Client"}
+          </div>
+
+          <div className="mt-1 text-xs text-ash">
+            {client.email || client.phone || "No contact details"}
+          </div>
         </div>
-      </div>
-    ),
+      );
+    },
   },
 
   {
@@ -128,35 +140,51 @@ export const clientColumns: ColumnDef<Client>[] = [
   },
 
   {
-    accessorKey: "resident_status",
-    header: "Resident",
-    cell: ({ row }) =>
-      row.original.resident_status || "—",
-  },
-
-  {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "kyc_status",
+    header: "KYC",
     cell: ({ row }) => {
-      const status = row.original.status?.toUpperCase();
+      const kycStatus =
+        row.original.kyc_status?.toUpperCase();
+
+      if (!kycStatus) {
+        return <span className="text-ash">—</span>;
+      }
 
       const variant =
-        statusVariant[status as keyof typeof statusVariant] ??
-        "secondary";
+        kycStatus === "VERIFIED"
+          ? "success"
+          : "secondary";
 
       return (
         <Badge variant={variant}>
-          {formatStatus(row.original.status)}
+          {formatStatus(row.original.kyc_status)}
         </Badge>
       );
     },
   },
 
   {
-    accessorKey: "onboarding_date",
-    header: "Onboarded",
+    id: "status",
+    accessorKey: "is_active",
+    header: "Status",
     cell: ({ row }) => {
-      const date = row.original.onboarding_date;
+      const status = row.original.is_active
+        ? "ACTIVE"
+        : "INACTIVE";
+
+      return (
+        <Badge variant={statusVariant[status]}>
+          {formatStatus(status)}
+        </Badge>
+      );
+    },
+  },
+
+  {
+    accessorKey: "created_at",
+    header: "Created",
+    cell: ({ row }) => {
+      const date = row.original.created_at;
 
       if (!date) {
         return <span className="text-ash">—</span>;

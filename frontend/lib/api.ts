@@ -221,6 +221,55 @@ export async function refreshToken(): Promise<TokenResponse> {
   return data;
 }
 
+
+
+
+async function advisorRequest(
+  endpoint: string,
+  token: string,
+  options: RequestInit = {}
+) {
+  const makeRequest = async (accessToken: string) => {
+    const headers = new Headers(options.headers);
+
+    headers.set('Authorization', `Bearer ${accessToken}`);
+    headers.set('Accept', 'application/json');
+
+    if (options.body) {
+      headers.set('Content-Type', 'application/json');
+    }
+
+    return fetch(`${API_BASE_URL}/advisors${endpoint}`, {
+      ...options,
+      headers,
+      credentials: 'include',
+    });
+  };
+
+  let response = await makeRequest(token);
+
+  // Access token expired/invalid → refresh and retry once
+  if (response.status === 401) {
+    try {
+      const refreshed = await refreshToken();
+
+      response = await makeRequest(refreshed.access_token);
+    } catch (error) {
+      console.error('Automatic token refresh failed:', error);
+
+      localStorage.removeItem('finplan_token');
+      localStorage.removeItem('finplan_refresh_token');
+      localStorage.removeItem('finplan_user');
+
+      window.location.href = '/login';
+
+      throw new Error('Session expired. Please log in again.');
+    }
+  }
+
+  return response;
+}
+
 // ==================== PASSWORD RESET API ====================
 
 export interface ForgotPasswordResponse {
@@ -349,40 +398,13 @@ export interface AdvisorProfile {
   risk_profile: string;
 }
 
-export async function advisorFetch(endpoint: string, token: string) {
-  const makeRequest = async (accessToken: string) => {
-    return fetch(`${API_BASE_URL}/advisors${endpoint}`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: 'application/json',
-      },
-      credentials: 'include',
-    });
-  };
-
-  let response = await makeRequest(token);
-
-  // Access token expired/invalid → refresh and retry once
-  if (response.status === 401) {
-
-
-    try {
-      const refreshed = await refreshToken();
-
-      response = await makeRequest(refreshed.access_token);
-    } catch (error) {
-      console.error('Automatic token refresh failed:', error);
-
-      localStorage.removeItem('finplan_token');
-      localStorage.removeItem('finplan_refresh_token');
-      localStorage.removeItem('finplan_user');
-
-      window.location.href = '/login';
-
-      throw new Error('Session expired. Please log in again.');
-    }
-  }
+export async function advisorFetch(
+  endpoint: string,
+  token: string
+) {
+  const response = await advisorRequest(endpoint, token, {
+    method: 'GET',
+  });
 
   if (!response.ok) {
     let errorMessage = 'Request failed';
@@ -428,23 +450,53 @@ export function getAdvisorProfile(token: string): Promise<AdvisorProfile> {
 
 export interface Client {
   id: number;
-  customer_code: string;
-  name: string;
-  status: string;
-  occupation?: string | null;
-  annual_income?: number | null;
-  net_worth?: number | null;
-  risk_profile?: string | null;
+  advisor_id: number;
+
+  customer_code?: string | null;
+  status?: string | null;
   resident_status?: string | null;
   onboarding_date?: string | null;
-  first_name?: string;
-  last_name?: string;
+
+  first_name: string;
+  last_name: string;
   email?: string | null;
   phone?: string | null;
   alternate_phone?: string | null;
+  date_of_birth?: string | null;
+  age?: number | null;
+  gender?: string | null;
+  marital_status?: string | null;
+  occupation?: string | null;
   pan_number?: string | null;
+  aadhar_number?: string | null;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  country?: string | null;
+  annual_income?: number | null;
+  net_worth?: number | null;
+  risk_profile?: string | null;
+  investment_experience?: string | null;
+  financial_goals?: string | null;
+  nominee_name?: string | null;
+  nominee_relation?: string | null;
+  nominee_contact?: string | null;
+  bank_name?: string | null;
+  account_number?: string | null;
+  ifsc_code?: string | null;
+  account_type?: string | null;
+  kyc_status?: string | null;
+  kyc_verified_date?: string | null;
+  kyc_document_url?: string | null;
+  notes?: string | null;
   group_id?: number | null;
-  is_active?: boolean;
+  group_name?: string | null;
+  is_active: boolean;
+  assigned_date?: string | null;
+  created_at: string;
+  updated_at?: string | null;
 }
 
 export interface ClientCreate {
@@ -530,56 +582,70 @@ export interface GroupListResponse {
   total: number;
 }
 
-export async function advisorPost(endpoint: string, token: string, body: any) {
-  const response = await fetch(`${API_BASE_URL}/advisors${endpoint}`, {
+export async function advisorPost(
+  endpoint: string,
+  token: string,
+  body: any
+) {
+  const response = await advisorRequest(endpoint, token, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
     body: JSON.stringify(body),
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Request failed');
+    const errorBody = await response.json().catch(() => null);
+
+    console.error("API ERROR:", {
+      status: response.status,
+      body: errorBody,
+    });
+
+    throw new Error(
+      typeof errorBody === "string"
+        ? errorBody
+        : errorBody?.detail ||
+          JSON.stringify(errorBody, null, 2)
+    );
   }
 
   return response.json();
 }
 
-export async function advisorPut(endpoint: string, token: string, body: any) {
-  const response = await fetch(`${API_BASE_URL}/advisors${endpoint}`, {
+export async function advisorPut(
+  endpoint: string,
+  token: string,
+  body: any
+) {
+  const response = await advisorRequest(endpoint, token, {
     method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
     body: JSON.stringify(body),
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Request failed');
+    const error = await response.json().catch(() => null);
+
+    throw new Error(
+      error?.detail || 'Request failed'
+    );
   }
 
   return response.json();
 }
 
-export async function advisorDelete(endpoint: string, token: string) {
-  const response = await fetch(`${API_BASE_URL}/advisors${endpoint}`, {
+export async function advisorDelete(
+  endpoint: string,
+  token: string
+) {
+  const response = await advisorRequest(endpoint, token, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/json',
-    },
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Request failed');
+    const error = await response.json().catch(() => null);
+
+    throw new Error(
+      error?.detail || 'Request failed'
+    );
   }
 
   return response.json();
@@ -604,16 +670,20 @@ export function getClientById(
   return advisorFetch(`/clients/${id}`, token);
 }
 
+export function updateClient(
+  token: string,
+  clientId: string,
+  data: Partial<ClientCreate>
+): Promise<Client> {
+  return advisorPut(`/clients/${clientId}`, token, data);
+}
+
 export function createClient(token: string, data: ClientCreate): Promise<Client> {
   return advisorPost('/clients', token, data);
 }
 
 export function getClient(token: string, id: number): Promise<Client> {
   return advisorFetch(`/clients/${id}`, token);
-}
-
-export function updateClient(token: string, id: number, data: Partial<ClientCreate>): Promise<Client> {
-  return advisorPut(`/clients/${id}`, token, data);
 }
 
 export function deleteClient(token: string, id: number): Promise<{ message: string }> {

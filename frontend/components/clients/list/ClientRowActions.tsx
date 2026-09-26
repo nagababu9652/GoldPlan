@@ -31,13 +31,18 @@ export default function ClientRowActions({
 }: Props) {
   const router = useRouter();
 
+  const clientName =
+    [client.first_name, client.last_name]
+      .filter(Boolean)
+      .join(" ") || "Unnamed Client";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           size="icon"
           variant="ghost"
-          aria-label={`Actions for ${client.name}`}
+          aria-label={`Actions for ${clientName}`}
         >
           ⋮
         </Button>
@@ -55,7 +60,13 @@ export default function ClientRowActions({
           View
         </DropdownMenuItem>
 
-        <DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() =>
+            router.push(
+              `/advisor-dashboard/clients/${client.id}/edit`
+            )
+          }
+        >
           <Pencil className="mr-2 h-4 w-4" />
           Edit
         </DropdownMenuItem>

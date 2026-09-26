@@ -282,7 +282,7 @@ export default function TransactionsPage() {
 
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
-                  {client.name} ({client.customer_code})
+                  {client.first_name} {client.last_name} ({client.customer_code})
                 </option>
               ))}
             </select>
