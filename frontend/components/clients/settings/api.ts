@@ -1,5 +1,10 @@
-import { clientSettings } from "./mock-data";
-
 export async function getClientSettings() {
-  return clientSettings;
+  return {
+    riskProfile: "Moderate" as const,
+    communicationMode: "Email" as const,
+    kycVerified: false,
+    fatcaCompleted: false,
+    bankAccounts: [] as never[],
+    nominees: [] as never[],
+  };
 }

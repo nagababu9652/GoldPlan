@@ -11,7 +11,7 @@ export default function TaxSavingCDPage() {
     <main className="min-h-screen bg-bone text-obsidian">
       <Navigation />
       <div className="page-frame grain">
-        <section className="shell-pad py-16 lg:py-24">
+        <section className="shell-body">
           <div className="grid grid-cols-12 gap-6 lg:gap-10 mb-16">
             <div className="col-span-12 lg:col-span-8">
               <div className="label-mono text-ash mb-4">&mdash; 018 &middot; Tax</div>

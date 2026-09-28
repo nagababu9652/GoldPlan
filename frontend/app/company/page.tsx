@@ -2,6 +2,7 @@
 
 import Navigation from '@/components/home/Navigation';
 import Footer from '@/components/home/Footer';
+import PageFrame from '@/components/shared/PageFrame';
 import { Building2, Users, Briefcase, Target, Award, Handshake, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -52,11 +53,10 @@ const sections = [
 
 export default function CompanyPage() {
   return (
-    <main className="min-h-screen bg-bone text-obsidian" data-testid="company-page">
+    <>
       <Navigation />
-      <div className="page-frame grain">
-        <section className="shell-pad py-16 lg:py-24">
-          <div className="grid grid-cols-12 gap-6 lg:gap-10 mb-16">
+      <PageFrame data-testid="company-page">
+        <div className="grid grid-cols-12 gap-6 lg:gap-10 mb-16">
             <div className="col-span-12 lg:col-span-8">
               <div className="label-mono text-ash mb-4">&mdash; 007 &middot; Company</div>
               <h1 className="display text-[44px] lg:text-[64px]">
@@ -116,9 +116,8 @@ export default function CompanyPage() {
               </div>
             </div>
           </div>
-        </section>
-      </div>
+      </PageFrame>
       <Footer />
-    </main>
+    </>
   );
 }

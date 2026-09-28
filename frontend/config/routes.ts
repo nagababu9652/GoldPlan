@@ -124,6 +124,12 @@ export const routes = {
     schedule: "/meetings/schedule",
   },
 
+  messages: {
+    root: "/messages",
+    list: "/messages/list",
+    compose: "/messages/compose",
+  },
+
   admin: {
     root: "/admin",
 

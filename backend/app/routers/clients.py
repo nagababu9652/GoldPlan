@@ -24,6 +24,7 @@ from ..models.organization.assignment import EmployeeAssignment
 from ..models.foundation.lookup import LookupValue
 from ..models.foundation.party import PartyAddress
 from ..models.foundation.geography import City, State
+from ..models.crm.customer import CustomerGroup, GroupMember
 
 router = APIRouter(
     prefix="/advisors/clients",
@@ -502,8 +503,39 @@ def create_client(
 
     db.add(assignment)
 
+    # Create initial household/group
+    customer_group = CustomerGroup(
+        organization_id=employee.organization_id,
+        group_code=f"G-{customer.id:05d}",
+        group_name=(
+            f"{party.display_name} Household"
+        ),
+        group_type="INDIVIDUAL",
+        head_customer_id=customer.id,
+        primary_branch_id=employee.branch_id,
+        primary_advisor_employee_id=employee.id,
+        risk_profile=customer.risk_profile,
+    )
+
+    db.add(customer_group)
+    db.flush()
+
+    # Add the new client as the primary household member
+    group_member = GroupMember(
+        customer_group_id=customer_group.id,
+        customer_id=customer.id,
+        relationship_type="SELF",
+        is_group_head=True,
+        is_primary=True,
+        joined_on=date.today(),
+    )
+
+    db.add(group_member)
+
     try:
         db.commit()
+
+    
     except IntegrityError as exc:
         db.rollback()
         raise _duplicate_conflict(exc) from exc

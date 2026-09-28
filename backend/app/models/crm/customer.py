@@ -77,6 +77,7 @@ class GroupMember(Base):
     customer_id = Column(BigInteger, ForeignKey("crm.customers.id"), nullable=False)
     relationship_type = Column(String(50), nullable=True)
     is_group_head = Column(Boolean, default=False)
+    is_primary = Column(Boolean, default=False)
     joined_on = Column(Date, default=datetime.utcnow)
     left_on = Column(Date, nullable=True)
     remarks = Column(Text, nullable=True)

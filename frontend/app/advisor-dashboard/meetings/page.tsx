@@ -1,33 +1,19 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
-import MeetingTable from "./MeetingTable";
-
-import { getMeetings } from "./meeting.service";
-
-import { Meeting } from "@/components/data-table/examples/meeting.types";
+import { MeetingTable } from "@/components/meetings/list";
 
 export default function MeetingsPage() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">
+          Meetings
+        </h1>
 
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
+        <p className="mt-2 text-muted-foreground">
+          Schedule and manage client meetings, reviews, and follow-ups.
+        </p>
+      </div>
 
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-
-    getMeetings().then((data) => {
-
-      setMeetings(data);
-
-      setLoading(false);
-
-    });
-
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
-
-  return <MeetingTable meetings={meetings} />;
-
+      <MeetingTable />
+    </div>
+  );
 }

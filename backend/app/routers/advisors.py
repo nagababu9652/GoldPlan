@@ -85,6 +85,13 @@ def get_current_advisor(
     return user
 
 
+from .advisor.meetings import router as meetings_router
+from .advisor.messages import router as messages_router
+from .advisor.document import router as documents_router
+router.include_router(meetings_router)
+router.include_router(messages_router)
+router.include_router(documents_router)
+
 @router.get("/dashboard")
 def get_advisor_dashboard(
     advisor: User = Depends(get_current_advisor),
@@ -231,31 +238,6 @@ def get_advisor_reports(advisor: User = Depends(get_current_advisor)):
             {"id": 2, "title": "Annual Portfolio Review 2025", "date": "2025-03-01", "type": "annual", "status": "ready"},
             {"id": 3, "title": "Tax Harvesting Report", "date": "2025-02-20", "type": "special", "status": "pending"},
             {"id": 4, "title": "Q3 2025 Performance Report", "date": "2025-01-15", "type": "quarterly", "status": "ready"},
-        ]
-    }
-
-
-@router.get("/documents")
-def get_advisor_documents(advisor: User = Depends(get_current_advisor)):
-    """Get advisor documents."""
-    return {
-        "documents": [
-            {"id": 1, "name": "KYC Documents", "date": "2025-01-10", "category": "kyc", "size": "2.4 MB"},
-            {"id": 2, "name": "Investment Agreement", "date": "2025-01-10", "category": "agreement", "size": "1.1 MB"},
-            {"id": 3, "name": "Risk Profile Assessment", "date": "2025-01-15", "category": "assessment", "size": "0.5 MB"},
-            {"id": 4, "name": "Tax Statement FY 2024-25", "date": "2025-04-01", "category": "tax", "size": "3.2 MB"},
-        ]
-    }
-
-
-@router.get("/messages")
-def get_advisor_messages(advisor: User = Depends(get_current_advisor)):
-    """Get advisor messages with clients."""
-    return {
-        "messages": [
-            {"id": 1, "from": "Client", "subject": "Quarterly Review Scheduled", "date": "2025-04-10", "unread": True},
-            {"id": 2, "from": "Client", "subject": "Portfolio Rebalancing Request", "date": "2025-03-28", "unread": False},
-            {"id": 3, "from": "Support", "subject": "Tax Documents Available", "date": "2025-03-15", "unread": False},
         ]
     }
 

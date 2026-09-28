@@ -1,4 +1,3 @@
-export * from "./mock-data";
 export * from "./columns";
 
 export { default as ClientTable } from "./ClientTable";

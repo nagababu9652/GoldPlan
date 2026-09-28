@@ -1,33 +1,17 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
-import TaskTable from "./TaskTable";
-
-import { getTasks } from "./task.service";
-
-import { Task } from "@/components/data-table/examples/task.types";
+import { TaskTable } from "@/components/task/list";
 
 export default function TasksPage() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Tasks</h1>
 
-  const [tasks, setTasks] = useState<Task[]>([]);
+        <p className="mt-2 text-muted-foreground">
+          Manage follow-ups, reminders, and advisor tasks.
+        </p>
+      </div>
 
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-
-    getTasks().then((data) => {
-
-      setTasks(data);
-
-      setLoading(false);
-
-    });
-
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
-
-  return <TaskTable tasks={tasks} />;
-
+      <TaskTable />
+    </div>
+  );
 }

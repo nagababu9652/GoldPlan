@@ -1,37 +1,120 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getGroup, updateGroup, getClients, assignClientToGroup, removeClientFromGroup, setGroupHead, deleteGroup, type Group, type Client } from '@/lib/api';
+
+import {
+  getGroup,
+  updateGroup,
+  getClients,
+  getGroupMembers,
+  addGroupMember,
+  removeGroupMember,
+  changeGroupHead,
+  setPrimaryGroup,
+  deactivateGroup,
+  type Group,
+  type GroupMember,
+  type GroupUpdatePayload,
+  type Client,
+} from '@/lib/api';
+
+const GROUP_TYPES = [
+  { value: 'HOUSEHOLD', label: 'Household' },
+  { value: 'FAMILY', label: 'Family' },
+  { value: 'BUSINESS', label: 'Business' },
+  { value: 'INVESTMENT', label: 'Investment' },
+  { value: 'TRUST', label: 'Trust' },
+  { value: 'HUF', label: 'HUF' },
+  { value: 'OTHER', label: 'Other' },
+];
+
+const RELATIONSHIP_TYPES = [
+  'SELF',
+  'SPOUSE',
+  'SON',
+  'DAUGHTER',
+  'FATHER',
+  'MOTHER',
+  'BROTHER',
+  'SISTER',
+  'GRANDFATHER',
+  'GRANDMOTHER',
+  'OTHER',
+];
 
 export default function GroupDetailPage() {
   const params = useParams();
   const router = useRouter();
+
+  const groupId = Number(params.id);
+
   const [group, setGroup] = useState<Group | null>(null);
-  const [groupClients, setGroupClients] = useState<Client[]>([]);
+  const [members, setMembers] = useState<GroupMember[]>([]);
   const [availableClients, setAvailableClients] = useState<Client[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
   const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState<any>({});
+
+  const [formData, setFormData] = useState<GroupUpdatePayload>({
+    group_name: '',
+    group_type: 'HOUSEHOLD',
+    risk_profile: null,
+    investment_objective: null,
+    remarks: null,
+  });
+
   const [selectedClientId, setSelectedClientId] = useState<number | ''>('');
+  const [selectedRelationship, setSelectedRelationship] =
+    useState('OTHER');
 
   const loadData = async () => {
     const token = localStorage.getItem('finplan_token');
-    if (!token) return;
+
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
     try {
-      const [groupData, allClients] = await Promise.all([
-        getGroup(token, Number(params.id)),
-        getClients(token, { page_size: 100 }),
-      ]);
+      setLoading(true);
+
+      const [groupData, memberData, clientData] =
+        await Promise.all([
+          getGroup(token, groupId),
+          getGroupMembers(token, groupId),
+          getClients(token, { page_size: 100 }),
+        ]);
+
       setGroup(groupData);
-      setFormData(groupData);
-      const members = allClients.clients.filter((c) => c.group_id === groupData.id);
-      const nonMembers = allClients.clients.filter((c) => c.group_id !== groupData.id && c.is_active);
-      setGroupClients(members);
-      setAvailableClients(nonMembers);
+      setMembers(memberData.members);
+
+      setFormData({
+        group_name: groupData.group_name,
+        group_type: groupData.group_type,
+        risk_profile: groupData.risk_profile,
+        investment_objective: groupData.investment_objective,
+        remarks: groupData.remarks,
+      });
+
+      const memberIds = new Set(
+        memberData.members
+          .filter((member) => !member.left_on)
+          .map((member) => member.customer_id)
+      );
+
+      const available = clientData.clients.filter(
+        (client) =>
+          client.is_active &&
+          !memberIds.has(client.id)
+      );
+
+      setAvailableClients(available);
     } catch (err: any) {
-      alert(err.message);
+      console.error('Failed to load group:', err);
+      alert(err.message || 'Failed to load group');
       router.push('/advisor-dashboard/groups');
     } finally {
       setLoading(false);
@@ -39,334 +122,619 @@ export default function GroupDetailPage() {
   };
 
   useEffect(() => {
-    loadData();
-  }, [params.id]);
+    if (!Number.isNaN(groupId)) {
+      loadData();
+    }
+  }, [groupId]);
 
   const handleSave = async () => {
     const token = localStorage.getItem('finplan_token');
+
     if (!token || !group) return;
-    setSaving(true);
+
+    if (!formData.group_name?.trim()) {
+      alert('Group name is required');
+      return;
+    }
+
     try {
-      await updateGroup(token, group.id, formData);
+      setSaving(true);
+
+      await updateGroup(token, group.id, {
+        ...formData,
+        group_name: formData.group_name.trim(),
+      });
+
       setEditing(false);
-      loadData();
+      await loadData();
+
       alert('Group updated successfully');
     } catch (err: any) {
-      alert(err.message);
+      alert(err.message || 'Failed to update group');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleAssignClient = async () => {
+  const handleAddMember = async () => {
     const token = localStorage.getItem('finplan_token');
-    if (!token || !group || selectedClientId === '') return;
+
+    if (
+      !token ||
+      !group ||
+      selectedClientId === ''
+    ) {
+      return;
+    }
+
     try {
-      await assignClientToGroup(token, group.id, Number(selectedClientId));
+      await addGroupMember(token, group.id, {
+        customer_id: Number(selectedClientId),
+        relationship_type: selectedRelationship,
+        is_primary: false,
+        is_group_head: members.length === 0,
+      });
+
       setSelectedClientId('');
-      loadData();
+      setSelectedRelationship('OTHER');
+
+      await loadData();
     } catch (err: any) {
-      alert(err.message);
+      alert(err.message || 'Failed to add member');
     }
   };
 
-  const handleRemoveClient = async (clientId: number) => {
-    if (!confirm('Remove this client from the group?')) return;
+  const handleRemoveMember = async (customerId: number) => {
+    if (!group) return;
+
+    const member = members.find(
+      (item) => item.customer_id === customerId
+    );
+
+    if (!member) return;
+
+    if (member.is_group_head) {
+      alert(
+        'The group head cannot be removed. Set another member as head first.'
+      );
+      return;
+    }
+
+    const confirmed = confirm(
+      'Remove this client from the group?\n\nThe membership will be marked as ended and history will be preserved.'
+    );
+
+    if (!confirmed) return;
+
     const token = localStorage.getItem('finplan_token');
-    if (!token || !group) return;
+
+    if (!token) return;
+
     try {
-      await removeClientFromGroup(token, group.id, clientId);
-      loadData();
+      await removeGroupMember(
+        token,
+        group.id,
+        customerId
+      );
+
+      await loadData();
     } catch (err: any) {
-      alert(err.message);
+      alert(err.message || 'Failed to remove member');
     }
   };
 
-  const handleSetHead = async (clientId: number) => {
+  const handleSetHead = async (customerId: number) => {
     const token = localStorage.getItem('finplan_token');
+
     if (!token || !group) return;
+
     try {
-      await setGroupHead(token, group.id, clientId);
-      loadData();
+      await changeGroupHead(
+        token,
+        group.id,
+        customerId
+      );
+
+      await loadData();
     } catch (err: any) {
-      alert(err.message);
+      alert(err.message || 'Failed to change group head');
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm('Delete this group? Clients will be unassigned.')) return;
+  const handleSetPrimary = async (customerId: number) => {
     const token = localStorage.getItem('finplan_token');
+
     if (!token || !group) return;
+
     try {
-      await deleteGroup(token, group.id);
+      await setPrimaryGroup(
+        token,
+        group.id,
+        customerId
+      );
+
+      await loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to set primary group');
+    }
+  };
+
+  const handleDeactivate = async () => {
+    if (!group || !group.is_active) return;
+
+    const confirmed = confirm(
+      `Deactivate "${group.group_name}"?\n\nThe group will become inactive and membership history will be preserved.`
+    );
+
+    if (!confirmed) return;
+
+    const token = localStorage.getItem('finplan_token');
+
+    if (!token) return;
+
+    try {
+      await deactivateGroup(token, group.id);
+
       router.push('/advisor-dashboard/groups');
     } catch (err: any) {
-      alert(err.message);
+      alert(err.message || 'Failed to deactivate group');
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-ash">Loading group details...</div>
+        <div className="text-ash">
+          Loading group details...
+        </div>
       </div>
     );
   }
 
-  if (!group) return null;
+  if (!group) {
+    return null;
+  }
+
+  const activeMembers = members.filter(
+    (member) => !member.left_on
+  );
 
   return (
-    <div className="page-frame">
-      <section className="shell-pad py-8 lg:py-12">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <div className="label-mono text-ash mb-3">&mdash; Group Details</div>
-            <h1 className="display text-[36px] lg:text-[48px]">{group.name}</h1>
-            <p className="text-ash text-[16px] mt-2">
-              <span className="font-mono uppercase tracking-wider2 text-[12px] border px-3 py-1 mr-3">{group.group_type}</span>
-              {group.client_count} member{group.client_count !== 1 ? 's' : ''}
-              {group.head_client_name && ` · Head: ${group.head_client_name}`}
-            </p>
+    <div className="w-full space-y-8">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+        <div>
+          <div className="label-mono text-ash mb-3">
+            &mdash; Group Details
           </div>
-          <div className="flex gap-4">
-            <button
-              onClick={() => router.push('/advisor-dashboard/groups')}
-              className="px-6 py-3 border border-obsidian text-[14px] font-mono uppercase tracking-wider2 hover:bg-bone-deep transition-colors"
-            >
-              Back
-            </button>
-            <button
-              onClick={() => setEditing(!editing)}
-              className={`px-6 py-3 border text-[14px] font-mono uppercase tracking-wider2 transition-colors ${
-                editing ? 'border-obsidian bg-bone text-obsidian' : 'bg-obsidian text-bone'
-              }`}
-            >
-              {editing ? 'Cancel' : 'Edit Group'}
-            </button>
-            <button
-              onClick={handleDelete}
-              className="px-6 py-3 border border-red-500 text-red-600 text-[14px] font-mono uppercase tracking-wider2 hover:bg-red-50 transition-colors"
-            >
-              Delete
-            </button>
+
+          <h1 className="display text-[36px] lg:text-[48px]">
+            {group.group_name}
+          </h1>
+
+          <div className="flex flex-wrap items-center gap-3 mt-3 text-ash">
+            <span className="font-mono uppercase tracking-wider2 text-[11px] border border-line px-3 py-1">
+              {group.group_type}
+            </span>
+
+            <span className="font-mono text-[12px]">
+              {group.group_code}
+            </span>
+
+            <span className="text-[14px]">
+              {group.active_member_count} active member
+              {group.active_member_count !== 1 ? 's' : ''}
+            </span>
+
+            {group.head_customer_name && (
+              <span className="text-[14px]">
+                · Head: {group.head_customer_name}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Group Info */}
-        <div className="border border-obsidian bg-bone p-6 lg:p-8 mb-8">
-          <h2 className="label-mono text-ash mb-6">Group Information</h2>
-          {editing ? (
-            <div className="grid grid-cols-2 gap-6 max-w-3xl">
-              <div>
-                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">Name</label>
-                <input
-                  type="text"
-                  value={formData.name || ''}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
-                />
-              </div>
-              <div>
-                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">Type</label>
-                <select
-                  value={formData.group_type || 'family'}
-                  onChange={(e) => setFormData({...formData, group_type: e.target.value})}
-                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
-                >
-                  <option value="family">Family</option>
-                  <option value="HUF">HUF</option>
-                  <option value="trust">Trust</option>
-                  <option value="corporate">Corporate</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div className="col-span-2">
-                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">Description</label>
-                <textarea
-                  value={formData.description || ''}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  rows={3}
-                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
-                />
-              </div>
-              <div>
-                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">Email</label>
-                <input
-                  type="email"
-                  value={formData.email || ''}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
-                />
-              </div>
-              <div>
-                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">Phone</label>
-                <input
-                  type="text"
-                  value={formData.phone || ''}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
-                />
-              </div>
-              <div>
-                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">City</label>
-                <input
-                  type="text"
-                  value={formData.city || ''}
-                  onChange={(e) => setFormData({...formData, city: e.target.value})}
-                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
-                />
-              </div>
-              <div>
-                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">State</label>
-                <input
-                  type="text"
-                  value={formData.state || ''}
-                  onChange={(e) => setFormData({...formData, state: e.target.value})}
-                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
-                />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">Address</label>
-                <textarea
-                  value={formData.address || ''}
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
-                  rows={2}
-                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
-                />
-              </div>
-              <div className="col-span-2 flex justify-end">
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="px-6 py-3 bg-obsidian text-bone text-[14px] font-mono uppercase tracking-wider2 hover:bg-obsidian-soft transition-colors disabled:opacity-50"
-                >
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              <div>
-                <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">Type</div>
-                <div className="font-medium">{group.group_type}</div>
-              </div>
-              <div>
-                <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">Members</div>
-                <div className="font-medium">{group.client_count}</div>
-              </div>
-              <div>
-                <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">Total Investment</div>
-                <div className="font-medium">₹{group.total_investment.toLocaleString('en-IN')}</div>
-              </div>
-              <div>
-                <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">Status</div>
-                <div className={`font-medium ${group.is_active ? 'text-emerald-700' : 'text-red-600'}`}>
-                  {group.is_active ? 'Active' : 'Inactive'}
-                </div>
-              </div>
-              {group.email && (
-                <div>
-                  <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">Email</div>
-                  <div className="font-medium">{group.email}</div>
-                </div>
-              )}
-              {group.phone && (
-                <div>
-                  <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">Phone</div>
-                  <div className="font-medium">{group.phone}</div>
-                </div>
-              )}
-              {group.city && (
-                <div>
-                  <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">City</div>
-                  <div className="font-medium">{group.city}</div>
-                </div>
-              )}
-              {group.state && (
-                <div>
-                  <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">State</div>
-                  <div className="font-medium">{group.state}</div>
-                </div>
-              )}
-            </div>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() =>
+              router.push('/advisor-dashboard/groups')
+            }
+            className="px-5 py-3 border border-obsidian text-[13px] font-mono uppercase tracking-wider2 hover:bg-bone-deep transition-colors"
+          >
+            Back
+          </button>
+
+          {group.is_active && (
+            <>
+              <button
+                onClick={() => setEditing(!editing)}
+                className={`px-5 py-3 border text-[13px] font-mono uppercase tracking-wider2 transition-colors ${
+                  editing
+                    ? 'border-obsidian bg-bone text-obsidian'
+                    : 'bg-obsidian text-bone'
+                }`}
+              >
+                {editing ? 'Cancel' : 'Edit Group'}
+              </button>
+
+              <button
+                onClick={handleDeactivate}
+                className="px-5 py-3 border border-red-500 text-red-600 text-[13px] font-mono uppercase tracking-wider2 hover:bg-red-50 transition-colors"
+              >
+                Deactivate
+              </button>
+            </>
           )}
         </div>
+      </div>
 
-        {/* Add Member */}
-        <div className="border border-obsidian bg-bone p-6 lg:p-8 mb-8">
-          <h2 className="label-mono text-ash mb-6">Assign Client to Group</h2>
-          <div className="flex gap-4">
+      {/* Group Information */}
+      <div className="border border-obsidian bg-bone p-6 lg:p-8">
+        <h2 className="label-mono text-ash mb-6">
+          Group Information
+        </h2>
+
+        {editing ? (
+          <div className="space-y-6 max-w-3xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">
+                  Group Name *
+                </label>
+
+                <input
+                  type="text"
+                  value={formData.group_name ?? ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      group_name: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">
+                  Group Type
+                </label>
+
+                <select
+                  value={formData.group_type ?? 'HOUSEHOLD'}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      group_type: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
+                >
+                  {GROUP_TYPES.map((type) => (
+                    <option
+                      key={type.value}
+                      value={type.value}
+                    >
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">
+                  Risk Profile
+                </label>
+
+                <select
+                  value={formData.risk_profile ?? ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      risk_profile:
+                        e.target.value || null,
+                    })
+                  }
+                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
+                >
+                  <option value="">Not specified</option>
+                  <option value="CONSERVATIVE">
+                    Conservative
+                  </option>
+                  <option value="MODERATE">
+                    Moderate
+                  </option>
+                  <option value="AGGRESSIVE">
+                    Aggressive
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">
+                  Investment Objective
+                </label>
+
+                <input
+                  type="text"
+                  value={formData.investment_objective ?? ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      investment_objective:
+                        e.target.value || null,
+                    })
+                  }
+                  placeholder="e.g. Wealth creation"
+                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">
+                Remarks
+              </label>
+
+              <textarea
+                value={formData.remarks ?? ''}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    remarks: e.target.value || null,
+                  })
+                }
+                rows={4}
+                className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={handleSave}
+                disabled={
+                  saving ||
+                  !formData.group_name?.trim()
+                }
+                className="px-6 py-3 bg-obsidian text-bone text-[14px] font-mono uppercase tracking-wider2 hover:bg-obsidian-soft transition-colors disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+              <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">
+                Type
+              </div>
+              <div className="font-medium">
+                {group.group_type}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">
+                Members
+              </div>
+              <div className="font-medium">
+                {group.active_member_count}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">
+                Risk Profile
+              </div>
+              <div className="font-medium">
+                {group.risk_profile || 'Not specified'}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">
+                Status
+              </div>
+              <div
+                className={`font-medium ${
+                  group.is_active
+                    ? 'text-emerald-700'
+                    : 'text-red-600'
+                }`}
+              >
+                {group.is_active ? 'Active' : 'Inactive'}
+              </div>
+            </div>
+
+            <div className="sm:col-span-2 lg:col-span-4">
+              <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">
+                Investment Objective
+              </div>
+
+              <div className="font-medium">
+                {group.investment_objective ||
+                  'Not specified'}
+              </div>
+            </div>
+
+            {group.remarks && (
+              <div className="sm:col-span-2 lg:col-span-4">
+                <div className="text-[12px] font-mono uppercase tracking-wider2 text-ash mb-1">
+                  Remarks
+                </div>
+
+                <div className="font-medium whitespace-pre-wrap">
+                  {group.remarks}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Add Member */}
+      {group.is_active && (
+        <div className="border border-obsidian bg-bone p-6 lg:p-8">
+          <h2 className="label-mono text-ash mb-6">
+            Add Group Member
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_220px_auto] gap-4">
             <select
               value={selectedClientId}
-              onChange={(e) => setSelectedClientId(e.target.value ? Number(e.target.value) : '')}
-              className="flex-1 px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
+              onChange={(e) =>
+                setSelectedClientId(
+                  e.target.value
+                    ? Number(e.target.value)
+                    : ''
+                )
+              }
+              className="px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
             >
-              <option value="">Select a client...</option>
-              {availableClients.map((c) => (
-                <option key={c.id} value={c.id}>{c.first_name} {c.last_name} {c.email ? `(${c.email})` : ''}</option>
+              <option value="">
+                Select a client...
+              </option>
+
+              {availableClients.map((client) => (
+                <option
+                  key={client.id}
+                  value={client.id}
+                >
+                  {client.first_name} {client.last_name}
+                  {client.email
+                    ? ` — ${client.email}`
+                    : ''}
+                </option>
               ))}
             </select>
-            <button
-              onClick={handleAssignClient}
-              disabled={selectedClientId === ''}
-              className="px-6 py-3 bg-obsidian text-bone text-[14px] font-mono uppercase tracking-wider2 hover:bg-obsidian-soft transition-colors disabled:opacity-50"
+
+            <select
+              value={selectedRelationship}
+              onChange={(e) =>
+                setSelectedRelationship(e.target.value)
+              }
+              className="px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
             >
-              Assign
+              {RELATIONSHIP_TYPES.map((relationship) => (
+                <option
+                  key={relationship}
+                  value={relationship}
+                >
+                  {relationship}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={handleAddMember}
+              disabled={selectedClientId === ''}
+              className="px-6 py-3 bg-obsidian text-bone text-[13px] font-mono uppercase tracking-wider2 hover:bg-obsidian-soft transition-colors disabled:opacity-50"
+            >
+              Add Member
             </button>
           </div>
         </div>
+      )}
 
-        {/* Member Clients */}
-        <div className="border border-obsidian bg-bone">
-          <div className="px-6 lg:px-8 py-4 border-b border-line">
-            <h2 className="label-mono text-ash">Members ({groupClients.length})</h2>
-          </div>
-          {groupClients.length === 0 ? (
-            <div className="px-6 lg:px-8 py-12 text-center text-ash">
-              No clients assigned to this group yet.
+      {/* Members */}
+      <div className="border border-obsidian bg-bone">
+        <div className="px-6 lg:px-8 py-5 border-b border-line flex items-center justify-between">
+          <div>
+            <h2 className="label-mono text-ash">
+              Members
+            </h2>
+
+            <div className="text-[12px] text-ash mt-1">
+              {activeMembers.length} active member
+              {activeMembers.length !== 1 ? 's' : ''}
             </div>
-          ) : (
-            <div className="divide-y divide-line">
-              {groupClients.map((client) => (
-                <div key={client.id} className="px-6 lg:px-8 py-4 flex items-center justify-between hover:bg-bone-deep transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <div className="font-medium">
-                        {client.first_name} {client.last_name}
-                        {group.head_client_id === client.id && (
-                          <span className="ml-2 text-[11px] font-mono uppercase tracking-wider2 border border-antique bg-antique-light text-obsidian px-2 py-0.5">
-                            Head
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[12px] text-ash font-mono">
-                        {client.email || 'No email'} · {client.phone || 'No phone'}
-                      </div>
+          </div>
+        </div>
+
+        {activeMembers.length === 0 ? (
+          <div className="px-6 lg:px-8 py-12 text-center text-ash">
+            No active members in this group.
+          </div>
+        ) : (
+          <div className="divide-y divide-line">
+            {activeMembers.map((member) => (
+              <div
+                key={member.id}
+                className="px-6 lg:px-8 py-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 hover:bg-bone-deep transition-colors"
+              >
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="font-medium">
+                      {member.display_name}
                     </div>
+
+                    {member.is_group_head && (
+                      <span className="text-[10px] font-mono uppercase tracking-wider2 border border-antique bg-antique-light text-obsidian px-2 py-0.5">
+                        Head
+                      </span>
+                    )}
+
+                    {member.is_primary && (
+                      <span className="text-[10px] font-mono uppercase tracking-wider2 border border-emerald-700 text-emerald-700 px-2 py-0.5">
+                        Primary
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center gap-3">
-                    {group.head_client_id !== client.id && (
+
+                  <div className="text-[12px] text-ash font-mono mt-1">
+                    {member.customer_code}
+                    {' · '}
+                    {member.relationship_type || 'OTHER'}
+                    {' · '}
+                    {member.email || 'No email'}
+                    {' · '}
+                    {member.phone || 'No phone'}
+                  </div>
+                </div>
+
+                {group.is_active && (
+                  <div className="flex flex-wrap items-center gap-4">
+                    {!member.is_group_head && (
                       <button
-                        onClick={() => handleSetHead(client.id)}
+                        onClick={() =>
+                          handleSetHead(member.customer_id)
+                        }
                         className="text-[12px] font-mono uppercase tracking-wider2 u-link"
                       >
                         Set as Head
                       </button>
                     )}
-                    <button
-                      onClick={() => handleRemoveClient(client.id)}
-                      className="text-[12px] font-mono uppercase tracking-wider2 text-red-600 hover:text-red-700"
-                    >
-                      Remove
-                    </button>
+
+                    {!member.is_primary && (
+                      <button
+                        onClick={() =>
+                          handleSetPrimary(member.customer_id)
+                        }
+                        className="text-[12px] font-mono uppercase tracking-wider2 u-link"
+                      >
+                        Set Primary
+                      </button>
+                    )}
+
+                    {!member.is_group_head && (
+                      <button
+                        onClick={() =>
+                          handleRemoveMember(
+                            member.customer_id
+                          )
+                        }
+                        className="text-[12px] font-mono uppercase tracking-wider2 text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

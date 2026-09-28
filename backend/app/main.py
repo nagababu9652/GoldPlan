@@ -3,14 +3,17 @@ Main application entry point for FinPlan Advisor Center API.
 Uses the new 4-schema architecture (foundation, identity, organization, crm).
 """
 import time
+from pathlib import Path
+
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
 
 from .core.config import settings
 from .middleware.cors import setup_cors
 
-
-from .routers.meetings import router as meetings_router
+BASE_DIR = Path(__file__).resolve().parent.parent
+UPLOAD_ROOT = BASE_DIR / "uploads"
 
 # Import all new models to register them with Base metadata
 # Foundation
@@ -52,6 +55,7 @@ from .routers.items import router as items_router
 from .routers.market import router as market_router
 from .routers.auth import router as auth_router
 from .routers.advisors import router as advisors_router
+from .routers.advisor.task import router as tasks_router
 from .routers.clients import router as clients_router
 from .routers.groups import router as groups_router
 from .routers.onboarding import router as onboarding_router
@@ -59,6 +63,17 @@ from .routers.onboarding import router as onboarding_router
 
 def create_app() -> FastAPI:
     app = FastAPI(title=settings.app_name)
+
+    # File storage
+    upload_dir = UPLOAD_ROOT
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    # Serve uploaded files
+    app.mount(
+        "/uploads",
+        StaticFiles(directory=str(upload_dir)),
+        name="uploads",
+    )
     
     # Add middleware for response timing
     @app.middleware("http")
@@ -78,10 +93,10 @@ def create_app() -> FastAPI:
     app.include_router(market_router)
     app.include_router(auth_router)
     app.include_router(advisors_router)
+    app.include_router(tasks_router, prefix="/advisors")
     app.include_router(clients_router)
     app.include_router(groups_router)
     app.include_router(onboarding_router)
-    app.include_router(meetings_router)
 
 
     @app.get("/health")

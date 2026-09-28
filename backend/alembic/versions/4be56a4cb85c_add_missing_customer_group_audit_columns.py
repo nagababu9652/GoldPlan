@@ -1,15 +1,11 @@
-"""add missing customer group audit columns
 
-Revision ID: REPLACE_WITH_GENERATED_ID
-Revises: 4f4e62608bd4
-"""
 
 from alembic import op
 import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "REPLACE_WITH_GENERATED_ID"
+revision = "4be56a4cb85c"
 down_revision = "4f4e62608bd4"
 branch_labels = None
 depends_on = None

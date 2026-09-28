@@ -1,78 +1,89 @@
-from datetime import date, time, datetime, timezone
+from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 
-class MeetingCreate(BaseModel):
-    client_id: int
+class MeetingBase(BaseModel):
+    title: str = Field(..., min_length=1, max_length=250)
 
-    title: str = Field(
-        ...,
-        min_length=1,
-        max_length=200,
-    )
+    meeting_type: str = "REVIEW"
 
-    meeting_date: date
-    meeting_time: time
+    description: Optional[str] = None
 
-    meeting_type: str = Field(
-        default="virtual",
-        pattern="^(virtual|in_person|phone)$",
-    )
+    scheduled_start: datetime
 
-    status: str = Field(
-        default="scheduled",
-        pattern="^(scheduled|completed|cancelled)$",
-    )
+    scheduled_end: datetime
+
+    location: Optional[str] = None
+
+    meeting_link: Optional[str] = None
+
+    status: str = "SCHEDULED"
+
+    outcome: Optional[str] = None
 
     notes: Optional[str] = None
+
+    customer_id: Optional[int] = None
+
+    customer_group_id: Optional[int] = None
+
+
+class MeetingCreate(MeetingBase):
+    pass
 
 
 class MeetingUpdate(BaseModel):
-    client_id: Optional[int] = None
-    title: Optional[str] = None
-    meeting_date: Optional[date] = None
-    meeting_time: Optional[time] = None
-
-    meeting_type: Optional[str] = Field(
+    title: Optional[str] = Field(
         default=None,
-        pattern="^(virtual|in_person|phone)$",
+        min_length=1,
+        max_length=250,
     )
 
-    status: Optional[str] = Field(
-        default=None,
-        pattern="^(scheduled|completed|cancelled)$",
-    )
+    meeting_type: Optional[str] = None
+
+    description: Optional[str] = None
+
+    scheduled_start: Optional[datetime] = None
+
+    scheduled_end: Optional[datetime] = None
+
+    location: Optional[str] = None
+
+    meeting_link: Optional[str] = None
+
+    status: Optional[str] = None
+
+    outcome: Optional[str] = None
 
     notes: Optional[str] = None
 
+    customer_id: Optional[int] = None
 
-class MeetingResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    customer_group_id: Optional[int] = None
 
+
+class MeetingResponse(MeetingBase):
     id: int
-    advisor_id: int
-    client_id: int
 
-    client_name: str
+    organization_id: int
 
-    title: str
-    meeting_date: date
-    meeting_time: time
+    advisor_employee_id: int
 
-    meeting_type: str
-    status: str
+    customer_name: Optional[str] = None
 
-    notes: Optional[str] = None
+    group_name: Optional[str] = None
 
     created_at: datetime
-    updated_at: Optional[datetime] = None
+
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class MeetingListResponse(BaseModel):
     meetings: list[MeetingResponse]
+
     total: int
-    page: int
-    page_size: int
-    total_pages: int

@@ -1,5 +1,2 @@
-export { default as MeetingTable } from './MeetingTable';
-export * from './meeting.columns';
-export * from './meeting.actions';
-export * from './meeting.filters';
-export * from './meeting.service';
+export { MeetingTable } from '@/components/meetings/list';
+export * from '@/components/meetings/list/columns';

@@ -9,7 +9,6 @@ import {
 } from "../base";
 
 import { TransactionRow } from ".";
-import { recentTransactions } from "./mockData";
 
 import { Button } from "@/components/ui/button";
 
@@ -27,7 +26,7 @@ export default function RecentTransactionsWidget() {
 
         <div className="space-y-3">
 
-          {recentTransactions.map((transaction) => (
+          {([] as any[]).map((transaction: any) => (
             <TransactionRow
               key={transaction.id}
               transaction={transaction}

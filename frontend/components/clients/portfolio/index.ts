@@ -1,5 +1,4 @@
 export * from "./types";
-export * from "../list/mock-data.ts";
 export * from "../list/columns.tsx";
 
 export { default as ClientTable } from "../list/ClientTable.tsx";

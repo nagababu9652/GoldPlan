@@ -168,6 +168,14 @@ export const navigation: NavigationItem[] = [
     href: routes.prospects.root,
   },
 
+  // Meetings
+  {
+    id: "meetings",
+    title: "Meetings",
+    icon: Users,
+    href: routes.meetings.root,
+  },
+
   // Tasks
   {
     id: "tasks",
@@ -176,12 +184,12 @@ export const navigation: NavigationItem[] = [
     href: routes.tasks.root,
   },
 
-  // Meetings
+  // Messages
   {
-    id: "meetings",
-    title: "Meetings",
-    icon: Users,
-    href: routes.meetings.root,
+    id: "messages",
+    title: "Messages",
+    icon: Bell,
+    href: routes.messages.root,
   },
 
   // Reports

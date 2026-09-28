@@ -235,7 +235,7 @@ async function advisorRequest(
     headers.set('Authorization', `Bearer ${accessToken}`);
     headers.set('Accept', 'application/json');
 
-    if (options.body) {
+    if (options.body && !(options.body instanceof FormData)) {
       headers.set('Content-Type', 'application/json');
     }
 
@@ -398,13 +398,12 @@ export interface AdvisorProfile {
   risk_profile: string;
 }
 
-export async function advisorFetch(
+export async function advisorFetch<T>(
   endpoint: string,
-  token: string
-) {
-  const response = await advisorRequest(endpoint, token, {
-    method: 'GET',
-  });
+  token: string,
+  options: RequestInit = { method: 'GET' }
+): Promise<T> {
+  const response = await advisorRequest(endpoint, token, options);
 
   if (!response.ok) {
     let errorMessage = 'Request failed';
@@ -419,7 +418,7 @@ export async function advisorFetch(
     throw new Error(errorMessage);
   }
 
-  return response.json();
+  return response.json() as Promise<T>;
 }
 
 export function getAdvisorDashboard(token: string): Promise<AdvisorDashboard> {
@@ -545,47 +544,10 @@ export interface ClientListResponse {
   total_pages?: number;
 }
 
-export interface Group {
-  id: number;
-  advisor_id: number;
-  name: string;
-  group_type: string;
-  description?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  head_client_id?: number;
-  head_client_name?: string;
-  is_active: boolean;
-  total_investment: number;
-  client_count: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface GroupCreate {
-  name: string;
-  group_type?: string;
-  description?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  head_client_id?: number;
-}
-
-export interface GroupListResponse {
-  groups: Group[];
-  total: number;
-}
-
 export async function advisorPost(
   endpoint: string,
   token: string,
-  body: any
+  body: any,
 ) {
   const response = await advisorRequest(endpoint, token, {
     method: 'POST',
@@ -595,16 +557,15 @@ export async function advisorPost(
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
 
-    console.error("API ERROR:", {
+    console.error('API ERROR:', {
       status: response.status,
       body: errorBody,
     });
 
     throw new Error(
-      typeof errorBody === "string"
+      typeof errorBody === 'string'
         ? errorBody
-        : errorBody?.detail ||
-          JSON.stringify(errorBody, null, 2)
+        : errorBody?.detail || JSON.stringify(errorBody, null, 2),
     );
   }
 
@@ -614,7 +575,7 @@ export async function advisorPost(
 export async function advisorPut(
   endpoint: string,
   token: string,
-  body: any
+  body: any,
 ) {
   const response = await advisorRequest(endpoint, token, {
     method: 'PUT',
@@ -624,9 +585,7 @@ export async function advisorPut(
   if (!response.ok) {
     const error = await response.json().catch(() => null);
 
-    throw new Error(
-      error?.detail || 'Request failed'
-    );
+    throw new Error(error?.detail || 'Request failed');
   }
 
   return response.json();
@@ -634,7 +593,7 @@ export async function advisorPut(
 
 export async function advisorDelete(
   endpoint: string,
-  token: string
+  token: string,
 ) {
   const response = await advisorRequest(endpoint, token, {
     method: 'DELETE',
@@ -643,29 +602,33 @@ export async function advisorDelete(
   if (!response.ok) {
     const error = await response.json().catch(() => null);
 
-    throw new Error(
-      error?.detail || 'Request failed'
-    );
+    throw new Error(error?.detail || 'Request failed');
   }
 
   return response.json();
 }
 
-// Client API functions
 export function getClients(
   token: string,
-  params?: { page_size?: number; page?: number }
+  params?: { page_size?: number; page?: number },
 ): Promise<ClientListResponse> {
   const queryParams = new URLSearchParams();
-  if (params?.page) queryParams.set('page', String(params.page));
-  if (params?.page_size) queryParams.set('page_size', String(params.page_size));
+
+  const safePage = params?.page ? Math.max(1, Math.trunc(params.page)) : undefined;
+  const safePageSize = params?.page_size
+    ? Math.min(100, Math.max(1, Math.trunc(params.page_size)))
+    : undefined;
+
+  if (safePage) queryParams.set('page', String(safePage));
+  if (safePageSize) queryParams.set('page_size', String(safePageSize));
+
   const qs = queryParams.toString();
-  return advisorFetch(`/clients${qs ? '?' + qs : ''}`, token);
+  return advisorFetch(`/clients${qs ? `?${qs}` : ''}`, token);
 }
 
 export function getClientById(
   token: string,
-  id: string
+  id: string,
 ): Promise<Client> {
   return advisorFetch(`/clients/${id}`, token);
 }
@@ -673,7 +636,7 @@ export function getClientById(
 export function updateClient(
   token: string,
   clientId: string,
-  data: Partial<ClientCreate>
+  data: Partial<ClientCreate>,
 ): Promise<Client> {
   return advisorPut(`/clients/${clientId}`, token, data);
 }
@@ -688,43 +651,6 @@ export function getClient(token: string, id: number): Promise<Client> {
 
 export function deleteClient(token: string, id: number): Promise<{ message: string }> {
   return advisorDelete(`/clients/${id}`, token);
-}
-
-// Group API functions
-export function getGroups(token: string, params?: { group_type?: string; search?: string }): Promise<GroupListResponse> {
-  const queryParams = new URLSearchParams();
-  if (params?.group_type) queryParams.set('group_type', params.group_type);
-  if (params?.search) queryParams.set('search', params.search);
-  const qs = queryParams.toString();
-  return advisorFetch(`/groups${qs ? '?' + qs : ''}`, token);
-}
-
-export function createGroup(token: string, data: GroupCreate): Promise<Group> {
-  return advisorPost('/groups', token, data);
-}
-
-export function getGroup(token: string, id: number): Promise<Group> {
-  return advisorFetch(`/groups/${id}`, token);
-}
-
-export function updateGroup(token: string, id: number, data: Partial<GroupCreate>): Promise<Group> {
-  return advisorPut(`/groups/${id}`, token, data);
-}
-
-export function deleteGroup(token: string, id: number): Promise<{ message: string }> {
-  return advisorDelete(`/groups/${id}`, token);
-}
-
-export function assignClientToGroup(token: string, groupId: number, clientId: number): Promise<{ message: string }> {
-  return advisorPost(`/groups/${groupId}/clients`, token, { client_id: clientId });
-}
-
-export function removeClientFromGroup(token: string, groupId: number, clientId: number): Promise<{ message: string }> {
-  return advisorDelete(`/groups/${groupId}/clients/${clientId}`, token);
-}
-
-export function setGroupHead(token: string, groupId: number, clientId: number): Promise<{ message: string }> {
-  return advisorPut(`/groups/${groupId}/head`, token, { client_id: clientId });
 }
 
 // ==================== MARKET DATA ====================
@@ -806,4 +732,963 @@ export async function getAdvisorTodayMeetings(
   token: string
 ): Promise<AdvisorMeetingsResponse> {
   return advisorFetch("/meetings/today", token);
+}
+
+
+// ============================================================
+// GROUPS / HOUSEHOLDS
+// ============================================================
+
+export type GroupType =
+  | 'INDIVIDUAL'
+  | 'HOUSEHOLD'
+  | 'FAMILY'
+  | 'BUSINESS'
+  | 'INVESTMENT'
+  | 'TRUST'
+  | 'HUF'
+  | 'OTHER';
+
+export interface Group {
+  id: number;
+  organization_id: number;
+  group_code: string;
+  group_name: string;
+  group_type: GroupType | string;
+
+  head_customer_id: number | null;
+  head_customer_name: string | null;
+
+  primary_branch_id: number | null;
+  primary_advisor_employee_id: number | null;
+
+  risk_profile: string | null;
+  investment_objective: string | null;
+  remarks: string | null;
+
+  is_active: boolean;
+
+  member_count: number;
+  active_member_count: number;
+
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface GroupListResponse {
+  groups: Group[];
+  total: number;
+}
+
+export interface GroupMember {
+  id: number;
+  customer_id: number;
+  customer_code: string;
+  display_name: string;
+  email: string | null;
+  phone: string | null;
+
+  relationship_type: string | null;
+
+  is_group_head: boolean;
+  is_primary: boolean;
+
+  joined_on: string | null;
+  left_on: string | null;
+
+  remarks: string | null;
+}
+
+export interface GroupMemberListResponse {
+  group_id: number;
+  members: GroupMember[];
+  total: number;
+}
+
+export interface GroupCreatePayload {
+  group_name: string;
+  group_type?: GroupType | string;
+  risk_profile?: string | null;
+  investment_objective?: string | null;
+  remarks?: string | null;
+  head_customer_id?: number | null;
+}
+
+export interface GroupUpdatePayload {
+  group_name?: string;
+  group_type?: GroupType | string;
+  risk_profile?: string | null;
+  investment_objective?: string | null;
+  remarks?: string | null;
+}
+
+export interface GroupMemberAddPayload {
+  customer_id: number;
+  relationship_type?: string;
+  is_primary?: boolean;
+  is_group_head?: boolean;
+  remarks?: string | null;
+}
+
+export interface GroupActionResponse {
+  message: string;
+  group: Group;
+}
+
+export async function getGroups(
+  token: string,
+  params?: {
+    search?: string;
+    group_type?: string;
+    include_inactive?: boolean;
+  }
+): Promise<GroupListResponse> {
+  const query = new URLSearchParams();
+
+  if (params?.search) {
+    query.set('search', params.search);
+  }
+
+  if (params?.group_type) {
+    query.set('group_type', params.group_type);
+  }
+
+  if (params?.include_inactive) {
+    query.set('include_inactive', 'true');
+  }
+
+  const queryString = query.toString();
+
+  return advisorFetch<GroupListResponse>(
+    `/groups/${queryString ? `?${queryString}` : ''}`,
+    token
+  );
+}
+
+export async function getGroup(
+  token: string,
+  id: string | number
+): Promise<Group> {
+  return advisorFetch<Group>(`/groups/${id}`, token);
+}
+
+export async function getGroupById(
+  token: string,
+  id: string | number
+): Promise<Group> {
+  return getGroup(token, id);
+}
+
+export async function getGroupMembers(
+  token: string,
+  id: string | number,
+  includeHistory = false
+): Promise<GroupMemberListResponse> {
+  const query = includeHistory ? '?include_history=true' : '';
+
+  return advisorFetch<GroupMemberListResponse>(
+    `/groups/${id}/members${query}`,
+    token
+  );
+}
+
+export async function createGroup(
+  token: string,
+  payload: GroupCreatePayload
+): Promise<Group> {
+  return advisorFetch<Group>('/groups/', token, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateGroup(
+  token: string,
+  id: string | number,
+  payload: GroupUpdatePayload
+): Promise<Group> {
+  return advisorFetch<Group>(`/groups/${id}`, token, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function addGroupMember(
+  token: string,
+  groupId: string | number,
+  payload: GroupMemberAddPayload
+): Promise<GroupMember> {
+  return advisorFetch<GroupMember>(
+    `/groups/${groupId}/members`,
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function changeGroupHead(
+  token: string,
+  groupId: string | number,
+  customerId: number
+): Promise<GroupActionResponse> {
+  return advisorFetch<GroupActionResponse>(
+    `/groups/${groupId}/head`,
+    token,
+    {
+      method: 'PUT',
+      body: JSON.stringify({
+        customer_id: customerId,
+      }),
+    }
+  );
+}
+
+export async function setPrimaryGroup(
+  token: string,
+  groupId: string | number,
+  customerId: number
+): Promise<GroupActionResponse> {
+  return advisorFetch<GroupActionResponse>(
+    `/groups/${groupId}/primary`,
+    token,
+    {
+      method: 'PUT',
+      body: JSON.stringify({
+        customer_id: customerId,
+      }),
+    }
+  );
+}
+
+export async function removeGroupMember(
+  token: string,
+  groupId: string | number,
+  customerId: string | number
+): Promise<{
+  message: string;
+  customer_id: number;
+  left_on: string;
+}> {
+  return advisorFetch(
+    `/groups/${groupId}/members/${customerId}`,
+    token,
+    {
+      method: 'DELETE',
+    }
+  );
+}
+
+export async function deactivateGroup(
+  token: string,
+  id: string | number
+): Promise<GroupActionResponse> {
+  return advisorFetch<GroupActionResponse>(
+    `/groups/${id}/deactivate`,
+    token,
+    {
+      method: 'POST',
+    }
+  );
+}
+
+
+
+
+
+
+
+
+
+
+export type Meeting = {
+  id: number;
+  organization_id: number;
+  advisor_employee_id: number;
+
+  title: string;
+  meeting_type: string;
+  description: string | null;
+
+  scheduled_start: string;
+  scheduled_end: string;
+
+  location: string | null;
+  meeting_link: string | null;
+
+  status: string;
+
+  outcome: string | null;
+  notes: string | null;
+
+  customer_id: number | null;
+  customer_group_id: number | null;
+
+  customer_name: string | null;
+  group_name: string | null;
+
+  created_at: string;
+  updated_at: string;
+};
+
+export type MeetingCreatePayload = {
+  title: string;
+  meeting_type?: string;
+  description?: string | null;
+
+  scheduled_start: string;
+  scheduled_end: string;
+
+  location?: string | null;
+  meeting_link?: string | null;
+
+  status?: string;
+
+  outcome?: string | null;
+  notes?: string | null;
+
+  customer_id?: number | null;
+  customer_group_id?: number | null;
+};
+
+export type MeetingUpdatePayload = {
+  title?: string;
+  meeting_type?: string;
+  description?: string | null;
+
+  scheduled_start?: string;
+  scheduled_end?: string;
+
+  location?: string | null;
+  meeting_link?: string | null;
+
+  status?: string;
+
+  outcome?: string | null;
+  notes?: string | null;
+
+  customer_id?: number | null;
+  customer_group_id?: number | null;
+};
+
+export type MeetingListResponse = {
+  meetings: Meeting[];
+  total: number;
+};
+
+
+
+export async function getMeetings(
+  token: string,
+  params?: {
+    search?: string;
+    status?: string;
+    meeting_type?: string;
+    from_date?: string;
+    to_date?: string;
+  }
+): Promise<MeetingListResponse> {
+  const searchParams = new URLSearchParams();
+
+  if (params?.search) {
+    searchParams.set("search", params.search);
+  }
+
+  if (params?.status) {
+    searchParams.set("status", params.status);
+  }
+
+  if (params?.meeting_type) {
+    searchParams.set("meeting_type", params.meeting_type);
+  }
+
+  if (params?.from_date) {
+    searchParams.set("from_date", params.from_date);
+  }
+
+  if (params?.to_date) {
+    searchParams.set("to_date", params.to_date);
+  }
+
+  const query = searchParams.toString();
+
+  return advisorFetch<MeetingListResponse>(
+    `/meetings/${query ? `?${query}` : ""}`,
+    token
+  );
+}
+
+export async function getMeeting(
+  token: string,
+  id: number
+): Promise<Meeting> {
+  return advisorFetch<Meeting>(`/meetings/${id}`, token);
+}
+
+export async function createMeeting(
+  token: string,
+  payload: MeetingCreatePayload,
+): Promise<Meeting> {
+  return advisorFetch<Meeting>("/meetings/", token, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateMeeting(
+  token: string,
+  id: number,
+  payload: MeetingUpdatePayload,
+): Promise<Meeting> {
+  return advisorFetch<Meeting>(`/meetings/${id}`, token, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function cancelMeeting(
+  token: string,
+  id: number
+): Promise<Meeting> {
+  return advisorFetch<Meeting>(`/meetings/${id}/cancel`, token, {
+    method: "POST",
+  });
+}
+
+
+
+
+
+
+
+// =========================
+// Tasks
+// =========================
+
+export type Task = {
+  id: number;
+  organization_id: number;
+  assigned_employee_id: number;
+
+  title: string;
+  task_type: string;
+  description: string | null;
+
+  due_at: string;
+
+  priority: string;
+  status: string;
+
+  notes: string | null;
+  completed_at: string | null;
+
+  customer_id: number | null;
+  customer_group_id: number | null;
+
+  customer_name: string | null;
+  group_name: string | null;
+
+  created_at: string;
+  updated_at: string;
+};
+
+export type TaskCreatePayload = {
+  title: string;
+  task_type?: string;
+  description?: string | null;
+  due_at: string;
+  priority?: string;
+  status?: string;
+  notes?: string | null;
+  customer_id?: number | null;
+  customer_group_id?: number | null;
+};
+
+export type TaskUpdatePayload = {
+  title?: string;
+  task_type?: string;
+  description?: string | null;
+  due_at?: string;
+  priority?: string;
+  status?: string;
+  notes?: string | null;
+  customer_id?: number | null;
+  customer_group_id?: number | null;
+};
+
+export type TaskListResponse = {
+  tasks: Task[];
+  total: number;
+};
+
+export async function getTasks(
+  token: string,
+  params?: {
+    search?: string;
+    status?: string;
+    priority?: string;
+    task_type?: string;
+    customer_id?: number;
+    customer_group_id?: number;
+    from_date?: string;
+    to_date?: string;
+  }
+): Promise<TaskListResponse> {
+  const searchParams = new URLSearchParams();
+
+  if (params?.search) {
+    searchParams.set("search", params.search);
+  }
+
+  if (params?.status) {
+    searchParams.set("status", params.status);
+  }
+
+  if (params?.priority) {
+    searchParams.set("priority", params.priority);
+  }
+
+  if (params?.task_type) {
+    searchParams.set("task_type", params.task_type);
+  }
+
+  if (params?.customer_id) {
+    searchParams.set("customer_id", String(params.customer_id));
+  }
+
+  if (params?.customer_group_id) {
+    searchParams.set("customer_group_id", String(params.customer_group_id));
+  }
+
+  if (params?.from_date) {
+    searchParams.set("from_date", params.from_date);
+  }
+
+  if (params?.to_date) {
+    searchParams.set("to_date", params.to_date);
+  }
+
+  const query = searchParams.toString();
+
+  return advisorFetch<TaskListResponse>(
+    `/tasks/${query ? `?${query}` : ""}`,
+    token
+  );
+}
+
+export async function getTask(
+  token: string,
+  id: number
+): Promise<Task> {
+  return advisorFetch<Task>(`/tasks/${id}`, token);
+}
+
+export async function createTask(
+  token: string,
+  payload: TaskCreatePayload
+): Promise<Task> {
+  return advisorFetch<Task>("/tasks/", token, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateTask(
+  token: string,
+  id: number,
+  payload: TaskUpdatePayload
+): Promise<Task> {
+  return advisorFetch<Task>(`/tasks/${id}`, token, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function completeTask(
+  token: string,
+  id: number
+): Promise<Task> {
+  return advisorFetch<Task>(`/tasks/${id}/complete`, token, {
+    method: "POST",
+  });
+}
+
+export async function reopenTask(
+  token: string,
+  id: number
+): Promise<Task> {
+  return advisorFetch<Task>(`/tasks/${id}/reopen`, token, {
+    method: "POST",
+  });
+}
+
+
+
+
+// =========================
+// Messages
+// =========================
+
+export type Message = {
+  id: number;
+  organization_id: number;
+  sender_employee_id: number;
+
+  message_type: string;
+  subject: string | null;
+  body: string;
+  status: string;
+
+  customer_id: number | null;
+  customer_group_id: number | null;
+
+  customer_name: string | null;
+  group_name: string | null;
+
+  sent_at: string;
+  read_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MessageListResponse = {
+  messages: Message[];
+  total: number;
+};
+
+export type MessageCreatePayload = {
+  message_type?: string;
+  subject?: string | null;
+  body: string;
+  status?: string;
+  customer_id?: number | null;
+  customer_group_id?: number | null;
+};
+
+export type MessageUpdatePayload = {
+  subject?: string | null;
+  body?: string;
+  status?: string;
+};
+
+export type MessageListParams = {
+  search?: string;
+  status?: string;
+  message_type?: string;
+  customer_id?: number;
+  customer_group_id?: number;
+  from_date?: string;
+  to_date?: string;
+};
+
+export function getMessages(
+  token: string,
+  params?: MessageListParams,
+): Promise<MessageListResponse> {
+  const queryParams = new URLSearchParams();
+
+  if (params?.search) {
+    queryParams.set("search", params.search);
+  }
+
+  if (params?.status) {
+    queryParams.set("status", params.status);
+  }
+
+  if (params?.message_type) {
+    queryParams.set("message_type", params.message_type);
+  }
+
+  if (params?.customer_id) {
+    queryParams.set("customer_id", String(params.customer_id));
+  }
+
+  if (params?.customer_group_id) {
+    queryParams.set(
+      "customer_group_id",
+      String(params.customer_group_id),
+    );
+  }
+
+  if (params?.from_date) {
+    queryParams.set("from_date", params.from_date);
+  }
+
+  if (params?.to_date) {
+    queryParams.set("to_date", params.to_date);
+  }
+
+  const qs = queryParams.toString();
+
+  return advisorFetch(
+    `/messages/${qs ? `?${qs}` : ""}`,
+    token,
+  );
+}
+
+export function getMessage(
+  token: string,
+  id: number,
+): Promise<Message> {
+  return advisorFetch(`/messages/${id}`, token);
+}
+
+export function createMessage(
+  token: string,
+  payload: MessageCreatePayload,
+): Promise<Message> {
+  return advisorFetch("/messages/", token, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateMessage(
+  token: string,
+  id: number,
+  payload: MessageUpdatePayload,
+): Promise<Message> {
+  return advisorFetch(`/messages/${id}`, token, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function markMessageRead(
+  token: string,
+  id: number,
+): Promise<Message> {
+  return advisorFetch(`/messages/${id}/read`, token, {
+    method: "POST",
+  });
+}
+
+export function archiveMessage(
+  token: string,
+  id: number,
+): Promise<Message> {
+  return advisorFetch(`/messages/${id}/archive`, token, {
+    method: "POST",
+  });
+}
+
+
+
+// ==================== Documents ====================
+
+export type Document = {
+  id: number;
+  organization_id: number;
+  customer_id: number | null;
+  customer_group_id: number | null;
+  uploaded_by_employee_id: number;
+
+  document_type: string;
+  document_name: string;
+  description: string | null;
+
+  file_name: string | null;
+  file_url: string | null;
+  file_type: string | null;
+  file_size: number | null;
+
+  status: string;
+  notes: string | null;
+
+  customer_name: string | null;
+  group_name: string | null;
+
+  created_at: string;
+  updated_at: string;
+};
+
+export type DocumentListResponse = {
+  documents: Document[];
+  total: number;
+};
+
+export type DocumentCreatePayload = {
+  customer_id?: number | null;
+  customer_group_id?: number | null;
+
+  document_type: string;
+  document_name: string;
+  description?: string | null;
+
+  file_name?: string | null;
+  file_url?: string | null;
+  file_type?: string | null;
+  file_size?: number | null;
+
+  status?: string;
+  notes?: string | null;
+};
+
+export type DocumentUpdatePayload = {
+  customer_id?: number | null;
+  customer_group_id?: number | null;
+
+  document_type?: string;
+  document_name?: string;
+  description?: string | null;
+
+  file_name?: string | null;
+  file_url?: string | null;
+  file_type?: string | null;
+  file_size?: number | null;
+
+  status?: string;
+  notes?: string | null;
+};
+
+export type DocumentListParams = {
+  search?: string;
+  status?: string;
+  document_type?: string;
+  customer_id?: number;
+  customer_group_id?: number;
+  from_date?: string;
+  to_date?: string;
+};
+
+export function getDocuments(
+  token: string,
+  params?: DocumentListParams,
+): Promise<DocumentListResponse> {
+  const queryParams = new URLSearchParams();
+
+  if (params?.search) queryParams.set("search", params.search);
+  if (params?.status) queryParams.set("status", params.status);
+
+  if (params?.document_type) {
+    queryParams.set("document_type", params.document_type);
+  }
+
+  if (params?.customer_id) {
+    queryParams.set("customer_id", String(params.customer_id));
+  }
+
+  if (params?.customer_group_id) {
+    queryParams.set(
+      "customer_group_id",
+      String(params.customer_group_id),
+    );
+  }
+
+  if (params?.from_date) {
+    queryParams.set("from_date", params.from_date);
+  }
+
+  if (params?.to_date) {
+    queryParams.set("to_date", params.to_date);
+  }
+
+  const qs = queryParams.toString();
+
+  return advisorFetch(
+    `/documents/${qs ? `?${qs}` : ""}`,
+    token,
+  );
+}
+
+export function getDocument(
+  token: string,
+  id: number,
+): Promise<Document> {
+  return advisorFetch(`/documents/${id}`, token);
+}
+
+/**
+ * Upload a real document file.
+ *
+ * The backend automatically determines:
+ * - document name
+ * - file name
+ * - file type
+ * - file size
+ * - file URL
+ */
+export async function uploadDocument(
+  token: string,
+  data: {
+    customer_id?: number | null;
+    customer_group_id?: number | null;
+    document_type: string;
+    description?: string | null;
+    notes?: string | null;
+    file: File;
+  },
+): Promise<Document> {
+  const formData = new FormData();
+
+  if (data.customer_id) {
+    formData.append(
+      "customer_id",
+      String(data.customer_id),
+    );
+  }
+
+  if (data.customer_group_id) {
+    formData.append(
+      "customer_group_id",
+      String(data.customer_group_id),
+    );
+  }
+
+  formData.append(
+    "document_type",
+    data.document_type,
+  );
+
+  if (data.description?.trim()) {
+    formData.append(
+      "description",
+      data.description.trim(),
+    );
+  }
+
+  if (data.notes?.trim()) {
+    formData.append(
+      "notes",
+      data.notes.trim(),
+    );
+  }
+
+  formData.append("file", data.file);
+
+  return advisorFetch("/documents/upload", token, {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export function createDocument(
+  token: string,
+  payload: DocumentCreatePayload,
+): Promise<Document> {
+  return advisorFetch("/documents/", token, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateDocument(
+  token: string,
+  id: number,
+  payload: DocumentUpdatePayload,
+): Promise<Document> {
+  return advisorFetch(`/documents/${id}`, token, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function archiveDocument(
+  token: string,
+  id: number,
+): Promise<Document> {
+  return advisorFetch(`/documents/${id}/archive`, token, {
+    method: "POST",
+  });
 }

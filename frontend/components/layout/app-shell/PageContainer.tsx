@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import Breadcrumb from "./Breadcrumb";
 
 interface PageContainerProps {
@@ -9,6 +10,7 @@ interface PageContainerProps {
   actions?: ReactNode;
   filters?: ReactNode;
   children: ReactNode;
+  className?: string;
 }
 
 export default function PageContainer({
@@ -17,9 +19,10 @@ export default function PageContainer({
   actions,
   filters,
   children,
+  className,
 }: PageContainerProps) {
   return (
-    <div className="mx-auto w-full max-w-7xl px-6 py-6 lg:px-8">
+    <div className={cn("shell-body", className)}>
 
       {/* Breadcrumb */}
       <Breadcrumb />

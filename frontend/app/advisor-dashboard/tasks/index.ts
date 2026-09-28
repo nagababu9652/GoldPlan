@@ -1,5 +1,2 @@
-export { default as TaskTable } from './TaskTable';
-export * from './task.columns';
-export * from './task.actions';
-export * from './task.filters';
-export * from './task.service';
+export { default as TaskTable } from '@/components/task/list/TaskTable';
+export * from '@/components/task/list/columns';

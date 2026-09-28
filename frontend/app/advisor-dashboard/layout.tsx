@@ -25,7 +25,8 @@ import {
 
 interface NavItem {
   label: string;
-  path: string;
+  path?: string;
+  href?: string;
 }
 
 interface NavModule {
@@ -50,12 +51,17 @@ const navigation: NavModule[] = [
         path: "/advisor-dashboard/clients",
       },
       {
-        label: "Groups",
+        label: "Households",
         path: "/advisor-dashboard/groups",
+        href: "/advisor-dashboard/groups",
       },
       {
         label: "Meetings",
         path: "/advisor-dashboard/meetings",
+      },
+      {
+        label: "Tasks",
+        path: "/advisor-dashboard/tasks",
       },
       {
         label: "Messages",
@@ -111,14 +117,17 @@ const navigation: NavModule[] = [
 
 function isPathActive(
   pathname: string,
-  path?: string
+  path?: string,
+  href?: string
 ) {
-  if (!path) return false;
+  const target = href ?? path;
+
+  if (!target) return false;
 
   return (
-    pathname === path ||
-    (path !== "/advisor-dashboard" &&
-      pathname.startsWith(`${path}/`))
+    pathname === target ||
+    (target !== "/advisor-dashboard" &&
+      pathname.startsWith(`${target}/`))
   );
 }
 
@@ -378,16 +387,18 @@ export default function AdvisorDashboardLayout({
                         <div className="py-1.5">
                           {module.items.map(
                             (item) => {
+                              const itemPath = item.href ?? item.path;
                               const itemActive =
                                 isPathActive(
                                   pathname,
-                                  item.path
+                                  item.path,
+                                  item.href
                                 );
 
                               return (
                                 <Link
-                                  key={item.path}
-                                  href={item.path}
+                                  key={`${itemPath ?? item.label}-${item.label}`}
+                                  href={itemPath ?? "/advisor-dashboard"}
                                   className={[
                                     "flex items-center px-4 py-2.5 text-sm transition-colors",
                                     itemActive
@@ -496,21 +507,19 @@ export default function AdvisorDashboardLayout({
 
                           <div className="ml-9 mt-1 space-y-1">
                             {module.items?.map(
-                              (item) => (
-                                <Link
-                                  key={
-                                    item.path
-                                  }
-                                  href={
-                                    item.path
-                                  }
-                                  className="block rounded-md px-3 py-2 text-xs text-ash-light hover:bg-obsidian-soft hover:text-bone"
-                                >
-                                  {
-                                    item.label
-                                  }
-                                </Link>
-                              )
+                              (item) => {
+                                const itemPath = item.href ?? item.path;
+
+                                return (
+                                  <Link
+                                    key={`${itemPath ?? item.label}-${item.label}`}
+                                    href={itemPath ?? "/advisor-dashboard"}
+                                    className="block rounded-md px-3 py-2 text-xs text-ash-light hover:bg-obsidian-soft hover:text-bone"
+                                  >
+                                    {item.label}
+                                  </Link>
+                                );
+                              }
                             )}
                           </div>
                         </div>
@@ -553,7 +562,7 @@ export default function AdvisorDashboardLayout({
         </div>
 
         {/* Page */}
-        <main className="min-w-0 w-full">
+        <main className="shell-body min-w-0 w-full">
           {children}
         </main>
       </div>
