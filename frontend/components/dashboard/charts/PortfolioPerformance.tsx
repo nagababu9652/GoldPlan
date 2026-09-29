@@ -67,13 +67,13 @@ export default function PortfolioPerformance({
 
   if (loading) {
     return (
-      <section className="card-surface rounded-2xl border border-line bg-bone p-6 lg:p-7">
+      <section className="dashboard-panel bg-bone/80 p-6 lg:p-7">
         <div className="mb-7">
-          <div className="label-mono text-ash">
-            PORTFOLIO
+          <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+            Portfolio
           </div>
 
-          <h2 className="mt-2 font-serif text-2xl text-obsidian">
+          <h2 className="mt-3 font-serif text-2xl text-obsidian">
             Assets under management
           </h2>
 
@@ -83,7 +83,7 @@ export default function PortfolioPerformance({
         </div>
 
         <div
-          className="animate-pulse rounded-xl bg-ash/10"
+          className="animate-pulse rounded-2xl bg-ash/10"
           style={{ height }}
         />
       </section>
@@ -92,18 +92,18 @@ export default function PortfolioPerformance({
 
   if (error || !portfolio) {
     return (
-      <section className="card-surface rounded-2xl border border-line bg-bone p-6 lg:p-7">
+      <section className="dashboard-panel bg-bone/80 p-6 lg:p-7">
         <div className="mb-7">
-          <div className="label-mono text-ash">
-            PORTFOLIO
+          <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+            Portfolio
           </div>
 
-          <h2 className="mt-2 font-serif text-2xl text-obsidian">
+          <h2 className="mt-3 font-serif text-2xl text-obsidian">
             Assets under management
           </h2>
         </div>
 
-        <div className="flex items-center justify-center rounded-xl border border-red-200 bg-red-50 p-8 text-sm text-red-600">
+        <div className="flex items-center justify-center rounded-2xl border border-red-200 bg-red-50 p-8 text-sm text-red-600">
           {error || "Unable to load portfolio"}
         </div>
       </section>
@@ -114,16 +114,15 @@ export default function PortfolioPerformance({
     portfolio.returns_percentage >= 0;
 
   return (
-    <section className="card-surface overflow-hidden rounded-2xl border border-line bg-bone">
-      {/* Header */}
+    <section className="dashboard-panel overflow-hidden bg-bone/80">
       <div className="border-b border-line p-6 lg:p-7">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
           <div>
-            <div className="label-mono text-ash">
-              PORTFOLIO
+            <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+              Portfolio
             </div>
 
-            <h2 className="mt-2 font-serif text-2xl text-obsidian">
+            <h2 className="mt-3 font-serif text-2xl text-obsidian">
               Assets under management
             </h2>
 
@@ -138,17 +137,17 @@ export default function PortfolioPerformance({
             </p>
 
             <p
-              className={`mt-2 text-sm font-medium ${
+              className={`mt-2 inline-flex items-center rounded-full border px-2.5 py-1 text-sm font-medium ${
                 isPositive
-                  ? "text-emerald-700"
-                  : "text-red-600"
+                  ? "border-emerald-700/20 bg-emerald-500/10 text-emerald-700"
+                  : "border-red-600/20 bg-red-500/10 text-red-600"
               }`}
             >
               {formatPercent(
                 portfolio.returns_percentage
               )}
 
-              <span className="ml-1 text-xs text-ash">
+              <span className="ml-1 text-[10px] uppercase tracking-[0.16em] text-ash">
                 returns
               </span>
             </p>

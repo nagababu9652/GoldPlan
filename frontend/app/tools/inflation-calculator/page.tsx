@@ -39,7 +39,7 @@ export default function InflationCalculatorPage() {
                     <div><h2 className="font-serif text-[24px] leading-tight">Inflation Impact</h2><p className="text-[13px] text-ash mt-1">See the effect of inflation</p></div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div><label className="label-mono text-ash block" style={{ marginBottom: '8px' }}>Today's Value (₹)</label><input type="number" value={amount} onChange={e=>setAmount(e.target.value)} className="w-full border border-obsidian bg-bone px-4 py-3 text-[15px] focus:border-antique focus:outline-none" min="1000" step="1000" /></div>
+                    <div><label className="label-mono text-ash block" style={{ marginBottom: '8px' }}>Today&apos;s Value (₹)</label><input type="number" value={amount} onChange={e=>setAmount(e.target.value)} className="w-full border border-obsidian bg-bone px-4 py-3 text-[15px] focus:border-antique focus:outline-none" min="1000" step="1000" /></div>
                     <div><label className="label-mono text-ash block" style={{ marginBottom: '8px' }}>Inflation Rate (%)</label><input type="number" value={inflationRate} onChange={e=>setInflationRate(e.target.value)} className="w-full border border-obsidian bg-bone px-4 py-3 text-[15px] focus:border-antique focus:outline-none" min="1" max="30" step="0.5" /></div>
                     <div><label className="label-mono text-ash block" style={{ marginBottom: '8px' }}>Time Period (years)</label><input type="number" value={years} onChange={e=>setYears(e.target.value)} className="w-full border border-obsidian bg-bone px-4 py-3 text-[15px] focus:border-antique focus:outline-none" min="1" max="50" step="1" /></div>
                     <button onClick={()=>setShowResults(true)} className="w-full btn-obsidian justify-center" style={{ padding: '12px 24px' }}>Calculate</button>
@@ -62,7 +62,7 @@ export default function InflationCalculatorPage() {
                         <div className="text-[13px] text-ash mt-2">After {years} years at {inflationRate}% inflation</div>
                       </div>
                       <div className="grid grid-cols-2" style={{ gap: '12px' }}>
-                        <div className="border border-line" style={{ padding: '14px' }}><div className="label-mono text-ash mb-2">Today's Value</div><div className="font-serif text-[18px] leading-none">{fmt(parseFloat(amount))}</div></div>
+                        <div className="border border-line" style={{ padding: '14px' }}><div className="label-mono text-ash mb-2">Today&apos;s Value</div><div className="font-serif text-[18px] leading-none">{fmt(parseFloat(amount))}</div></div>
                         <div className="border border-line" style={{ padding: '14px' }}><div className="label-mono text-ash mb-2">Value Lost</div><div className="font-serif text-[18px] leading-none text-red-700">{fmt(lostValue)}</div></div>
                       </div>
                       <div className="border border-line" style={{ padding: '14px' }}><div className="label-mono text-ash mb-2">Purchasing Power Lost</div><div className="flex items-baseline gap-2"><span className="font-serif text-[24px] leading-none text-red-700">{((lostValue / parseFloat(amount)) * 100).toFixed(1)}%</span></div></div>

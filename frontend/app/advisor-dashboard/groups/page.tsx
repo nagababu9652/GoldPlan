@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   getGroups,
@@ -42,7 +42,7 @@ export default function GroupsPage() {
     head_customer_id: null,
   });
 
-  const loadGroups = async () => {
+  const loadGroups = useCallback(async () => {
     const token = localStorage.getItem('finplan_token');
 
     if (!token) {
@@ -59,17 +59,17 @@ export default function GroupsPage() {
       });
 
       setGroups(data.groups);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load groups:', err);
-      alert(err.message || 'Failed to load groups');
+      alert(err instanceof Error ? err.message : 'Failed to load groups');
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterType, router, search]);
 
   useEffect(() => {
-    loadGroups();
-  }, [search, filterType]);
+    void loadGroups();
+  }, [loadGroups]);
 
   const handleCreate = async () => {
     const token = localStorage.getItem('finplan_token');
@@ -98,8 +98,8 @@ export default function GroupsPage() {
       });
 
       await loadGroups();
-    } catch (err: any) {
-      alert(err.message || 'Failed to create group');
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to create group');
     } finally {
       setSaving(false);
     }
@@ -121,15 +121,16 @@ export default function GroupsPage() {
     try {
       await deactivateGroup(token, group.id);
       await loadGroups();
-    } catch (err: any) {
-      alert(err.message || 'Failed to deactivate group');
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to deactivate group');
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-ash">Loading groups...</div>
+      <div className="dashboard-panel p-6 lg:p-8">
+        <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">Group management</div>
+        <div className="mt-4 text-sm text-ash">Loading groups...</div>
       </div>
     );
   }
@@ -137,17 +138,17 @@ export default function GroupsPage() {
   return (
     <div className="w-full space-y-8">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+      <div className="dashboard-panel flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between lg:p-8">
         <div>
-          <div className="label-mono text-ash mb-3">
-            &mdash; Group Management
+          <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+            Group management
           </div>
 
-          <h1 className="display text-[36px] lg:text-[48px]">
+          <h1 className="mt-4 font-serif text-4xl tracking-tight text-obsidian lg:text-5xl">
             Groups & Households
           </h1>
 
-          <p className="text-ash text-[16px] mt-2">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-ash">
             Organize clients into households, families, businesses and other
             financial groups.
           </p>
@@ -155,7 +156,7 @@ export default function GroupsPage() {
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="self-start lg:self-auto px-6 py-3 bg-obsidian text-bone text-[14px] font-mono uppercase tracking-wider2 hover:bg-obsidian-soft transition-colors"
+          className="self-start rounded-full bg-obsidian px-5 py-2.5 text-xs font-medium uppercase tracking-[0.2em] text-bone transition-colors hover:bg-obsidian/90 lg:self-auto"
         >
           + Add Group
         </button>

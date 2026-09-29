@@ -4,10 +4,8 @@ import {
   dropdownItemVariants,
 } from "./dropdown.variants";
 
-export interface DropdownContentProps
-  extends VariantProps<typeof dropdownContentVariants> {}
+export type DropdownContentProps = VariantProps<typeof dropdownContentVariants>;
 
-export interface DropdownItemProps
-  extends VariantProps<typeof dropdownItemVariants> {
+export type DropdownItemProps = VariantProps<typeof dropdownItemVariants> & {
   inset?: boolean;
-}
+};

@@ -35,19 +35,19 @@ export default function AdvisorSnapshot({
     0;
 
   return (
-    <section className="card-surface flex flex-col rounded-2xl border border-line bg-bone p-6 lg:p-7">
-      {/* Header */}
+    <section className="dashboard-panel flex flex-col bg-bone/80 p-6 lg:p-7">
       <div className="flex items-center justify-between">
-        <div className="label-mono text-ash">
-          TODAY'S SNAPSHOT
+        <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+          Today&apos;s Snapshot
         </div>
 
-        <div className="h-2 w-2 rounded-full bg-emerald-600" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-emerald-600/20 bg-emerald-500/10 text-emerald-700">
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+        </div>
       </div>
 
-      {/* AUM */}
       <div className="mt-6">
-        <p className="text-xs font-mono uppercase tracking-wider text-ash">
+        <p className="text-xs font-mono uppercase tracking-[0.22em] text-ash">
           Assets under management
         </p>
 
@@ -57,10 +57,10 @@ export default function AdvisorSnapshot({
           </p>
 
           <span
-            className={`pb-0.5 text-xs font-medium ${
+            className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${
               portfolioChange >= 0
-                ? "text-emerald-700"
-                : "text-red-600"
+                ? "border-emerald-700/20 bg-emerald-500/10 text-emerald-700"
+                : "border-red-600/20 bg-red-500/10 text-red-600"
             }`}
           >
             {portfolioChange >= 0 ? "+" : ""}
@@ -73,10 +73,9 @@ export default function AdvisorSnapshot({
         </p>
       </div>
 
-      {/* Metrics */}
       <div className="mt-6 grid grid-cols-3 border-y border-line py-5">
         <div>
-          <p className="text-[10px] font-mono uppercase tracking-wider text-ash">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-ash">
             Reviews
           </p>
 
@@ -86,7 +85,7 @@ export default function AdvisorSnapshot({
         </div>
 
         <div className="border-l border-line pl-4">
-          <p className="text-[10px] font-mono uppercase tracking-wider text-ash">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-ash">
             Upcoming
           </p>
 
@@ -96,7 +95,7 @@ export default function AdvisorSnapshot({
         </div>
 
         <div className="border-l border-line pl-4">
-          <p className="text-[10px] font-mono uppercase tracking-wider text-ash">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-ash">
             New clients
           </p>
 
@@ -106,10 +105,9 @@ export default function AdvisorSnapshot({
         </div>
       </div>
 
-      {/* Satisfaction */}
       <div className="mt-5">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-ash">
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-ash">
             Client satisfaction
           </span>
 
@@ -121,9 +119,9 @@ export default function AdvisorSnapshot({
           </span>
         </div>
 
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ash/10">
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-ash/10">
           <div
-            className="h-full rounded-full bg-obsidian transition-all duration-500"
+            className="h-full rounded-full bg-gradient-to-r from-obsidian via-obsidian to-antique transition-all duration-500"
             style={{
               width: `${Math.min(
                 Math.max(

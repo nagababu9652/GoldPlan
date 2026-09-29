@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -212,7 +213,7 @@ export default function Navigation() {
       {/* Main bar */}
       <div className="flex items-center justify-between shell-gutter h-14 lg:h-16">
         {/* Brand */}
-        <a href="/" className="flex items-center gap-2 lg:gap-3 shrink-0" data-testid="brand-logo">
+        <Link href="/" className="flex items-center gap-2 lg:gap-3 shrink-0" data-testid="brand-logo">
           <div className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-antique bg-obsidian text-bone flex items-center justify-center">
             <span className="font-serif text-[18px] lg:text-[24px] leading-none text-antique">F</span>
           </div>
@@ -220,7 +221,7 @@ export default function Navigation() {
               <div className="font-serif text-[16px] lg:text-[20px] tracking-tight">FinPlan<span className="text-antique">.</span></div>
               <div className="hidden lg:block font-mono text-[9px] uppercase tracking-wider2 text-ash mt-0.5">EST. 2026 · HYDERABAD</div>
             </div>
-        </a>
+        </Link>
 
         {/* Center nav */}
         <nav className="hidden lg:flex items-center h-full gap-8" data-testid="nav-links">
@@ -298,7 +299,7 @@ export default function Navigation() {
           >
             <div className="shell-gutter py-10 grid grid-cols-12 gap-10">
               {(() => {
-                const current = navItems.find((i) => i.label === openMega) as Extract<NavItem, { columns: any }>;
+                const current = navItems.find((i) => i.label === openMega) as Extract<NavItem, { columns: { heading: string; items: MegaItem[] }[] }>;
                 const cols = current.columns;
                 return (
                   <>
@@ -338,9 +339,9 @@ export default function Navigation() {
                           <h4 className="font-serif text-2xl leading-tight mb-3">{current.promo.title}</h4>
                           <p className="text-bone/75 text-[13px] leading-relaxed">{current.promo.body}</p>
                         </div>
-                        <a href={current.promo.href} className="mt-6 inline-flex items-center justify-between border border-bone/30 px-4 py-3 text-[12px] font-mono uppercase tracking-wider2 hover:bg-bone hover:text-obsidian transition-colors">
+                        <Link href={current.promo.href} className="mt-6 inline-flex items-center justify-between border border-bone/30 px-4 py-3 text-[12px] font-mono uppercase tracking-wider2 hover:bg-bone hover:text-obsidian transition-colors">
                           {current.promo.cta} <ArrowRight size={14} />
-                        </a>
+                        </Link>
                       </div>
                     )}
                   </>
@@ -364,7 +365,7 @@ export default function Navigation() {
           >
             <div className="shell-gutter py-6 space-y-1">
                {navItems.map((item) => (
-                 <a
+                 <Link
                    key={item.label}
                    href={'href' in item ? item.href : '/'}
                    onClick={closeMobile}
@@ -373,18 +374,18 @@ export default function Navigation() {
                  >
                    {item.label}
                    <ArrowUpRight size={16} className="text-ash" />
-                 </a>
+                 </Link>
                ))}
                <div className="pt-5 flex flex-col gap-3">
                  {isLoggedIn ? (
                    <>
-                     <a href="/advisor-dashboard" onClick={closeMobile} className="btn-outline justify-center">Advisor Dashboard</a>
+                     <Link href="/advisor-dashboard" onClick={closeMobile} className="btn-outline justify-center">Advisor Dashboard</Link>
                      <button onClick={() => { handleLogout(); closeMobile(); }} className="btn-outline justify-center">Sign Out</button>
                    </>
                  ) : (
                    <>
-                     <a href="/login" onClick={closeMobile} className="btn-outline justify-center">Advisor Login</a>
-                     <a href="/contact" onClick={closeMobile} className="btn-obsidian justify-center">Request Demo <ArrowRight size={14} /></a>
+                     <Link href="/login" onClick={closeMobile} className="btn-outline justify-center">Advisor Login</Link>
+                     <Link href="/contact" onClick={closeMobile} className="btn-obsidian justify-center">Request Demo <ArrowRight size={14} /></Link>
                    </>
                  )}
                </div>

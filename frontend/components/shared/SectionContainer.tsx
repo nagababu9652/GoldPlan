@@ -1,9 +1,8 @@
-interface SectionContainerProps {
+type SectionContainerProps = {
   children: React.ReactNode;
   className?: string;
   as?: 'section' | 'div' | 'footer';
-  [key: string]: any;
-}
+} & React.ComponentPropsWithoutRef<'div'>;
 
 export default function SectionContainer({
   children,

@@ -216,7 +216,7 @@ export default function TaskForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 rounded-xl border border-line bg-bone p-6"
+      className="dashboard-form-shell space-y-6"
     >
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
@@ -226,61 +226,72 @@ export default function TaskForm({
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="lg:col-span-2">
-          <label className="mb-2 block text-sm font-medium">
-            Task Title
-          </label>
+      <section className="dashboard-form-section p-5 sm:p-6">
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-obsidian">
+            Task Information
+          </h2>
 
-          <input
-            value={title}
-            onChange={(event) =>
-              setTitle(event.target.value)
-            }
-            placeholder="Follow up on financial plan"
-            className="h-11 w-full rounded-lg border border-line bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-black/10"
-            required
-          />
+          <p className="mt-1 text-sm text-ash">
+            Capture the essentials for this task and assign it to a client or group.
+          </p>
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Task Type
-          </label>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div className="lg:col-span-2">
+            <label className="dashboard-form-label">
+              Task Title
+            </label>
 
-          <select
-            value={taskType}
-            onChange={(event) =>
-              setTaskType(event.target.value)
-            }
-            className="h-11 w-full rounded-lg border border-line bg-white px-3 text-sm"
-          >
-            <option value="FOLLOW_UP">
-              Follow Up
-            </option>
-            <option value="CALL">
-              Call
-            </option>
-            <option value="EMAIL">
-              Email
-            </option>
-            <option value="DOCUMENT">
-              Document
-            </option>
-            <option value="REVIEW">
-              Review
-            </option>
-            <option value="REMINDER">
-              Reminder
-            </option>
-            <option value="OTHER">
-              Other
-            </option>
-          </select>
-        </div>
+            <input
+              value={title}
+              onChange={(event) =>
+                setTitle(event.target.value)
+              }
+              placeholder="Follow up on financial plan"
+              className="dashboard-form-control"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="dashboard-form-label">
+              Task Type
+            </label>
+
+            <select
+              value={taskType}
+              onChange={(event) =>
+                setTaskType(event.target.value)
+              }
+              className="dashboard-form-control"
+            >
+              <option value="FOLLOW_UP">
+                Follow Up
+              </option>
+              <option value="CALL">
+                Call
+              </option>
+              <option value="EMAIL">
+                Email
+              </option>
+              <option value="DOCUMENT">
+                Document
+              </option>
+              <option value="REVIEW">
+                Review
+              </option>
+              <option value="REMINDER">
+                Reminder
+              </option>
+              <option value="OTHER">
+                Other
+              </option>
+            </select>
+          </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium">
+          <label className="dashboard-form-label">
             Due Date & Time
           </label>
 
@@ -290,13 +301,13 @@ export default function TaskForm({
             onChange={(event) =>
               setDueAt(event.target.value)
             }
-            className="h-11 w-full rounded-lg border border-line bg-white px-3 text-sm"
+            className="dashboard-form-control"
             required
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium">
+          <label className="dashboard-form-label">
             Priority
           </label>
 
@@ -305,7 +316,7 @@ export default function TaskForm({
             onChange={(event) =>
               setPriority(event.target.value)
             }
-            className="h-11 w-full rounded-lg border border-line bg-white px-3 text-sm"
+            className="dashboard-form-control"
           >
             <option value="HIGH">High</option>
             <option value="MEDIUM">Medium</option>
@@ -314,7 +325,7 @@ export default function TaskForm({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium">
+          <label className="dashboard-form-label">
             Status
           </label>
 
@@ -323,7 +334,7 @@ export default function TaskForm({
             onChange={(event) =>
               setStatus(event.target.value)
             }
-            className="h-11 w-full rounded-lg border border-line bg-white px-3 text-sm"
+            className="dashboard-form-control"
           >
             <option value="PENDING">Pending</option>
             <option value="IN_PROGRESS">
@@ -339,7 +350,7 @@ export default function TaskForm({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium">
+          <label className="dashboard-form-label">
             Client
           </label>
 
@@ -348,7 +359,7 @@ export default function TaskForm({
             onChange={(event) =>
               setCustomerId(event.target.value)
             }
-            className="h-11 w-full rounded-lg border border-line bg-white px-3 text-sm"
+            className="dashboard-form-control"
           >
             <option value="">
               Select client
@@ -367,7 +378,7 @@ export default function TaskForm({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium">
+          <label className="dashboard-form-label">
             Group
           </label>
 
@@ -376,7 +387,7 @@ export default function TaskForm({
             onChange={(event) =>
               setGroupId(event.target.value)
             }
-            className="h-11 w-full rounded-lg border border-line bg-white px-3 text-sm"
+            className="dashboard-form-control"
           >
             <option value="">
               Select group
@@ -396,7 +407,7 @@ export default function TaskForm({
         </div>
 
         <div className="lg:col-span-2">
-          <label className="mb-2 block text-sm font-medium">
+          <label className="dashboard-form-label">
             Description
           </label>
 
@@ -407,12 +418,12 @@ export default function TaskForm({
             }
             rows={4}
             placeholder="Describe what needs to be done..."
-            className="w-full rounded-lg border border-line bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-black/10"
+            className="dashboard-form-control dashboard-form-textarea"
           />
         </div>
 
         <div className="lg:col-span-2">
-          <label className="mb-2 block text-sm font-medium">
+          <label className="dashboard-form-label">
             Notes
           </label>
 
@@ -423,10 +434,11 @@ export default function TaskForm({
             }
             rows={3}
             placeholder="Internal notes..."
-            className="w-full rounded-lg border border-line bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-black/10"
+            className="dashboard-form-control dashboard-form-textarea"
           />
         </div>
       </div>
+      </section>
 
       <div className="flex flex-col-reverse gap-3 border-t border-line pt-6 sm:flex-row sm:justify-end">
         <button
@@ -434,7 +446,7 @@ export default function TaskForm({
           onClick={() =>
             router.back()
           }
-          className="h-11 rounded-lg border border-line px-5 text-sm font-medium hover:bg-muted"
+          className="dashboard-form-action border border-line bg-bone text-obsidian"
         >
           Cancel
         </button>
@@ -442,7 +454,7 @@ export default function TaskForm({
         <button
           type="submit"
           disabled={saving}
-          className="h-11 rounded-lg bg-obsidian px-5 text-sm font-medium text-bone hover:opacity-90 disabled:opacity-50"
+          className="dashboard-form-action bg-obsidian text-bone disabled:cursor-not-allowed disabled:opacity-50"
         >
           {saving
             ? "Saving..."

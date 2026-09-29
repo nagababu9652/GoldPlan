@@ -125,15 +125,14 @@ export default function RecentTransactions() {
   }, []);
 
   return (
-    <section className="card-surface overflow-hidden rounded-2xl border border-line bg-bone">
-      {/* Header */}
+    <section className="dashboard-panel overflow-hidden bg-bone/80">
       <div className="flex items-end justify-between border-b border-line p-6 lg:p-7">
         <div>
-          <div className="label-mono text-ash">
-            FINANCIAL ACTIVITY
+          <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+            Financial Activity
           </div>
 
-          <h2 className="mt-2 font-serif text-2xl text-obsidian">
+          <h2 className="mt-3 font-serif text-2xl text-obsidian">
             Recent transactions
           </h2>
 
@@ -144,7 +143,7 @@ export default function RecentTransactions() {
 
         <Link
           href="/advisor-dashboard/transactions"
-          className="hidden items-center gap-2 text-xs font-mono uppercase tracking-wider text-obsidian u-link sm:inline-flex"
+          className="hidden items-center gap-2 text-xs font-mono uppercase tracking-[0.18em] text-obsidian u-link sm:inline-flex"
         >
           View all
           <ArrowRight size={14} />

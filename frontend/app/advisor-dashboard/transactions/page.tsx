@@ -14,8 +14,6 @@ import TransactionTable from "./TransactionTable";
 import {
   getTransactions,
   getTransactionHistory,
-  createTransaction,
-  updateTransaction,
   deleteTransaction,
   type AdvisorTransaction,
   type TransactionHistory,
@@ -223,14 +221,18 @@ export default function TransactionsPage() {
     <div className="space-y-6">
 
       {/* Header */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="dashboard-panel flex flex-col gap-4 p-6 lg:flex-row lg:items-end lg:justify-between lg:p-8">
 
         <div>
-          <h1 className="text-3xl font-bold">
+          <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+            Transaction management
+          </div>
+
+          <h1 className="mt-4 font-serif text-4xl tracking-tight text-obsidian lg:text-5xl">
             Transactions
           </h1>
 
-          <p className="mt-2 text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-ash">
             Manage financial transactions for your clients.
           </p>
         </div>

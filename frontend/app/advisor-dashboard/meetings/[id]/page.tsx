@@ -69,34 +69,37 @@ export default function MeetingDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="dashboard-panel p-4 lg:p-5">
         <Link
           href="/advisor-dashboard/meetings"
-          className="text-sm text-muted-foreground hover:underline"
+          className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] text-ash transition-colors hover:text-obsidian"
         >
           ← Back to Meetings
         </Link>
       </div>
 
       {loading ? (
-        <div className="rounded-xl border border-line bg-bone p-8 text-center">
-          <p className="text-sm text-ash">
-            Loading meeting...
-          </p>
+        <div className="dashboard-panel p-6 lg:p-8">
+          <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+            Meeting details
+          </div>
+          <p className="mt-4 text-sm text-ash">Loading meeting...</p>
         </div>
       ) : error ? (
-        <div className="rounded-xl border border-red-200 bg-bone p-8 text-center">
-          <p className="text-sm text-red-600">
-            {error}
-          </p>
+        <div className="dashboard-panel p-6 lg:p-8">
+          <div className="dashboard-pill border-red-200 bg-red-50 text-red-600">
+            Meeting details
+          </div>
+          <p className="mt-4 text-sm text-red-600">{error}</p>
         </div>
       ) : meeting ? (
         <MeetingDetail meeting={meeting} />
       ) : (
-        <div className="rounded-xl border border-line bg-bone p-8 text-center">
-          <p className="text-sm text-ash">
-            Meeting not found.
-          </p>
+        <div className="dashboard-panel p-6 lg:p-8">
+          <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+            Meeting details
+          </div>
+          <p className="mt-4 text-sm text-ash">Meeting not found.</p>
         </div>
       )}
     </div>

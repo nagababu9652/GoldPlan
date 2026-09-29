@@ -163,7 +163,10 @@ export default function MarketChart({ title, symbol, color = '#0C0B0A', prefix =
                   fontFamily: 'monospace',
                   color: '#F8F6F0',
                 }}
-                formatter={(value: any) => [fmt(Number(value)), title]}
+                formatter={(value) => {
+                  const rawValue = Array.isArray(value) ? value[0] : value ?? 0;
+                  return [fmt(Number(rawValue)), title] as [string, string];
+                }}
                 labelStyle={{ color: '#A8A29E' }}
               />
               <Area

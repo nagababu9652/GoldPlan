@@ -45,12 +45,12 @@ export default function DashboardHome() {
   }
 
   return (
-    <DashboardContainer className="space-y-12 lg:space-y-16">
+    <DashboardContainer className="dashboard-shell space-y-8 lg:space-y-10">
       {/* Overview */}
       <DashboardOverview advisor={data} />
 
       {/* Quick Actions */}
-      <div className="mt-8">
+      <div className="pt-2">
         <QuickActions />
       </div>
 

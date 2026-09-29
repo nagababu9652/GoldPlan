@@ -90,17 +90,21 @@ export default function NewClientPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">
+      <div className="dashboard-panel p-6 lg:p-8">
+        <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+          Client onboarding
+        </div>
+
+        <h1 className="mt-4 font-serif text-4xl tracking-tight text-obsidian lg:text-5xl">
           Add Client
         </h1>
 
-        <p className="mt-2 text-muted-foreground">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-ash">
           Create a new client profile.
         </p>
       </div>
 
-      <form className="space-y-8"onSubmit={handleSubmit}>
+      <form className="space-y-8" onSubmit={handleSubmit}>
         {/* Personal Information */}
         <section className="rounded-xl border border-line bg-bone p-6">
           <h2 className="text-lg font-semibold">

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   CalendarDays,
@@ -93,15 +94,14 @@ export default function TodaySchedule() {
   }, []);
 
   return (
-    <section className="card-surface overflow-hidden rounded-2xl border border-line bg-bone">
-      {/* Header */}
+    <section className="dashboard-panel overflow-hidden bg-bone/80">
       <div className="flex items-end justify-between border-b border-line p-6 lg:p-7">
         <div>
-          <div className="label-mono text-ash">
-            TODAY
+          <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+            Today
           </div>
 
-          <h3 className="mt-2 font-serif text-2xl text-obsidian">
+          <h3 className="mt-3 font-serif text-2xl text-obsidian">
             Your schedule
           </h3>
 
@@ -111,7 +111,7 @@ export default function TodaySchedule() {
         </div>
 
         {!loading && !error && (
-          <span className="shrink-0 text-xs font-mono uppercase tracking-wide text-ash">
+          <span className="shrink-0 rounded-full border border-line bg-white/50 px-2.5 py-1 text-[10px] font-mono uppercase tracking-[0.16em] text-ash">
             {meetings.length}{" "}
             {meetings.length === 1
               ? "activity"
@@ -225,14 +225,14 @@ export default function TodaySchedule() {
           </div>
         )}
 
-        <a
+        <Link
           href="/advisor-dashboard/meetings"
-          className="mt-6 flex items-center justify-between border-t border-line pt-5 text-xs font-mono uppercase tracking-wider text-obsidian transition-opacity hover:opacity-60"
+          className="mt-6 flex items-center justify-between border-t border-line pt-5 text-xs font-mono uppercase tracking-[0.18em] text-obsidian transition-opacity hover:opacity-60"
         >
           <span>View all meetings</span>
 
           <ArrowRight size={14} />
-        </a>
+        </Link>
       </div>
     </section>
   );

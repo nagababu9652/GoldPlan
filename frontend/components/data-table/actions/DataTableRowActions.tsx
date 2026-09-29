@@ -49,13 +49,10 @@ export default function DataTableRowActions<TData>({
               onClick={() =>
                 action.onClick(row)
               }
-              {...({ children: (
-                <>
-                  {action.icon}
-                  <span>{action.label}</span>
-                </>
-              ) } as any)}
-            />
+            >
+              {action.icon}
+              <span>{action.label}</span>
+            </DropdownItem>
           ))}
 
       </DropdownContent>

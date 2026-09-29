@@ -285,6 +285,121 @@ a, button { cursor: pointer; }
   box-shadow: 0 16px 30px -28px rgb(12 11 10 / 0.5);
 }
 
+.dashboard-shell {
+  position: relative;
+  background:
+    radial-gradient(circle at top left, rgba(180, 142, 75, 0.14), transparent 28%),
+    linear-gradient(180deg, rgba(248, 246, 240, 0.96), rgba(239, 236, 228, 0.96));
+}
+
+.dashboard-panel {
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid rgb(12 11 10 / 0.08);
+  border-radius: 26px;
+  box-shadow: 0 22px 50px -32px rgba(12, 11, 10, 0.38);
+  backdrop-filter: blur(8px);
+}
+
+.dashboard-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(12, 11, 10, 0.12);
+  background: rgba(255, 255, 255, 0.44);
+  color: var(--text-primary);
+  border-radius: 9999px;
+  padding: 0.45rem 0.8rem;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dashboard-pill {
+  border: 1px solid rgba(12, 11, 10, 0.08);
+  background: rgba(12, 11, 10, 0.02);
+  color: var(--text-primary);
+  border-radius: 9999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+.dashboard-form-shell {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.dashboard-form-section {
+  background: rgba(255, 255, 255, 0.44);
+  border: 1px solid rgb(12 11 10 / 0.08);
+  border-radius: 24px;
+  box-shadow: 0 22px 50px -32px rgba(12, 11, 10, 0.28);
+}
+
+.dashboard-form-label {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.dashboard-form-control {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgb(12 11 10 / 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--text-primary);
+  padding: 0.72rem 0.9rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.dashboard-form-control::placeholder {
+  color: rgb(92 88 80 / 0.7);
+}
+
+.dashboard-form-control:hover {
+  border-color: rgb(12 11 10 / 0.2);
+}
+
+.dashboard-form-control:focus {
+  outline: none;
+  border-color: rgb(12 11 10 / 0.36);
+  box-shadow: 0 0 0 4px rgba(180, 142, 75, 0.12);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.dashboard-form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.dashboard-form-action {
+  min-height: 44px;
+  border-radius: 14px;
+  padding: 0.72rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.dashboard-form-action:hover {
+  opacity: 0.96;
+}
+
+.dashboard-form-action:active {
+  transform: translateY(1px);
+}
+
 /* Visible keyboard focus for every link and button in the shell. */
 a:focus-visible,
 button:focus-visible {

@@ -37,7 +37,16 @@ async function handleApiError(response: Response): Promise<string> {
   try {
     const data = await response.json();
     if (typeof data.detail === 'string') return data.detail;
-    if (Array.isArray(data.detail)) return data.detail.map((e: any) => e.msg || JSON.stringify(e)).join('; ');
+    if (Array.isArray(data.detail)) {
+      return data.detail
+        .map((entry: unknown) => {
+          if (entry && typeof entry === 'object' && 'msg' in entry && typeof entry.msg === 'string') {
+            return entry.msg;
+          }
+          return JSON.stringify(entry);
+        })
+        .join('; ');
+    }
     if (typeof data.detail === 'object') return JSON.stringify(data.detail);
     return 'Request failed';
   } catch {

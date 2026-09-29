@@ -11,19 +11,24 @@ const COLORS = {
   Pending: "warning",
   Inactive: "secondary",
   Rejected: "danger",
-};
+} as const;
 
 export default function StatusColumn({
   value,
 }: Props) {
+  const badgeVariant =
+    (COLORS[value as keyof typeof COLORS] ?? "secondary") as
+      | "default"
+      | "secondary"
+      | "outline"
+      | "success"
+      | "warning"
+      | "danger"
+      | "info"
+      | "purple";
+
   return (
-    <Badge
-      variant={
-        (COLORS[
-          value as keyof typeof COLORS
-        ] ?? "secondary") as any
-      }
-    >
+    <Badge variant={badgeVariant}>
       {value}
     </Badge>
   );

@@ -3,9 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export interface TableCellProps
-  extends React.TdHTMLAttributes<HTMLTableCellElement> {}
-
+export type TableCellProps = React.TdHTMLAttributes<HTMLTableCellElement>;
 const TableCell = React.forwardRef<
   HTMLTableCellElement,
   TableCellProps

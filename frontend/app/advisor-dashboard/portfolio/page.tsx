@@ -26,8 +26,31 @@ export default function PortfolioPage() {
 
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <div className="dashboard-panel p-6 lg:p-8">
+      <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">Portfolio</div>
+      <p className="mt-4 text-sm text-ash">Loading portfolio...</p>
+    </div>
+  );
 
-  return <PortfolioTable portfolios={portfolios} />;
+  return (
+    <div className="space-y-6">
+      <div className="dashboard-panel p-6 lg:p-8">
+        <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+          Portfolio oversight
+        </div>
+
+        <h1 className="mt-4 font-serif text-4xl tracking-tight text-obsidian lg:text-5xl">
+          Portfolio
+        </h1>
+
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-ash">
+          Review managed holdings, allocations, and portfolio movements.
+        </p>
+      </div>
+
+      <PortfolioTable portfolios={portfolios} />
+    </div>
+  );
 
 }

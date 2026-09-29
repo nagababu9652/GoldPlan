@@ -257,7 +257,7 @@ export default function SIPCalculatorPage() {
                 <div className="label-mono text-ash mb-3">03</div>
                 <h4 className="font-serif text-[18px] leading-tight mb-3">Rupee Cost Averaging</h4>
                 <p className="text-[13px] text-ash leading-relaxed">
-                  Buy more units when markets are down and fewer when they're up, 
+                  Buy more units when markets are down and fewer when they&apos;re up, 
                   averaging your purchase cost.
                 </p>
               </div>

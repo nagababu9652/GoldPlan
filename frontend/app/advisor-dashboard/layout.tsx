@@ -9,17 +9,13 @@ import {
   BriefcaseBusiness,
   ChevronDown,
   FileText,
-  FolderKanban,
   LayoutDashboard,
   LogOut,
   Menu,
-  MessageSquare,
   Search,
   Users,
   X,
-  CalendarDays,
   Receipt,
-  UserRound,
   Settings,
 } from "lucide-react";
 
@@ -209,7 +205,7 @@ export default function AdvisorDashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-bone text-obsidian">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(180,142,75,0.08),transparent_35%),linear-gradient(180deg,#f8f6f0_0%,#efece4_100%)] text-obsidian">
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
         <button
@@ -225,8 +221,8 @@ export default function AdvisorDashboardLayout({
       {/* Application shell */}
       <div className="min-h-screen">
         {/* Top black header */}
-        <header className="sticky top-0 z-50 bg-obsidian text-bone">
-            <div className="shell-gutter flex min-h-[58px] items-center gap-5">
+        <header className="sticky top-0 z-50 border-b border-bone/10 bg-obsidian/95 text-bone backdrop-blur-md">
+          <div className="shell-gutter flex min-h-[58px] items-center gap-5">
             {/* Logo */}
             <Link
               href="/advisor-dashboard"
@@ -248,16 +244,16 @@ export default function AdvisorDashboardLayout({
 
             {/* Search */}
             <div className="hidden min-w-0 flex-1 md:block">
-              <div className="mx-auto flex h-9 max-w-[430px] items-center gap-2 rounded-md bg-bone px-3 text-obsidian">
+              <div className="mx-auto flex h-10 max-w-[430px] items-center gap-2 rounded-full border border-bone/10 bg-white/5 px-3 text-bone/80 shadow-inner shadow-white/5">
                 <Search
                   size={16}
-                  className="shrink-0 text-ash"
+                  className="shrink-0 text-ash-light"
                 />
 
                 <input
                   type="search"
                   placeholder="Search a menu item"
-                  className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ash"
+                  className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ash-light"
                 />
               </div>
             </div>
@@ -313,8 +309,8 @@ export default function AdvisorDashboardLayout({
         </header>
 
         {/* Module navigation */}
-        <nav className="relative z-40 hidden border-b border-line bg-bone lg:block">
-            <div className="shell-gutter flex min-h-[76px] items-stretch overflow-visible">
+        <nav className="relative z-40 hidden border-b border-line bg-bone/80 backdrop-blur-sm lg:block">
+          <div className="shell-gutter flex min-h-[76px] items-stretch overflow-visible">
             {navigation.map((module) => {
               const Icon = module.icon;
               const active = isModuleActive(
@@ -333,10 +329,10 @@ export default function AdvisorDashboardLayout({
                       href={module.path}
                       className={[
                         "flex h-full min-w-[110px] flex-col items-center justify-center gap-1.5 border-r border-line px-4",
-                        "text-xs transition-colors",
+                        "text-xs transition-all duration-200",
                         active
-                          ? "bg-antique/10 text-obsidian"
-                          : "text-ash hover:bg-bone-deep hover:text-obsidian",
+                          ? "bg-antique/12 text-obsidian shadow-[inset_0_-2px_0_0_rgba(180,142,75,0.8)]"
+                          : "text-ash hover:bg-white/80 hover:text-obsidian",
                       ].join(" ")}
                     >
                       <Icon
@@ -542,27 +538,27 @@ export default function AdvisorDashboardLayout({
         )}
 
         {/* Breadcrumb */}
-        <div className="border-b border-line bg-bone-deep">
-          <div className="shell-gutter flex min-h-[38px] items-center text-[11px] text-ash">
-            <Link
-              href="/advisor-dashboard"
-              className="hover:text-obsidian"
-            >
-              Home
-            </Link>
+        <div className="border-b border-line bg-white/40 backdrop-blur-sm">
+          <div className="shell-gutter flex min-h-[42px] items-center text-[11px] text-ash">
+            <div className="inline-flex items-center gap-2 rounded-full border border-line bg-bone/60 px-3 py-1.5">
+              <Link
+                href="/advisor-dashboard"
+                className="transition-colors hover:text-obsidian"
+              >
+                Home
+              </Link>
 
-            <span className="mx-2 text-line">
-              &gt;
-            </span>
+              <span className="text-line">/</span>
 
-            <span className="text-obsidian">
-              Advisor Workspace
-            </span>
+              <span className="text-obsidian">
+                Advisor Workspace
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Page */}
-        <main className="shell-body min-w-0 w-full">
+        <main className="shell-body min-w-0 w-full pb-12">
           {children}
         </main>
       </div>

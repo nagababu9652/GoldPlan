@@ -369,7 +369,7 @@ export default function MeetingForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6"
+      className="dashboard-form-shell space-y-6"
     >
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4">
@@ -379,20 +379,20 @@ export default function MeetingForm({
         </div>
       )}
 
-      <section className="rounded-xl border border-line bg-bone p-6">
+      <section className="dashboard-form-section p-5 sm:p-6">
         <div className="mb-6">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold text-obsidian">
             Meeting Information
           </h2>
 
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ash">
             Add the basic details for this meeting.
           </p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
           <div className="md:col-span-2">
-            <label className="mb-2 block text-sm font-medium">
+            <label className="dashboard-form-label">
               Meeting title
             </label>
 
@@ -406,13 +406,13 @@ export default function MeetingForm({
                 )
               }
               placeholder="e.g. Annual portfolio review"
-              className="w-full rounded-lg border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-foreground"
+              className="dashboard-form-control"
               required
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <label className="dashboard-form-label">
               Meeting type
             </label>
 
@@ -424,7 +424,7 @@ export default function MeetingForm({
                   event.target.value,
                 )
               }
-              className="w-full rounded-lg border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-foreground"
+              className="dashboard-form-control"
             >
               {meetingTypes.map((type) => (
                 <option
@@ -439,25 +439,25 @@ export default function MeetingForm({
         </div>
       </section>
 
-      <section className="rounded-xl border border-line bg-bone p-6">
+      <section className="dashboard-form-section p-5 sm:p-6">
         <div className="mb-6">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold text-obsidian">
             Meeting With
           </h2>
 
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ash">
             Associate this meeting with a client or group.
           </p>
         </div>
 
         {loadingOptions ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ash">
             Loading clients and groups...
           </p>
         ) : (
           <div className="grid gap-5 md:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium">
+              <label className="dashboard-form-label">
                 Client
               </label>
 
@@ -469,7 +469,7 @@ export default function MeetingForm({
                     event.target.value,
                   )
                 }
-                className="w-full rounded-lg border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-foreground"
+                className="dashboard-form-control"
               >
                 <option value="">
                   Select client
@@ -491,7 +491,7 @@ export default function MeetingForm({
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium">
+              <label className="dashboard-form-label">
                 Group
               </label>
 
@@ -503,7 +503,7 @@ export default function MeetingForm({
                     event.target.value,
                   )
                 }
-                className="w-full rounded-lg border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-foreground"
+                className="dashboard-form-control"
               >
                 <option value="">
                   Select group
@@ -525,26 +525,26 @@ export default function MeetingForm({
           </div>
         )}
 
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-3 text-xs text-ash">
           You can associate a meeting with a client,
           a group, or both.
         </p>
       </section>
 
-      <section className="rounded-xl border border-line bg-bone p-6">
+      <section className="dashboard-form-section p-5 sm:p-6">
         <div className="mb-6">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold text-obsidian">
             Date & Time
           </h2>
 
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ash">
             Set when the meeting starts and ends.
           </p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <label className="dashboard-form-label">
               Start
             </label>
 
@@ -557,13 +557,13 @@ export default function MeetingForm({
                   event.target.value,
                 )
               }
-              className="w-full rounded-lg border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-foreground"
+              className="dashboard-form-control"
               required
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <label className="dashboard-form-label">
               End
             </label>
 
@@ -576,27 +576,27 @@ export default function MeetingForm({
                   event.target.value,
                 )
               }
-              className="w-full rounded-lg border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-foreground"
+              className="dashboard-form-control"
               required
             />
           </div>
         </div>
       </section>
 
-      <section className="rounded-xl border border-line bg-bone p-6">
+      <section className="dashboard-form-section p-5 sm:p-6">
         <div className="mb-6">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold text-obsidian">
             Location
           </h2>
 
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ash">
             Add a physical location or online meeting link.
           </p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <label className="dashboard-form-label">
               Location
             </label>
 
@@ -610,12 +610,12 @@ export default function MeetingForm({
                 )
               }
               placeholder="e.g. Head Office"
-              className="w-full rounded-lg border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-foreground"
+              className="dashboard-form-control"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <label className="dashboard-form-label">
               Meeting link
             </label>
 
@@ -629,26 +629,26 @@ export default function MeetingForm({
                 )
               }
               placeholder="https://..."
-              className="w-full rounded-lg border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-foreground"
+              className="dashboard-form-control"
             />
           </div>
         </div>
       </section>
 
-      <section className="rounded-xl border border-line bg-bone p-6">
+      <section className="dashboard-form-section p-5 sm:p-6">
         <div className="mb-6">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold text-obsidian">
             Notes
           </h2>
 
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ash">
             Add useful context for the meeting.
           </p>
         </div>
 
         <div className="space-y-5">
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <label className="dashboard-form-label">
               Description
             </label>
 
@@ -662,12 +662,12 @@ export default function MeetingForm({
               }
               rows={4}
               placeholder="What is this meeting about?"
-              className="w-full resize-y rounded-lg border border-line bg-white px-4 py-3 text-sm outline-none focus:border-foreground"
+              className="dashboard-form-control dashboard-form-textarea"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <label className="dashboard-form-label">
               Internal notes
             </label>
 
@@ -681,7 +681,7 @@ export default function MeetingForm({
               }
               rows={4}
               placeholder="Add internal notes..."
-              className="w-full resize-y rounded-lg border border-line bg-white px-4 py-3 text-sm outline-none focus:border-foreground"
+              className="dashboard-form-control dashboard-form-textarea"
             />
           </div>
         </div>
@@ -697,7 +697,7 @@ export default function MeetingForm({
                 : "/advisor-dashboard/meetings",
             )
           }
-          className="rounded-lg border border-line bg-bone px-5 py-2.5 text-sm font-medium transition hover:bg-muted"
+          className="dashboard-form-action border border-line bg-bone text-obsidian"
           disabled={submitting}
         >
           Cancel
@@ -708,7 +708,7 @@ export default function MeetingForm({
           disabled={
             submitting || loadingOptions
           }
-          className="rounded-lg bg-obsidian px-5 py-2.5 text-sm font-medium text-bone transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="dashboard-form-action bg-obsidian text-bone disabled:cursor-not-allowed disabled:opacity-50"
         >
           {submitting
             ? isEditMode

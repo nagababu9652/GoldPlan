@@ -1,13 +1,12 @@
-import type { ElementType, ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-interface PageFrameProps {
+type PageFrameProps = {
   children: ReactNode;
   className?: string;
   contentClassName?: string;
   as?: ElementType;
-  [key: string]: any;
-}
+} & ComponentPropsWithoutRef<"main">;
 
 export default function PageFrame({
   children,

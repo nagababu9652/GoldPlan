@@ -208,7 +208,7 @@ export function MessageForm({ messageId }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 rounded-xl border bg-card p-6"
+      className="dashboard-form-shell space-y-6"
     >
       {error ? (
         <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
@@ -216,9 +216,20 @@ export function MessageForm({ messageId }: Props) {
         </div>
       ) : null}
 
-      {!messageId ? (
+      <section className="dashboard-form-section p-5 sm:p-6">
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-obsidian">
+            Message Details
+          </h2>
+
+          <p className="mt-1 text-sm text-ash">
+            Compose the message and choose the correct recipient.
+          </p>
+        </div>
+
+        {!messageId ? (
         <div className="space-y-2">
-          <label className="text-sm font-medium">
+          <label className="dashboard-form-label">
             Message Type
           </label>
 
@@ -227,7 +238,7 @@ export function MessageForm({ messageId }: Props) {
             onChange={(event) =>
               setMessageType(event.target.value)
             }
-            className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+            className="dashboard-form-control"
           >
             <option value="CLIENT_MESSAGE">
               Client Message
@@ -247,12 +258,12 @@ export function MessageForm({ messageId }: Props) {
 
       {!messageId ? (
         <div className="space-y-3">
-          <label className="text-sm font-medium">
+          <label className="dashboard-form-label">
             Recipient
           </label>
 
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm">
+          <div className="flex flex-wrap gap-4">
+            <label className="flex items-center gap-2 text-sm text-obsidian">
               <input
                 type="radio"
                 checked={
@@ -266,7 +277,7 @@ export function MessageForm({ messageId }: Props) {
               Client
             </label>
 
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-center gap-2 text-sm text-obsidian">
               <input
                 type="radio"
                 checked={
@@ -286,7 +297,7 @@ export function MessageForm({ messageId }: Props) {
       {!messageId &&
       recipientType === "CLIENT" ? (
         <div className="space-y-2">
-          <label className="text-sm font-medium">
+          <label className="dashboard-form-label">
             Client
           </label>
 
@@ -295,7 +306,7 @@ export function MessageForm({ messageId }: Props) {
             onChange={(event) =>
               setCustomerId(event.target.value)
             }
-            className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+            className="dashboard-form-control"
           >
             <option value="">
               Select client
@@ -317,7 +328,7 @@ export function MessageForm({ messageId }: Props) {
       {!messageId &&
       recipientType === "GROUP" ? (
         <div className="space-y-2">
-          <label className="text-sm font-medium">
+          <label className="dashboard-form-label">
             Group
           </label>
 
@@ -326,7 +337,7 @@ export function MessageForm({ messageId }: Props) {
             onChange={(event) =>
               setGroupId(event.target.value)
             }
-            className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+            className="dashboard-form-control"
           >
             <option value="">
               Select group
@@ -361,7 +372,7 @@ export function MessageForm({ messageId }: Props) {
       ) : null}
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">
+        <label className="dashboard-form-label">
           Subject
         </label>
 
@@ -373,12 +384,12 @@ export function MessageForm({ messageId }: Props) {
           }
           maxLength={250}
           placeholder="Enter message subject"
-          className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+          className="dashboard-form-control"
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">
+        <label className="dashboard-form-label">
           Message
         </label>
 
@@ -389,13 +400,13 @@ export function MessageForm({ messageId }: Props) {
           }
           rows={8}
           placeholder="Write your message..."
-          className="w-full resize-y rounded-md border bg-background px-3 py-3 text-sm"
+          className="dashboard-form-control dashboard-form-textarea"
         />
       </div>
 
       {messageId ? (
         <div className="space-y-2">
-          <label className="text-sm font-medium">
+          <label className="dashboard-form-label">
             Status
           </label>
 
@@ -404,7 +415,7 @@ export function MessageForm({ messageId }: Props) {
             onChange={(event) =>
               setStatus(event.target.value)
             }
-            className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+            className="dashboard-form-control"
           >
             <option value="SENT">Sent</option>
             <option value="READ">Read</option>
@@ -415,11 +426,11 @@ export function MessageForm({ messageId }: Props) {
         </div>
       ) : null}
 
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex items-center justify-end gap-3 pt-2">
         <button
           type="button"
           onClick={() => router.back()}
-          className="h-10 rounded-md border px-4 text-sm font-medium hover:bg-muted"
+          className="dashboard-form-action border border-line bg-bone text-obsidian"
         >
           Cancel
         </button>
@@ -427,7 +438,7 @@ export function MessageForm({ messageId }: Props) {
         <button
           type="submit"
           disabled={saving}
-          className="h-10 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="dashboard-form-action bg-obsidian text-bone disabled:cursor-not-allowed disabled:opacity-50"
         >
           {saving
             ? "Saving..."
@@ -436,6 +447,7 @@ export function MessageForm({ messageId }: Props) {
               : "Send Message"}
         </button>
       </div>
+      </section>
     </form>
   );
 }

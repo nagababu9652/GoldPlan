@@ -57,21 +57,37 @@ export default function TaskDetailPage() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-line bg-bone p-8 text-center">
-        Loading task...
+      <div className="dashboard-panel p-6 lg:p-8">
+        <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+          Task details
+        </div>
+        <p className="mt-4 text-sm text-ash">Loading task...</p>
       </div>
     );
   }
 
   if (error || !task) {
     return (
-      <div className="rounded-xl border border-red-200 bg-bone p-8 text-center">
-        <p className="text-sm text-red-600">
+      <div className="dashboard-panel p-6 lg:p-8">
+        <div className="dashboard-pill border-red-200 bg-red-50 text-red-600">
+          Task details
+        </div>
+        <p className="mt-4 text-sm text-red-600">
           {error || "Task not found."}
         </p>
       </div>
     );
   }
 
-  return <TaskDetail task={task} />;
+  return (
+    <div className="space-y-6">
+      <div className="dashboard-panel p-4 lg:p-5">
+        <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+          Task overview
+        </div>
+      </div>
+
+      <TaskDetail task={task} />
+    </div>
+  );
 }

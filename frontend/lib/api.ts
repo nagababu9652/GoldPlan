@@ -547,7 +547,7 @@ export interface ClientListResponse {
 export async function advisorPost(
   endpoint: string,
   token: string,
-  body: any,
+  body: unknown,
 ) {
   const response = await advisorRequest(endpoint, token, {
     method: 'POST',
@@ -575,7 +575,7 @@ export async function advisorPost(
 export async function advisorPut(
   endpoint: string,
   token: string,
-  body: any,
+  body: unknown,
 ) {
   const response = await advisorRequest(endpoint, token, {
     method: 'PUT',

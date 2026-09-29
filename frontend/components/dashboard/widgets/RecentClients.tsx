@@ -109,15 +109,14 @@ export default function RecentClients() {
   }, []);
 
   return (
-    <section className="card-surface overflow-hidden rounded-2xl border border-line bg-bone">
-      {/* Header */}
+    <section className="dashboard-panel overflow-hidden bg-bone/80">
       <div className="flex items-end justify-between border-b border-line p-6 lg:p-7">
         <div>
-          <div className="label-mono text-ash">
-            CLIENT RELATIONSHIPS
+          <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+            Client Relationships
           </div>
 
-          <h2 className="mt-2 font-serif text-2xl text-obsidian">
+          <h2 className="mt-3 font-serif text-2xl text-obsidian">
             Recent clients
           </h2>
 
@@ -128,7 +127,7 @@ export default function RecentClients() {
 
         <Link
           href="/advisor-dashboard/clients"
-          className="hidden items-center gap-2 text-xs font-mono uppercase tracking-wider text-obsidian u-link sm:inline-flex"
+          className="hidden items-center gap-2 text-xs font-mono uppercase tracking-[0.18em] text-obsidian u-link sm:inline-flex"
         >
           View all
           <ArrowUpRight size={14} />

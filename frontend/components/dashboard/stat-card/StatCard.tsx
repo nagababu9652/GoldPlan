@@ -21,7 +21,7 @@ export default function StatCard({
   href,
 }: StatCardProps) {
   const cardClassName = cn(
-    "group block rounded-none border border-line bg-bone p-5 lg:p-6",
+    "group block rounded-[24px] border border-line bg-white/60 p-5 shadow-[0_18px_40px_-30px_rgba(12,11,10,0.25)] backdrop-blur-sm lg:p-6",
     href ? "card-interactive" : "card-surface"
   );
 
@@ -45,7 +45,7 @@ export default function StatCard({
         </div>
 
         {icon && (
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-ash transition-colors duration-200 group-hover:border-obsidian/20 group-hover:text-obsidian">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-obsidian/10 bg-obsidian text-bone shadow-inner shadow-white/10 transition-all duration-200 group-hover:scale-[1.04] group-hover:bg-antique group-hover:text-obsidian">
             {icon}
           </div>
         )}
@@ -54,10 +54,10 @@ export default function StatCard({
       {trend !== undefined && (
         <div className="mt-5 border-t border-line pt-3">
           <span
-            className={`text-[11px] font-mono ${
+            className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-mono ${
               trend >= 0
-                ? "text-emerald-700"
-                : "text-red-600"
+                ? "border-emerald-700/20 bg-emerald-500/10 text-emerald-700"
+                : "border-red-600/20 bg-red-500/10 text-red-600"
             }`}
           >
             {trend >= 0 ? "+" : ""}

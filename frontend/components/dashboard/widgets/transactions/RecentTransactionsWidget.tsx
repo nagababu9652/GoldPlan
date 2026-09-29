@@ -9,10 +9,13 @@ import {
 } from "../base";
 
 import { TransactionRow } from ".";
+import type { Transaction } from "./types";
 
 import { Button } from "@/components/ui/button";
 
 export default function RecentTransactionsWidget() {
+  const transactions: Transaction[] = [];
+
   return (
     <Widget>
 
@@ -26,7 +29,7 @@ export default function RecentTransactionsWidget() {
 
         <div className="space-y-3">
 
-          {([] as any[]).map((transaction: any) => (
+          {transactions.map((transaction) => (
             <TransactionRow
               key={transaction.id}
               transaction={transaction}

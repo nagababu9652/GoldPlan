@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 import {
@@ -70,7 +70,7 @@ export default function GroupDetailPage() {
   const [selectedRelationship, setSelectedRelationship] =
     useState('OTHER');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     const token = localStorage.getItem('finplan_token');
 
     if (!token) {
@@ -112,20 +112,20 @@ export default function GroupDetailPage() {
       );
 
       setAvailableClients(available);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load group:', err);
-      alert(err.message || 'Failed to load group');
+      alert(err instanceof Error ? err.message : 'Failed to load group');
       router.push('/advisor-dashboard/groups');
     } finally {
       setLoading(false);
     }
-  };
+  }, [groupId, router]);
 
   useEffect(() => {
     if (!Number.isNaN(groupId)) {
-      loadData();
+      void loadData();
     }
-  }, [groupId]);
+  }, [groupId, loadData]);
 
   const handleSave = async () => {
     const token = localStorage.getItem('finplan_token');
@@ -149,8 +149,8 @@ export default function GroupDetailPage() {
       await loadData();
 
       alert('Group updated successfully');
-    } catch (err: any) {
-      alert(err.message || 'Failed to update group');
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to update group');
     } finally {
       setSaving(false);
     }
@@ -179,8 +179,8 @@ export default function GroupDetailPage() {
       setSelectedRelationship('OTHER');
 
       await loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to add member');
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to add member');
     }
   };
 
@@ -218,8 +218,8 @@ export default function GroupDetailPage() {
       );
 
       await loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to remove member');
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to remove member');
     }
   };
 
@@ -236,8 +236,8 @@ export default function GroupDetailPage() {
       );
 
       await loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to change group head');
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to change group head');
     }
   };
 
@@ -254,8 +254,8 @@ export default function GroupDetailPage() {
       );
 
       await loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to set primary group');
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to set primary group');
     }
   };
 
@@ -276,15 +276,18 @@ export default function GroupDetailPage() {
       await deactivateGroup(token, group.id);
 
       router.push('/advisor-dashboard/groups');
-    } catch (err: any) {
-      alert(err.message || 'Failed to deactivate group');
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to deactivate group');
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-ash">
+      <div className="dashboard-panel p-6 lg:p-8">
+        <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+          Group details
+        </div>
+        <div className="mt-4 text-sm text-ash">
           Loading group details...
         </div>
       </div>
@@ -302,32 +305,32 @@ export default function GroupDetailPage() {
   return (
     <div className="w-full space-y-8">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+      <div className="dashboard-panel flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between lg:p-8">
         <div>
-          <div className="label-mono text-ash mb-3">
-            &mdash; Group Details
+          <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+            Group details
           </div>
 
-          <h1 className="display text-[36px] lg:text-[48px]">
+          <h1 className="mt-4 font-serif text-4xl tracking-tight text-obsidian lg:text-5xl">
             {group.group_name}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-3 mt-3 text-ash">
-            <span className="font-mono uppercase tracking-wider2 text-[11px] border border-line px-3 py-1">
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-ash">
+            <span className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
               {group.group_type}
             </span>
 
-            <span className="font-mono text-[12px]">
+            <span className="text-sm text-ash">
               {group.group_code}
             </span>
 
-            <span className="text-[14px]">
+            <span className="text-sm text-ash">
               {group.active_member_count} active member
               {group.active_member_count !== 1 ? 's' : ''}
             </span>
 
             {group.head_customer_name && (
-              <span className="text-[14px]">
+              <span className="text-sm text-ash">
                 · Head: {group.head_customer_name}
               </span>
             )}
@@ -336,10 +339,8 @@ export default function GroupDetailPage() {
 
         <div className="flex flex-wrap gap-3">
           <button
-            onClick={() =>
-              router.push('/advisor-dashboard/groups')
-            }
-            className="px-5 py-3 border border-obsidian text-[13px] font-mono uppercase tracking-wider2 hover:bg-bone-deep transition-colors"
+            onClick={() => router.push('/advisor-dashboard/groups')}
+            className="rounded-full border border-obsidian bg-transparent px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-bone-deep"
           >
             Back
           </button>
@@ -348,9 +349,9 @@ export default function GroupDetailPage() {
             <>
               <button
                 onClick={() => setEditing(!editing)}
-                className={`px-5 py-3 border text-[13px] font-mono uppercase tracking-wider2 transition-colors ${
+                className={`rounded-full px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] transition-colors ${
                   editing
-                    ? 'border-obsidian bg-bone text-obsidian'
+                    ? 'border border-obsidian bg-bone text-obsidian'
                     : 'bg-obsidian text-bone'
                 }`}
               >
@@ -359,7 +360,7 @@ export default function GroupDetailPage() {
 
               <button
                 onClick={handleDeactivate}
-                className="px-5 py-3 border border-red-500 text-red-600 text-[13px] font-mono uppercase tracking-wider2 hover:bg-red-50 transition-colors"
+                className="rounded-full border border-red-500 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] text-red-600 transition-colors hover:bg-red-50"
               >
                 Deactivate
               </button>
@@ -369,8 +370,8 @@ export default function GroupDetailPage() {
       </div>
 
       {/* Group Information */}
-      <div className="border border-obsidian bg-bone p-6 lg:p-8">
-        <h2 className="label-mono text-ash mb-6">
+      <div className="dashboard-panel p-6 lg:p-8">
+        <h2 className="mb-6 text-[11px] font-medium uppercase tracking-[0.18em] text-ash">
           Group Information
         </h2>
 

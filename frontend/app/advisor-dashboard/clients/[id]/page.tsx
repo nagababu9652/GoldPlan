@@ -56,45 +56,48 @@ export default function ClientDetailsPage() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border bg-card p-6">
-        <p className="text-sm text-muted-foreground">
-          Loading client...
-        </p>
+      <div className="dashboard-panel p-6 lg:p-8">
+        <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+          Client details
+        </div>
+        <p className="mt-4 text-sm text-ash">Loading client...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="space-y-4">
-        <div className="rounded-xl border border-red-200 bg-card p-6">
-          <p className="text-sm text-red-600">{error}</p>
+      <div className="dashboard-panel p-6 lg:p-8">
+        <div className="dashboard-pill border-red-200 bg-red-50 text-red-600">
+          Client details
         </div>
+        <p className="mt-4 text-sm text-red-600">{error}</p>
       </div>
     );
   }
 
   if (!client) {
     return (
-      <div className="space-y-4">
-        <div className="rounded-xl border bg-card p-6">
-          <h1 className="text-xl font-semibold">
-            Client not found
-          </h1>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            The requested client could not be found or you do not
-            have access to this client.
-          </p>
-
-          <button
-            type="button"
-            onClick={() => router.push("/advisor-dashboard/clients")}
-            className="mt-4 text-sm font-medium underline"
-          >
-            Back to Clients
-          </button>
+      <div className="dashboard-panel p-6 lg:p-8">
+        <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+          Client details
         </div>
+
+        <h1 className="mt-4 font-serif text-4xl tracking-tight text-obsidian lg:text-5xl">
+          Client not found
+        </h1>
+
+        <p className="mt-2 text-sm text-ash">
+          The requested client could not be found or you do not have access to this client.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => router.push("/advisor-dashboard/clients")}
+          className="mt-4 rounded-full bg-obsidian px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] text-bone transition-colors hover:bg-obsidian/90"
+        >
+          Back to Clients
+        </button>
       </div>
     );
   }

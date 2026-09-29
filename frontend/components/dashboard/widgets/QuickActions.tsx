@@ -45,32 +45,39 @@ const actions = [
 
 export default function QuickActions() {
   return (
-    <section className="px-4 py-6 bg-bone/90 rounded-none ring-[1px] ring-line shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
-      <div className="mb-6">
-        <div className="label-mono text-ash">
-          Shortcuts
+    <section className="dashboard-panel bg-white/55 p-5 lg:p-6">
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
+            Shortcuts
+          </div>
+          <h2 className="mt-3 font-serif text-2xl text-obsidian">
+            Quick Actions
+          </h2>
         </div>
-        <h2 className="mt-2 font-serif text-2xl text-obsidian">
-          Quick Actions
-        </h2>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {actions.map((action) => {
           const Icon = action.icon;
           return (
             <Link
               key={action.title}
               href={action.href}
-              className="group flex flex-col rounded-none border border-line bg-bone p-6 transition-colors duration-200 hover:bg-bone-deep"
+              className="group flex min-h-[170px] flex-col rounded-[22px] border border-line bg-bone/80 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-obsidian/20 hover:bg-white"
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-line">
-                  <Icon size={18} className="text-obsidian" />
+              <div className="mb-5 flex items-center justify-between">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-obsidian/10 bg-obsidian text-bone">
+                  <Icon size={18} />
                 </div>
-                <ArrowUpRight size={16} className="text-ash transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <ArrowUpRight
+                  size={16}
+                  className="text-ash transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                />
               </div>
+
               <h3 className="text-sm font-medium text-obsidian">{action.title}</h3>
-              <p className="mt-1 text-xs leading-5 text-ash">{action.description}</p>
+              <p className="mt-2 text-xs leading-5 text-ash">{action.description}</p>
             </Link>
           );
         })}
