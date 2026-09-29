@@ -21,7 +21,7 @@ export default function StatCard({
   href,
 }: StatCardProps) {
   const cardClassName = cn(
-    "group block rounded-2xl border border-line bg-bone p-5 lg:p-6",
+    "group block rounded-none border border-line bg-bone p-5 lg:p-6",
     href ? "card-interactive" : "card-surface"
   );
 

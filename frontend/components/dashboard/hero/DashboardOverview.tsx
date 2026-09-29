@@ -12,9 +12,13 @@ export default function DashboardOverview({
 }: Props) {
   return (
     <section className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(300px,1fr)]">
-      <WelcomePanel advisor={advisor} />
+      <div className="min-h-0">
+        <WelcomePanel advisor={advisor} />
+      </div>
 
-      <AdvisorSnapshot advisor={advisor} />
+      <div className="min-h-0">
+        <AdvisorSnapshot advisor={advisor} />
+      </div>
     </section>
   );
 }
