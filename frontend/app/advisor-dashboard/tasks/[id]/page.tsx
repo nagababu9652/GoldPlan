@@ -80,7 +80,7 @@ export default function TaskDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="dashboard-panel p-4 lg:p-5">
         <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
           Task overview

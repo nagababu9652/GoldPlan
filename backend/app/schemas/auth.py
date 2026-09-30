@@ -48,11 +48,15 @@ class UserRegister(BaseModel):
     email: EmailStr
     mobile_number: Optional[str] = Field(default=None, max_length=20)
     pan_number: Optional[str] = Field(default=None, max_length=20)
+    aadhaar_number: Optional[str] = Field(default=None, max_length=20)
+    legal_name: Optional[str] = Field(default=None, max_length=250)
+    remarks: Optional[str] = None
     address_line1: Optional[str] = None
     address_line2: Optional[str] = None
     city: Optional[str] = None
     state: Optional[str] = None
     pincode: Optional[str] = None
+    country: str = "India"
 
     # Auth fields
     password: str = Field(..., min_length=8)

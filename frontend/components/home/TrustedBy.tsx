@@ -17,7 +17,7 @@ const companies = [
 export default function TrustedBy() {
   return (
     <section className="hairline-b" data-testid="trusted-section">
-      <SectionContainer className="py-16 lg:py-24 grid grid-cols-12 gap-6 items-center">
+      <SectionContainer className="py-8 lg:py-12 grid grid-cols-12 gap-6 items-center">
         <div className="col-span-12 lg:col-span-3">
           <div className="label-mono text-ash mb-2">&mdash; 001</div>
           <h3 className="font-serif text-[26px] leading-tight">

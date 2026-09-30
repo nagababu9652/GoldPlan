@@ -105,6 +105,7 @@ class PartyBankAccount(AuditMixin, Base):
     ifsc_code = Column(String(20), nullable=True)
     micr_code = Column(String(20), nullable=True)
     account_type_id = Column(BigInteger, ForeignKey("foundation.lookup_values.id"), nullable=True)
+    account_type = relationship("LookupValue", foreign_keys=[account_type_id], lazy="selectin")
     upi_id = Column(String(100), nullable=True)
     is_primary = Column(Boolean, default=False)
     remarks = Column(Text, nullable=True)

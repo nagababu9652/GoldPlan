@@ -8,10 +8,11 @@ import {
   updateGroup,
   getClients,
   getGroupMembers,
+  getGroupMembershipHistory,
   addGroupMember,
+  moveClientToHousehold,
   removeGroupMember,
   changeGroupHead,
-  setPrimaryGroup,
   deactivateGroup,
   type Group,
   type GroupMember,
@@ -19,29 +20,7 @@ import {
   type Client,
 } from '@/lib/api';
 
-const GROUP_TYPES = [
-  { value: 'HOUSEHOLD', label: 'Household' },
-  { value: 'FAMILY', label: 'Family' },
-  { value: 'BUSINESS', label: 'Business' },
-  { value: 'INVESTMENT', label: 'Investment' },
-  { value: 'TRUST', label: 'Trust' },
-  { value: 'HUF', label: 'HUF' },
-  { value: 'OTHER', label: 'Other' },
-];
-
-const RELATIONSHIP_TYPES = [
-  'SELF',
-  'SPOUSE',
-  'SON',
-  'DAUGHTER',
-  'FATHER',
-  'MOTHER',
-  'BROTHER',
-  'SISTER',
-  'GRANDFATHER',
-  'GRANDMOTHER',
-  'OTHER',
-];
+import { getGroupRelationships } from '@/lib/group-options';
 
 export default function GroupDetailPage() {
   const params = useParams();
@@ -51,6 +30,8 @@ export default function GroupDetailPage() {
 
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
+  const [membershipHistory, setMembershipHistory] = useState<GroupMember[]>([]);
+  const [historyError, setHistoryError] = useState<string | null>(null);
   const [availableClients, setAvailableClients] = useState<Client[]>([]);
 
   const [loading, setLoading] = useState(true);
@@ -66,9 +47,22 @@ export default function GroupDetailPage() {
     remarks: null,
   });
 
+  const [replacementHeadId, setReplacementHeadId] =
+    useState<number | ''>('');
+
+  const [replacementHeadOptions, setReplacementHeadOptions] =
+    useState<GroupMember[]>([]);
+
   const [selectedClientId, setSelectedClientId] = useState<number | ''>('');
   const [selectedRelationship, setSelectedRelationship] =
     useState('OTHER');
+
+  const activeMembers = members.filter(
+    (member) => !member.left_on
+  );
+  const canRemoveSoleHouseholdHead =
+    (group?.group_type === 'HOUSEHOLD' || group?.group_type === 'FAMILY') &&
+    activeMembers.length === 1;
 
   const loadData = useCallback(async () => {
     const token = localStorage.getItem('finplan_token');
@@ -80,16 +74,27 @@ export default function GroupDetailPage() {
 
     try {
       setLoading(true);
+      setHistoryError(null);
 
-      const [groupData, memberData, clientData] =
+      const [groupData, memberData, clientData, historyData] =
         await Promise.all([
           getGroup(token, groupId),
           getGroupMembers(token, groupId),
           getClients(token, { page_size: 100 }),
+          getGroupMembershipHistory(token, groupId).catch((err: unknown) => {
+            setHistoryError(
+              err instanceof Error ? err.message : 'Failed to load membership history'
+            );
+            return null;
+          }),
         ]);
 
       setGroup(groupData);
+      setSelectedRelationship((current) =>
+        getGroupRelationships(groupData.group_type).includes(current) ? current : 'OTHER'
+      );
       setMembers(memberData.members);
+      setMembershipHistory(historyData?.members ?? []);
 
       setFormData({
         group_name: groupData.group_name,
@@ -171,8 +176,7 @@ export default function GroupDetailPage() {
       await addGroupMember(token, group.id, {
         customer_id: Number(selectedClientId),
         relationship_type: selectedRelationship,
-        is_primary: false,
-        is_group_head: members.length === 0,
+        is_group_head: activeMembers.length === 0,
       });
 
       setSelectedClientId('');
@@ -181,6 +185,117 @@ export default function GroupDetailPage() {
       await loadData();
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Failed to add member');
+    }
+  };
+
+  const handleMoveMemberHere = async () => {
+    const token = localStorage.getItem('finplan_token');
+
+    if (
+      !token ||
+      !group ||
+      selectedClientId === ''
+    ) {
+      return;
+    }
+
+    const selectedClient = availableClients.find(
+      (client) => client.id === Number(selectedClientId)
+    );
+
+    if (!selectedClient) {
+      alert('Selected client was not found.');
+      return;
+    }
+
+    try {
+      let newHeadCustomerId: number | null = null;
+
+      // Client currently belongs to another household.
+      if (
+        selectedClient.group_id &&
+        selectedClient.group_id !== group.id
+      ) {
+        const sourceMembersResponse =
+          await getGroupMembers(
+            token,
+            selectedClient.group_id
+          );
+
+        const sourceActiveMembers =
+          sourceMembersResponse.members.filter(
+            (member) => !member.left_on
+          );
+
+        const movingMember =
+          sourceActiveMembers.find(
+            (member) =>
+              member.customer_id === selectedClient.id
+          );
+
+        const remainingMembers =
+          sourceActiveMembers.filter(
+            (member) =>
+              member.customer_id !== selectedClient.id
+          );
+
+        // If the moving client is the old household head
+        // and people remain, a replacement head is required.
+        if (
+          movingMember?.is_group_head &&
+          remainingMembers.length > 0
+        ) {
+          setReplacementHeadOptions(
+            remainingMembers
+          );
+
+          if (replacementHeadId === '') {
+            alert(
+              'This client is the head of their current household. ' +
+              'Select a replacement head first.'
+            );
+
+            return;
+          }
+
+          newHeadCustomerId =
+            Number(replacementHeadId);
+        }
+      }
+
+      const confirmed = confirm(
+        'Move this client to this household?\n\n' +
+        'Their previous household membership will be ' +
+        'preserved in history.'
+      );
+
+      if (!confirmed) return;
+
+      await moveClientToHousehold(
+        token,
+        group.id,
+        {
+          customer_id: selectedClient.id,
+          relationship_type: selectedRelationship,
+          new_head_customer_id:
+            newHeadCustomerId,
+        }
+      );
+
+      setSelectedClientId('');
+      setSelectedRelationship('OTHER');
+      setReplacementHeadId('');
+      setReplacementHeadOptions([]);
+
+      await loadData();
+
+      alert('Client moved successfully');
+    } catch (err: unknown) {
+      alert(
+        err instanceof Error
+          ? err.message
+          : 'Failed to move client'
+      );
     }
   };
 
@@ -193,7 +308,7 @@ export default function GroupDetailPage() {
 
     if (!member) return;
 
-    if (member.is_group_head) {
+    if (member.is_group_head && !canRemoveSoleHouseholdHead) {
       alert(
         'The group head cannot be removed. Set another member as head first.'
       );
@@ -241,24 +356,6 @@ export default function GroupDetailPage() {
     }
   };
 
-  const handleSetPrimary = async (customerId: number) => {
-    const token = localStorage.getItem('finplan_token');
-
-    if (!token || !group) return;
-
-    try {
-      await setPrimaryGroup(
-        token,
-        group.id,
-        customerId
-      );
-
-      await loadData();
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to set primary group');
-    }
-  };
-
   const handleDeactivate = async () => {
     if (!group || !group.is_active) return;
 
@@ -297,10 +394,6 @@ export default function GroupDetailPage() {
   if (!group) {
     return null;
   }
-
-  const activeMembers = members.filter(
-    (member) => !member.left_on
-  );
 
   return (
     <div className="w-full space-y-8">
@@ -376,7 +469,7 @@ export default function GroupDetailPage() {
         </h2>
 
         {editing ? (
-          <div className="space-y-6 max-w-3xl">
+          <div className="space-y-3 max-w-3xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-[12px] font-mono uppercase tracking-wider2 text-ash mb-2">
@@ -401,25 +494,12 @@ export default function GroupDetailPage() {
                   Group Type
                 </label>
 
-                <select
-                  value={formData.group_type ?? 'HOUSEHOLD'}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      group_type: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
-                >
-                  {GROUP_TYPES.map((type) => (
-                    <option
-                      key={type.value}
-                      value={type.value}
-                    >
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
+                <input
+                  type="text"
+                  value={formData.group_type ?? ''}
+                  disabled
+                  className="w-full px-4 py-3 border border-line bg-bone-deep text-[14px] text-ash cursor-not-allowed"
+                />
               </div>
 
               <div>
@@ -583,13 +663,15 @@ export default function GroupDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-[1fr_220px_auto] gap-4">
             <select
               value={selectedClientId}
-              onChange={(e) =>
+              onChange={(e) => {
                 setSelectedClientId(
                   e.target.value
                     ? Number(e.target.value)
                     : ''
-                )
-              }
+                );
+                setReplacementHeadId('');
+                setReplacementHeadOptions([]);
+              }}
               className="px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
             >
               <option value="">
@@ -616,7 +698,7 @@ export default function GroupDetailPage() {
               }
               className="px-4 py-3 border border-line bg-bone text-[14px] focus:outline-none focus:border-obsidian"
             >
-              {RELATIONSHIP_TYPES.map((relationship) => (
+              {getGroupRelationships(group.group_type).map((relationship) => (
                 <option
                   key={relationship}
                   value={relationship}
@@ -633,7 +715,63 @@ export default function GroupDetailPage() {
             >
               Add Member
             </button>
+
+            {(group.group_type === 'HOUSEHOLD' ||
+              group.group_type === 'FAMILY') && (
+              <button
+                type="button"
+                onClick={handleMoveMemberHere}
+                disabled={selectedClientId === ''}
+                className="rounded-full border border-obsidian px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-bone-deep disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Move Client Here
+              </button>
+            )}
           </div>
+
+          {replacementHeadOptions.length > 0 && (
+            <div className="mt-4 border border-amber-300 bg-amber-50 p-4">
+              <label
+                htmlFor="replacement-head"
+                className="mb-2 block text-[12px] font-mono uppercase tracking-wider2 text-ash"
+              >
+                Replacement Head for Current Household
+              </label>
+
+              <select
+                id="replacement-head"
+                value={replacementHeadId}
+                onChange={(e) =>
+                  setReplacementHeadId(
+                    e.target.value
+                      ? Number(e.target.value)
+                      : ''
+                  )
+                }
+                className="w-full border border-line bg-bone px-4 py-3 text-[14px] focus:border-obsidian focus:outline-none"
+              >
+                <option value="">
+                  Select new household head...
+                </option>
+
+                {replacementHeadOptions.map((member) => (
+                  <option
+                    key={member.id}
+                    value={member.customer_id}
+                  >
+                    {member.display_name}
+                    {' — '}
+                    {member.relationship_type || 'MEMBER'}
+                  </option>
+                ))}
+              </select>
+
+              <p className="mt-2 text-xs text-ash">
+                The selected client is currently the household head.
+                Choose another active member before moving them.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -706,18 +844,7 @@ export default function GroupDetailPage() {
                       </button>
                     )}
 
-                    {!member.is_primary && (
-                      <button
-                        onClick={() =>
-                          handleSetPrimary(member.customer_id)
-                        }
-                        className="text-[12px] font-mono uppercase tracking-wider2 u-link"
-                      >
-                        Set Primary
-                      </button>
-                    )}
-
-                    {!member.is_group_head && (
+                    {(!member.is_group_head || canRemoveSoleHouseholdHead) && (
                       <button
                         onClick={() =>
                           handleRemoveMember(
@@ -736,6 +863,83 @@ export default function GroupDetailPage() {
           </div>
         )}
       </div>
+      {/* Membership History */}
+      <section
+        aria-labelledby="membership-history-heading"
+        className="border border-obsidian bg-bone"
+      >
+        <div className="px-6 lg:px-8 py-5 border-b border-line">
+          <h2 id="membership-history-heading" className="label-mono text-ash">
+            Membership History
+          </h2>
+          <p className="mt-1 text-[12px] text-ash">
+            All membership periods, including current members. Newest first.
+          </p>
+        </div>
+
+        {historyError ? (
+          <div role="alert" className="px-6 lg:px-8 py-6 text-sm text-red-600">
+            {historyError}
+            <button
+              type="button"
+              onClick={() => void loadData()}
+              className="ml-3 underline"
+            >
+              Retry
+            </button>
+          </div>
+        ) : membershipHistory.length === 0 ? (
+          <div className="px-6 lg:px-8 py-12 text-center text-ash">
+            No membership history for this group.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-line bg-bone-deep text-[12px] text-ash">
+                <tr>
+                  <th scope="col" className="px-6 py-3 lg:pl-8">Client</th>
+                  <th scope="col" className="px-6 py-3">Relationship</th>
+                  <th scope="col" className="px-6 py-3">Joined</th>
+                  <th scope="col" className="px-6 py-3">Left</th>
+                  <th scope="col" className="px-6 py-3 lg:pr-8">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {membershipHistory.map((membership) => (
+                  <tr key={membership.id} className="hover:bg-bone-deep">
+                    <td className="px-6 py-4 lg:pl-8">
+                      <div className="font-medium">{membership.display_name}</div>
+                      <div className="mt-1 text-[12px] font-mono text-ash">
+                        {membership.customer_code}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {membership.relationship_type || 'MEMBER'}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      {membership.joined_on ? (
+                        <time dateTime={membership.joined_on}>{membership.joined_on}</time>
+                      ) : 'Not recorded'}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      {membership.left_on ? (
+                        <time dateTime={membership.left_on}>{membership.left_on}</time>
+                      ) : '—'}
+                    </td>
+                    <td className="px-6 py-4 lg:pr-8">
+                      <span className={`text-[12px] font-medium ${
+                        membership.left_on ? 'text-ash' : 'text-emerald-700'
+                      }`}>
+                        {membership.left_on ? 'Ended' : 'Active'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

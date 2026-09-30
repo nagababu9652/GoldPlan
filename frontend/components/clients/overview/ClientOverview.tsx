@@ -37,7 +37,7 @@ export default function ClientOverview({ client }: Props) {
     `${client.first_name || ""} ${client.last_name || ""}`.trim();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Personal Information */}
       <Card className="p-6">
         <h2 className="mb-6 text-xl font-semibold">

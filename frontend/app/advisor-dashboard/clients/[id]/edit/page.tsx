@@ -31,6 +31,7 @@ export default function EditClientPage() {
     city: "",
     state: "",
     pincode: "",
+    country: "India",
     annual_income: "",
     net_worth: "",
     risk_profile: "",
@@ -62,8 +63,8 @@ export default function EditClientPage() {
           phone: client.phone ?? "",
           alternate_phone: client.alternate_phone ?? "",
           date_of_birth: client.date_of_birth ?? "",
-          gender: client.gender ?? "",
-          marital_status: client.marital_status ?? "",
+          gender: ({ Male: "M", Female: "F", Other: "O" } as Record<string, string>)[client.gender ?? ""] ?? client.gender ?? "",
+          marital_status: client.marital_status?.toUpperCase() ?? "",
           occupation: client.occupation ?? "",
           pan_number: client.pan_number ?? "",
           aadhar_number: client.aadhar_number ?? "",
@@ -72,6 +73,7 @@ export default function EditClientPage() {
           city: client.city ?? "",
           state: client.state ?? "",
           pincode: client.pincode ?? "",
+          country: client.country ?? "India",
           annual_income:
             client.annual_income != null
               ? String(client.annual_income)
@@ -136,15 +138,15 @@ export default function EditClientPage() {
       const client = await updateClient(token, id, {
         ...form,
         date_of_birth:
-          form.date_of_birth || undefined,
+          form.date_of_birth || null,
         annual_income:
           form.annual_income
             ? Number(form.annual_income)
-            : undefined,
+            : null,
         net_worth:
           form.net_worth
             ? Number(form.net_worth)
-            : undefined,
+            : null,
       });
 
       console.log("Client updated:", client);
@@ -169,7 +171,7 @@ export default function EditClientPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <div className="dashboard-panel p-6 lg:p-8">
           <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
             Client edit
@@ -188,7 +190,7 @@ export default function EditClientPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="dashboard-panel p-6 lg:p-8">
         <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
           Client edit
@@ -422,6 +424,14 @@ export default function EditClientPage() {
               name="state"
               placeholder="State"
               value={form.state}
+              onChange={handleChange}
+              className="rounded-lg border border-line bg-background px-4 py-3"
+            />
+
+            <input
+              name="country"
+              placeholder="Country"
+              value={form.country}
               onChange={handleChange}
               className="rounded-lg border border-line bg-background px-4 py-3"
             />

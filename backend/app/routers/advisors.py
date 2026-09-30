@@ -3,7 +3,7 @@ Advisors Router - handles advisor-specific endpoints.
 Uses the new identity schema and auth service.
 """
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy import select
@@ -12,6 +12,7 @@ from ..models.crm.transaction import Transaction
 from ..models.crm.transaction_history import TransactionHistory
 from ..models.crm.customer import Customer
 from ..models.organization.employee import Employee
+from ..models.foundation.party import Party
 from ..models.organization.assignment import EmployeeAssignment
 from ..schemas.transaction import (
     TransactionCreate,
@@ -24,7 +25,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone, date
-from ..models.meeting import Meeting
+from ..models.crm.meeting import Meeting
 from ..database.session import get_db
 from ..services import auth_service as auth
 from ..models.identity.auth import User
@@ -158,27 +159,28 @@ def get_advisor_dashboard(
                 .count()
             )
 
-    # Real meeting data
-    today_meetings = (
-        db.query(Meeting)
-        .filter(
-            Meeting.advisor_id == advisor.id,
-            Meeting.meeting_date == today,
-            Meeting.status == "scheduled",
+    today_meetings = []
+    upcoming_meetings = 0
+    if employee:
+        today_start = datetime.combine(today, datetime.min.time())
+        tomorrow_start = today_start + timedelta(days=1)
+        meeting_query = db.query(Meeting).filter(
+            Meeting.organization_id == employee.organization_id,
+            Meeting.advisor_employee_id == employee.id,
+            Meeting.status == "SCHEDULED",
         )
-        .order_by(Meeting.meeting_time.asc())
-        .all()
-    )
-
-    upcoming_meetings = (
-        db.query(Meeting)
-        .filter(
-            Meeting.advisor_id == advisor.id,
-            Meeting.meeting_date >= today,
-            Meeting.status == "scheduled",
+        today_meetings = (
+            meeting_query
+            .filter(
+                Meeting.scheduled_start >= today_start,
+                Meeting.scheduled_start < tomorrow_start,
+            )
+            .order_by(Meeting.scheduled_start.asc())
+            .all()
         )
-        .count()
-    )
+        upcoming_meetings = meeting_query.filter(
+            Meeting.scheduled_start >= today_start,
+        ).count()
 
     return {
         "advisor_name": advisor.display_name or "",
@@ -243,9 +245,17 @@ def get_advisor_reports(advisor: User = Depends(get_current_advisor)):
 
 
 @router.get("/profile")
-def get_advisor_profile(advisor: User = Depends(get_current_advisor)):
+def get_advisor_profile(
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
     """Get advisor profile information."""
+    party = db.query(Party).filter(Party.id == advisor.party_id).first()
     return {
+        "first_name": party.first_name or "" if party else "",
+        "last_name": party.last_name or "" if party else "",
+        "phone": advisor.mobile_number or "",
+        "role": "advisor",
         "display_name": advisor.display_name,
         "email": advisor.email,
         "mobile_number": advisor.mobile_number or "",
@@ -312,13 +322,21 @@ def reset_client_password(
     db: Session = Depends(get_db)
 ):
     """Allow advisor to reset a client password using the new auth service."""
+    customer_ids = get_advisor_customer_ids(advisor, db)
+    customer = (
+        db.query(Customer)
+        .filter(Customer.id == client_id, Customer.id.in_(customer_ids))
+        .first()
+    )
+    if not customer:
+        raise HTTPException(status_code=404, detail="Client not found")
+    user = auth.get_user_by_email(db, request.email)
+    if not user or user.party_id != customer.party_id:
+        raise HTTPException(status_code=400, detail="Email does not belong to the selected client")
+
     is_valid = verify_otp(db, request.email, request.otp_code, "password_reset")
     if not is_valid:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired OTP")
-
-    user = auth.get_user_by_email(db, request.email)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     auth.reset_password(db, user, request.new_password)
     return MessageResponse(message="Client password reset successfully")

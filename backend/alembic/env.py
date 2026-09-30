@@ -12,7 +12,7 @@ from app.models.identity.authorization import Role, UserRole
 
 from app.models.foundation import Party
 from app.models.crm import Customer
-from app.models.meeting import Meeting
+from app.models.crm.meeting import Meeting
 
 config = context.config
 

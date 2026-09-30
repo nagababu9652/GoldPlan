@@ -10,7 +10,6 @@ class ClientBase(BaseModel):
     phone: Optional[str] = None
     alternate_phone: Optional[str] = None
     date_of_birth: Optional[date] = None
-    age: Optional[int] = None
     gender: Optional[str] = None
     marital_status: Optional[str] = None
     occupation: Optional[str] = None
@@ -25,33 +24,27 @@ class ClientBase(BaseModel):
     annual_income: Optional[float] = None
     net_worth: Optional[float] = None
     risk_profile: Optional[str] = None
-    investment_experience: Optional[str] = None
-    financial_goals: Optional[str] = None
-    nominee_name: Optional[str] = None
-    nominee_relation: Optional[str] = None
-    nominee_contact: Optional[str] = None
     bank_name: Optional[str] = None
     account_number: Optional[str] = None
     ifsc_code: Optional[str] = None
     account_type: Optional[str] = None
     kyc_status: Optional[str] = "pending"
-    kyc_document_url: Optional[str] = None
     notes: Optional[str] = None
-    group_id: Optional[int] = None
 
 
 class ClientCreate(ClientBase):
-    pass
+    model_config = ConfigDict(extra="forbid")
 
 
 class ClientUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     alternate_phone: Optional[str] = None
     date_of_birth: Optional[date] = None
-    age: Optional[int] = None
     gender: Optional[str] = None
     marital_status: Optional[str] = None
     occupation: Optional[str] = None
@@ -66,24 +59,26 @@ class ClientUpdate(BaseModel):
     annual_income: Optional[float] = None
     net_worth: Optional[float] = None
     risk_profile: Optional[str] = None
-    investment_experience: Optional[str] = None
-    financial_goals: Optional[str] = None
-    nominee_name: Optional[str] = None
-    nominee_relation: Optional[str] = None
-    nominee_contact: Optional[str] = None
     bank_name: Optional[str] = None
     account_number: Optional[str] = None
     ifsc_code: Optional[str] = None
     account_type: Optional[str] = None
     kyc_status: Optional[str] = None
-    kyc_document_url: Optional[str] = None
     notes: Optional[str] = None
-    group_id: Optional[int] = None
     is_active: Optional[bool] = None
 
 
 class ClientResponse(ClientBase):
     model_config = ConfigDict(from_attributes=True)
+
+    age: Optional[int] = None
+    investment_experience: Optional[str] = None
+    financial_goals: Optional[str] = None
+    nominee_name: Optional[str] = None
+    nominee_relation: Optional[str] = None
+    nominee_contact: Optional[str] = None
+    kyc_document_url: Optional[str] = None
+    group_id: Optional[int] = None
 
     id: int
     advisor_id: int

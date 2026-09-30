@@ -20,7 +20,7 @@ export default function DashboardContainer({
   className,
 }: DashboardContainerProps) {
   return (
-    <div className={cn("shell-body space-y-10 lg:space-y-12", className)}>
+    <div className={cn("shell-body space-y-2 lg:space-y-2", className)}>
       {children}
     </div>
   );

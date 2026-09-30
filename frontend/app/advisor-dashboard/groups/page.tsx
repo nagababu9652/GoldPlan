@@ -8,18 +8,9 @@ import {
   deactivateGroup,
   type Group,
   type GroupCreatePayload,
-  type GroupType,
 } from '@/lib/api';
 
-const GROUP_TYPES: Array<{ value: GroupType; label: string }> = [
-  { value: 'HOUSEHOLD', label: 'Household' },
-  { value: 'FAMILY', label: 'Family' },
-  { value: 'BUSINESS', label: 'Business' },
-  { value: 'INVESTMENT', label: 'Investment' },
-  { value: 'TRUST', label: 'Trust' },
-  { value: 'HUF', label: 'HUF' },
-  { value: 'OTHER', label: 'Other' },
-];
+import { GROUP_TYPES } from '@/lib/group-options';
 
 export default function GroupsPage() {
   const router = useRouter();

@@ -68,7 +68,7 @@ export default function MeetingDetailPage() {
   }, [id]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="dashboard-panel p-4 lg:p-5">
         <Link
           href="/advisor-dashboard/meetings"

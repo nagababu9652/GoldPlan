@@ -21,7 +21,7 @@ export default function FAQ() {
 
   return (
     <section className="hairline-b bg-bone-deep" data-testid="faq-section">
-      <SectionContainer className="py-16 lg:py-24 grid grid-cols-12 gap-6">
+      <SectionContainer className="py-8 lg:py-12 grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-4 lg:sticky lg:top-32 lg:self-start">
           <div className="label-mono text-ash mb-3">— 008 · Enquiries</div>
           <h2 className="display text-[44px] lg:text-[60px]">

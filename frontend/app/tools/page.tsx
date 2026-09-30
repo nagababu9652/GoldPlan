@@ -20,7 +20,7 @@ export default function ToolsPage() {
 
       <div className="page-frame grain">
         <section className="shell-body">
-          <div className="grid grid-cols-12 gap-6 lg:gap-10 mb-16">
+          <div className="grid grid-cols-12 gap-3 lg:gap-5 mb-8">
             <div className="col-span-12 lg:col-span-8">
               <div className="label-mono text-ash mb-4">&mdash; Tools</div>
               <h1 className="display text-[44px] lg:text-[64px]">
@@ -34,7 +34,7 @@ export default function ToolsPage() {
           </div>
 
           {categories.map(({ key, label }) => (
-            <div key={key} className="mb-16 last:mb-0">
+            <div key={key} className="mb-8 last:mb-0">
               <h2 className="font-serif text-[28px] leading-tight mb-8">{label}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tools

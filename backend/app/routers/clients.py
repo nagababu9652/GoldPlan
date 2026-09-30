@@ -22,8 +22,8 @@ from ..models.foundation.party import Party
 from ..models.organization.employee import Employee
 from ..models.organization.assignment import EmployeeAssignment
 from ..models.foundation.lookup import LookupValue
-from ..models.foundation.party import PartyAddress
-from ..models.foundation.geography import City, State
+from ..models.crm.kyc import CustomerKYC, CustomerKYCHistory
+from ..services.party_profile import save_address, save_bank_account, primary_record, lookup_id
 from ..models.crm.customer import CustomerGroup, GroupMember
 
 router = APIRouter(
@@ -113,42 +113,75 @@ def get_advisor_customer_ids(
     return [row.entity_id for row in assignments]
 
 
+def save_client_profile(db, customer, party, data):
+    save_address(db, party, data)
+    save_bank_account(db, party, data)
+    if "kyc_status" in data:
+        value = _blank_to_none(data["kyc_status"])
+        if not value:
+            raise HTTPException(422, "KYC status cannot be empty")
+        kyc = customer.kyc
+        previous = kyc.kyc_status if kyc else None
+        if kyc is None:
+            kyc = CustomerKYC(customer=customer, kyc_status=value)
+            db.add(kyc)
+        else:
+            kyc.kyc_status = value
+        if previous != value:
+            db.add(CustomerKYCHistory(customer_id=customer.id, previous_status=previous, new_status=value))
+
+
 def build_client_response(
     customer: Customer,
     advisor: User,
 ) -> ClientResponse:
     party = customer.party
 
-    primary_address = next(
-        (
-            address
-            for address in party.addresses
-            if address.is_primary and address.deleted_at is None
-        ),
-        None,
+    primary_address = primary_record(party.addresses)
+    active_banks = sorted(
+        (bank for bank in party.bank_accounts if bank.is_active and bank.deleted_at is None),
+        key=lambda bank: bank.id,
     )
-    latest_risk_profile = None
-
-    if customer.risk_profiles:
-        latest_risk_profile = max(
-            customer.risk_profiles,
-            key=lambda profile: (
-                profile.assessed_on
-                or date.min
-            ),
-        )
+    bank = primary_record(active_banks) or next(iter(active_banks), None)
 
     group_member = None
 
     if customer.group_members:
+        # First preference: the client's primary active household.
         group_member = next(
             (
                 member
                 for member in customer.group_members
-                if member.left_on is None
+                if (
+                    member.left_on is None
+                    and member.is_primary
+                    and member.group
+                    and member.group.group_type in {
+                        "HOUSEHOLD",
+                        "FAMILY",
+                    }
+                )
             ),
             None,
         )
+
+        # Fallback: an active HOUSEHOLD/FAMILY membership.
+        if group_member is None:
+            group_member = next(
+                (
+                    member
+                    for member in customer.group_members
+                    if (
+                        member.left_on is None
+                        and member.group
+                        and member.group.group_type in {
+                            "HOUSEHOLD",
+                            "FAMILY",
+                        }
+                    )
+                ),
+                None,
+            )
 
     group = group_member.group if group_member else None
 
@@ -160,16 +193,7 @@ def build_client_response(
         first_name=party.first_name or "",
         last_name=party.last_name or "",
         email=party.email,
-        phone=next(
-            (
-                contact.contact_value
-                for contact in party.contacts
-                if contact.contact_type_id == 14
-                and contact.is_primary
-                and contact.deleted_at is None
-            ),
-            party.mobile_number,
-        ),
+        phone=party.mobile_number,
         alternate_phone=party.alternate_mobile,
         date_of_birth=party.date_of_birth,
         age=(
@@ -197,11 +221,7 @@ def build_client_response(
         occupation=customer.occupation,
         annual_income=customer.annual_income,
         net_worth=customer.net_worth,
-        risk_profile=(
-            latest_risk_profile.risk_profile
-            if latest_risk_profile
-            else customer.risk_profile
-        ),
+        risk_profile=customer.risk_profile,
         investment_experience=None,
         financial_goals=None,
 
@@ -235,7 +255,7 @@ def build_client_response(
             if primary_address
             else None
         ),
-        country="India",
+        country=primary_address.country.country_name if primary_address else None,
 
         # Nominee
         nominee_name=None,
@@ -243,22 +263,10 @@ def build_client_response(
         nominee_contact=None,
 
         # Bank
-        bank_name=(
-            customer.party.bank_accounts[0].bank_name
-            if customer.party.bank_accounts
-            else None
-        ),
-        account_number=(
-            customer.party.bank_accounts[0].account_number
-            if customer.party.bank_accounts
-            else None
-        ),
-        ifsc_code=(
-            customer.party.bank_accounts[0].ifsc_code
-            if customer.party.bank_accounts
-            else None
-        ),
-        account_type=None,
+        bank_name=bank.bank_name if bank else None,
+        account_number=bank.account_number if bank else None,
+        ifsc_code=bank.ifsc_code if bank else None,
+        account_type=bank.account_type.value_code if bank and bank.account_type else None,
 
         # KYC
         kyc_status=(
@@ -377,175 +385,124 @@ def create_client(
 ):
     employee = get_advisor_employee(advisor, db)
 
-    # Create Party
-    # Resolve lookup values
-    gender_id = None
-    if client_data.gender:
-        gender_id = (
-            db.query(LookupValue.id)
-            .filter(
-                LookupValue.category_id == 1,
-                LookupValue.value_code == client_data.gender.upper(),
-            )
-            .scalar()
-        )
-
-    marital_status_id = None
-    if client_data.marital_status:
-        marital_status_id = (
-            db.query(LookupValue.id)
-            .filter(
-                LookupValue.category_id == 2,
-                LookupValue.value_code == client_data.marital_status.upper(),
-            )
-            .scalar()
-        )
-
-    # Create Party
-    party = Party(
-        organization_id=employee.organization_id,
-        party_code=(
-            f"P-{advisor.party_id}-"
-            f"{db.query(Party).count() + 1:05d}"
-        ),
-        party_type_id=19,  # INDIVIDUAL
-        first_name=client_data.first_name,
-        last_name=client_data.last_name,
-        display_name=(
-            f"{client_data.first_name} "
-            f"{client_data.last_name}"
-        ).strip(),
-        date_of_birth=client_data.date_of_birth,
-        gender_id=gender_id,
-        marital_status_id=marital_status_id,
-        pan_number=_blank_to_none(client_data.pan_number),
-        aadhaar_number=_blank_to_none(client_data.aadhar_number),
-        email=_blank_to_none(client_data.email),
-        mobile_number=_blank_to_none(client_data.phone),
-        alternate_mobile=_blank_to_none(client_data.alternate_phone),
-        remarks=_blank_to_none(client_data.notes),
-    )
-
-    db.add(party)
+    gender_id = lookup_id(db, "GENDER", client_data.gender)
+    marital_status_id = lookup_id(db, "MARITAL_STATUS", client_data.marital_status)
 
     try:
+        # Create Party
+        party = Party(
+            organization_id=employee.organization_id,
+            party_code=(
+                f"P-{advisor.party_id}-"
+                f"{db.query(Party).count() + 1:05d}"
+            ),
+            party_type_id=lookup_id(db, "PARTY_TYPE", "INDIVIDUAL"),
+            first_name=client_data.first_name,
+            last_name=client_data.last_name,
+            display_name=(
+                f"{client_data.first_name} "
+                f"{client_data.last_name}"
+            ).strip(),
+            date_of_birth=client_data.date_of_birth,
+            gender_id=gender_id,
+            marital_status_id=marital_status_id,
+            pan_number=_blank_to_none(client_data.pan_number),
+            aadhaar_number=_blank_to_none(client_data.aadhar_number),
+            email=_blank_to_none(client_data.email),
+            mobile_number=_blank_to_none(client_data.phone),
+            alternate_mobile=_blank_to_none(client_data.alternate_phone),
+            remarks=_blank_to_none(client_data.notes),
+        )
+
+        db.add(party)
+
+        try:
+            db.flush()
+        except IntegrityError as exc:
+            db.rollback()
+            raise _duplicate_conflict(exc) from exc
+
+        # Create Customer
+        customer = Customer(
+            organization_id=employee.organization_id,
+            party_id=party.id,
+            customer_code=(
+                f"C-{db.query(Customer).count() + 1:05d}"
+            ),
+            occupation=_blank_to_none(client_data.occupation),
+            annual_income=client_data.annual_income,
+            net_worth=client_data.net_worth,
+            risk_profile=_blank_to_none(client_data.risk_profile),
+            onboarding_date=date.today(),
+            customer_status="ACTIVE",
+            remarks=_blank_to_none(client_data.notes),
+        )
+
+        db.add(customer)
         db.flush()
-    except IntegrityError as exc:
-        db.rollback()
-        raise _duplicate_conflict(exc) from exc
 
-    # Create Customer
-    customer = Customer(
-        organization_id=employee.organization_id,
-        party_id=party.id,
-        customer_code=(
-            f"C-{db.query(Customer).count() + 1:05d}"
-        ),
-        occupation=_blank_to_none(client_data.occupation),
-        annual_income=client_data.annual_income,
-        net_worth=client_data.net_worth,
-        risk_profile=_blank_to_none(client_data.risk_profile),
-        onboarding_date=date.today(),
-        customer_status="ACTIVE",
-        remarks=_blank_to_none(client_data.notes),
-    )
+        save_client_profile(db, customer, party, client_data.model_dump())
 
-    db.add(customer)
-    db.flush()
+        # Assign customer to advisor
+        assignment = EmployeeAssignment(
+            employee_id=employee.id,
+            assignment_type="ADVISOR",
+            entity_type="CUSTOMER",
+            entity_id=customer.id,
+            effective_from=date.today(),
+            is_primary=True,
+            is_active=True,
+        )
 
-    # Create primary address
-    if client_data.address_line1:
-        city_id = None
+        db.add(assignment)
 
-        if client_data.city:
-            city_id = (
-                db.query(City.id)
-                .filter(City.city_name.ilike(client_data.city))
-                .scalar()
-            )
+        # Create initial household/group
+        customer_group = CustomerGroup(
+            organization_id=employee.organization_id,
+            group_code=f"G-{customer.id:05d}",
+            group_name=(
+                f"{party.display_name} Household"
+            ),
+            group_type="HOUSEHOLD",
+            head_customer_id=customer.id,
+            primary_branch_id=employee.branch_id,
+            primary_advisor_employee_id=employee.id,
+            risk_profile=customer.risk_profile,
+        )
 
-        state_id = None
+        db.add(customer_group)
+        db.flush()
 
-        if client_data.state:
-            state_id = (
-                db.query(State.id)
-                .filter(State.state_name.ilike(client_data.state))
-                .scalar()
-            )
+        # Add the new client as the primary household member
+        group_member = GroupMember(
+            customer_group_id=customer_group.id,
+            customer_id=customer.id,
+            relationship_type="SELF",
+            is_group_head=True,
+            is_primary=True,
+            joined_on=date.today(),
+        )
 
-        if city_id and state_id:
-            address = PartyAddress(
-                party_id=party.id,
-                address_type_id=8,  # HOME / Residential
-                address_line1=client_data.address_line1,
-                address_line2=client_data.address_line2,
-                city_id=city_id,
-                state_id=state_id,
-                country_id=1,  # India
-                postal_code=client_data.pincode,
-                is_primary=True,
-                remarks="Created during client onboarding",
-            )
+        db.add(group_member)
 
-            db.add(address)
-
-            
-    # Assign customer to advisor
-    assignment = EmployeeAssignment(
-        employee_id=employee.id,
-        assignment_type="ADVISOR",
-        entity_type="CUSTOMER",
-        entity_id=customer.id,
-        effective_from=date.today(),
-        is_primary=True,
-        is_active=True,
-    )
-
-    db.add(assignment)
-
-    # Create initial household/group
-    customer_group = CustomerGroup(
-        organization_id=employee.organization_id,
-        group_code=f"G-{customer.id:05d}",
-        group_name=(
-            f"{party.display_name} Household"
-        ),
-        group_type="INDIVIDUAL",
-        head_customer_id=customer.id,
-        primary_branch_id=employee.branch_id,
-        primary_advisor_employee_id=employee.id,
-        risk_profile=customer.risk_profile,
-    )
-
-    db.add(customer_group)
-    db.flush()
-
-    # Add the new client as the primary household member
-    group_member = GroupMember(
-        customer_group_id=customer_group.id,
-        customer_id=customer.id,
-        relationship_type="SELF",
-        is_group_head=True,
-        is_primary=True,
-        joined_on=date.today(),
-    )
-
-    db.add(group_member)
-
-    try:
-        db.commit()
+        try:
+            db.commit()
 
     
-    except IntegrityError as exc:
+        except IntegrityError as exc:
+            db.rollback()
+            raise _duplicate_conflict(exc) from exc
+
+        db.expire_all()
+        db.refresh(customer)
+
+        return build_client_response(
+            customer=customer,
+            advisor=advisor,
+        )
+    except Exception:
         db.rollback()
-        raise _duplicate_conflict(exc) from exc
-
-    db.refresh(customer)
-
-    return build_client_response(
-        customer=customer,
-        advisor=advisor,
-    )
+        raise
 
 
 @router.get(
@@ -625,137 +582,117 @@ def update_client(
 
     party = customer.party
 
-    primary_address = next(
-    (
-        address
-        for address in party.addresses
-        if address.is_primary and address.deleted_at is None
-    ),
-    None,
-)
-
     update_data = client_data.model_dump(
         exclude_unset=True
     )
 
-    # The UI submits "" for cleared fields; keep NULL in the database so
-    # blank unique columns (pan_number) never collide with each other.
-    for field in (
-        "email",
-        "phone",
-        "alternate_phone",
-        "pan_number",
-        "aadhar_number",
-        "notes",
-        "occupation",
-        "risk_profile",
-        "gender",
-        "marital_status",
-    ):
-        if field in update_data:
-            update_data[field] = _blank_to_none(
-                update_data[field]
-            )
-
-    # Party fields
-    party_fields = {
-        "first_name",
-        "last_name",
-        "email",
-        "phone",
-        "alternate_phone",
-        "date_of_birth",
-        "gender",
-        "marital_status",
-        "pan_number",
-        "aadhar_number",
-        "notes",
-    }
-
-    # Customer fields
-    customer_fields = {
-        "occupation",
-        "annual_income",
-        "net_worth",
-        "risk_profile",
-        "is_active",
-    }
-
-    for field, value in update_data.items():
-
-        if field in party_fields:
-            if field == "phone":
-                setattr(party, "mobile_number", value)
-
-            elif field == "alternate_phone":
-                setattr(party, "alternate_mobile", value)
-
-            elif field == "aadhar_number":
-                setattr(party, "aadhaar_number", value)
-
-            elif field == "gender":
-                party.gender_id = (
-                    db.query(LookupValue.id)
-                    .filter(
-                        LookupValue.category_id == 1,
-                        LookupValue.value_code == value.upper(),
-                    )
-                    .scalar()
-                    if value
-                    else None
-                )
-
-            elif field == "marital_status":
-                party.marital_status_id = (
-                    db.query(LookupValue.id)
-                    .filter(
-                        LookupValue.category_id == 2,
-                        LookupValue.value_code == value.upper(),
-                    )
-                    .scalar()
-                    if value
-                    else None
-                )
-
-            elif field == "notes":
-                setattr(party, "remarks", value)
-                customer.remarks = value
-
-            elif field == "first_name":
-                party.first_name = value
-
-            elif field == "last_name":
-                party.last_name = value
-
-            else:
-                setattr(party, field, value)
-
-        elif field in customer_fields:
-            setattr(customer, field, value)
-
-    # Keep display name synchronized
-    if (
-        "first_name" in update_data
-        or "last_name" in update_data
-    ):
-        customer.party.display_name = (
-            f"{party.first_name or ''} "
-            f"{party.last_name or ''}"
-        ).strip()
-
     try:
-        db.commit()
-    except IntegrityError as exc:
+        # The UI submits "" for cleared fields; keep NULL in the database so
+        # blank unique columns (pan_number) never collide with each other.
+        for field in (
+            "email",
+            "phone",
+            "alternate_phone",
+            "pan_number",
+            "aadhar_number",
+            "notes",
+            "occupation",
+            "risk_profile",
+            "gender",
+            "marital_status",
+        ):
+            if field in update_data:
+                update_data[field] = _blank_to_none(
+                    update_data[field]
+                )
+
+        # Party fields
+        party_fields = {
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "alternate_phone",
+            "date_of_birth",
+            "gender",
+            "marital_status",
+            "pan_number",
+            "aadhar_number",
+            "notes",
+        }
+
+        # Customer fields
+        customer_fields = {
+            "occupation",
+            "annual_income",
+            "net_worth",
+            "risk_profile",
+            "is_active",
+        }
+
+        for field, value in update_data.items():
+
+            if field in party_fields:
+                if field == "phone":
+                    setattr(party, "mobile_number", value)
+
+                elif field == "alternate_phone":
+                    setattr(party, "alternate_mobile", value)
+
+                elif field == "aadhar_number":
+                    setattr(party, "aadhaar_number", value)
+
+                elif field == "gender":
+                    party.gender_id = lookup_id(db, "GENDER", value)
+
+                elif field == "marital_status":
+                    party.marital_status_id = lookup_id(db, "MARITAL_STATUS", value)
+
+                elif field == "notes":
+                    setattr(party, "remarks", value)
+                    customer.remarks = value
+
+                elif field == "first_name":
+                    party.first_name = value
+
+                elif field == "last_name":
+                    party.last_name = value
+
+                else:
+                    setattr(party, field, value)
+
+            elif field in customer_fields:
+                setattr(customer, field, value)
+
+        save_client_profile(db, customer, party, update_data)
+
+        # Keep display name synchronized
+        if (
+            "first_name" in update_data
+            or "last_name" in update_data
+        ):
+            customer.party.display_name = (
+                f"{party.first_name or ''} "
+                f"{party.last_name or ''}"
+            ).strip()
+
+        try:
+            db.commit()
+        except IntegrityError as exc:
+            db.rollback()
+            raise _duplicate_conflict(exc) from exc
+
+        db.expire_all()
+        db.refresh(customer)
+        db.refresh(party)
+
+        return build_client_response(
+            customer=customer,
+            advisor=advisor,
+        )
+    except Exception:
         db.rollback()
-        raise _duplicate_conflict(exc) from exc
-
-    db.refresh(customer)
-    db.refresh(party)
-
-    return build_client_response(
-        customer=customer,
-        advisor=advisor,
-    )
+        raise
 
 
 @router.delete(

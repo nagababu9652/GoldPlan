@@ -15,7 +15,7 @@ const steps = [
 export default function Process() {
   return (
     <section className="hairline-b bg-bone" data-testid="process-section">
-      <SectionContainer className="py-16 lg:py-24">
+      <SectionContainer className="py-8 lg:py-12">
         <div className="grid grid-cols-12 gap-6 mb-14">
           <div className="col-span-12 lg:col-span-5">
             <div className="label-mono text-ash mb-3">— 005 · Method</div>

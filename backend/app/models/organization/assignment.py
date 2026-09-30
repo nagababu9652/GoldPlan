@@ -1,6 +1,7 @@
 """
 Assignment models: employee_assignments, employee_skills, employee_certifications, organization_holidays.
 """
+from sqlalchemy import text
 from datetime import datetime
 from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, SmallInteger, String, Text
 from sqlalchemy.orm import relationship
@@ -35,7 +36,7 @@ class EmployeeSkill(Base):
     proficiency_level = Column(SmallInteger, nullable=True)
     certified = Column(Boolean, default=False)
     remarks = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
     employee = relationship("Employee", lazy="selectin")
 
@@ -53,7 +54,7 @@ class EmployeeCertification(Base):
     expiry_date = Column(Date, nullable=True)
     verification_status = Column(String(30), default="PENDING")
     remarks = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
     employee = relationship("Employee", lazy="selectin")
 
@@ -68,7 +69,7 @@ class OrganizationHoliday(Base):
     holiday_date = Column(Date, nullable=False)
     holiday_name = Column(String(200), nullable=False)
     holiday_type = Column(String(30), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
     organization = relationship("Organization", lazy="selectin")
     branch = relationship("Branch", lazy="selectin")

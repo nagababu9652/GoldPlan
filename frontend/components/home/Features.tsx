@@ -16,7 +16,7 @@ const features = [
 export default function Features() {
   return (
     <section className="hairline-b bg-bone-deep" data-testid="features-section">
-      <SectionContainer className="py-16 lg:py-24 grid grid-cols-12 gap-x-6">
+      <SectionContainer className="py-8 lg:py-12 grid grid-cols-12 gap-x-6">
         <div className="col-span-12 lg:col-span-5 lg:sticky lg:top-32 lg:self-start mb-12 lg:mb-0">
           <div className="label-mono text-ash mb-4">&mdash; 003 &middot; Why</div>
           <h2 className="display text-[44px] lg:text-[72px]">

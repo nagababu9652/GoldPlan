@@ -2,6 +2,7 @@
 CRM relationship and operation models: customer_relationships, group_merge/split_history,
 customer_merge_history, group_member_order.
 """
+from sqlalchemy import text
 from datetime import datetime
 from sqlalchemy import Column, BigInteger, Date, DateTime, ForeignKey, Integer, String, Text, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
@@ -19,7 +20,7 @@ class CustomerRelationship(Base):
     related_customer_id = Column(BigInteger, ForeignKey("crm.customers.id"), nullable=False)
     relationship_type = Column(String(50), nullable=False)
     remarks = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
     group = relationship("CustomerGroup", lazy="selectin")
     customer = relationship("Customer", foreign_keys=[customer_id], lazy="selectin")
@@ -34,7 +35,7 @@ class GroupMergeHistory(Base):
     source_group_id = Column(BigInteger, ForeignKey("crm.customer_groups.id"), nullable=False)
     target_group_id = Column(BigInteger, ForeignKey("crm.customer_groups.id"), nullable=False)
     merged_by = Column(BigInteger, nullable=True)
-    merged_at = Column(DateTime, default=datetime.utcnow)
+    merged_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     merge_reason = Column(Text, nullable=True)
     remarks = Column(Text, nullable=True)
 
@@ -50,7 +51,7 @@ class GroupSplitHistory(Base):
     original_group_id = Column(BigInteger, ForeignKey("crm.customer_groups.id"), nullable=False)
     new_group_id = Column(BigInteger, ForeignKey("crm.customer_groups.id"), nullable=False)
     split_by = Column(BigInteger, nullable=True)
-    split_at = Column(DateTime, default=datetime.utcnow)
+    split_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     split_reason = Column(Text, nullable=True)
     remarks = Column(Text, nullable=True)
 
@@ -66,7 +67,7 @@ class CustomerMergeHistory(Base):
     source_customer_id = Column(BigInteger, ForeignKey("crm.customers.id"), nullable=False)
     target_customer_id = Column(BigInteger, ForeignKey("crm.customers.id"), nullable=False)
     merged_by = Column(BigInteger, nullable=True)
-    merged_at = Column(DateTime, default=datetime.utcnow)
+    merged_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     merge_reason = Column(Text, nullable=True)
     remarks = Column(Text, nullable=True)
 

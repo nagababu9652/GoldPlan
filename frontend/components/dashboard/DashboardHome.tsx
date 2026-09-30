@@ -45,7 +45,7 @@ export default function DashboardHome() {
   }
 
   return (
-    <DashboardContainer className="dashboard-shell space-y-8 lg:space-y-10">
+    <DashboardContainer className="dashboard-shell ">
       {/* Overview */}
       <DashboardOverview advisor={data} />
 
@@ -57,15 +57,15 @@ export default function DashboardHome() {
       {/* Key metrics */}
       <KPIGrid advisor={data} />
 
-      {/* Portfolio + Schedule */}
-      <section className="grid gap-8 xl:grid-cols-[minmax(0,1.65fr)_minmax(340px,1fr)]">
+      {/* Portfolio + Client Relationships */}
+      <section className="grid items-stretch gap-3 xl:grid-cols-2">
         <PortfolioPerformance />
-        <TodaySchedule />
+        <RecentClients />
       </section>
 
-      {/* Clients + Notifications */}
-      <section className="grid items-start gap-8 xl:grid-cols-[2fr_1fr]">
-        <RecentClients />
+      {/* Schedule + Notifications */}
+      <section className="grid items-stretch gap-3 xl:grid-cols-2">
+        <TodaySchedule />
         <Notifications />
       </section>
 

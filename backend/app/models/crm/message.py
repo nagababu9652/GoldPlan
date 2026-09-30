@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from datetime import datetime
 
 from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, String, Text
@@ -62,6 +63,7 @@ class Message(Base):
         DateTime,
         nullable=False,
         default=datetime.utcnow,
+        server_default=text("CURRENT_TIMESTAMP"),
     )
 
     read_at = Column(
@@ -73,6 +75,7 @@ class Message(Base):
         DateTime,
         nullable=False,
         default=datetime.utcnow,
+        server_default=text("CURRENT_TIMESTAMP"),
     )
 
     updated_at = Column(
@@ -80,6 +83,7 @@ class Message(Base):
         nullable=False,
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
+        server_default=text("CURRENT_TIMESTAMP"),
     )
 
     customer = relationship(

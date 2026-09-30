@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart
 } from 'recharts';
@@ -46,7 +47,8 @@ export default function MarketChart({ title, symbol, color = '#0C0B0A', prefix =
     const fetchHistory = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost:8000/market/history?symbol=${symbol}&range=${range}`);
+        const response = await fetch(`${API_BASE_URL}/market/history?symbol=${encodeURIComponent(symbol)}&range=${range}`);
+        if (!response.ok) throw new Error('Failed to load market history');
         const result = await response.json();
         setData(result.data || []);
         if (result.prediction) {

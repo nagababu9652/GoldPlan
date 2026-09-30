@@ -208,7 +208,7 @@ export function MessageForm({ messageId }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="dashboard-form-shell space-y-6"
+      className="dashboard-form-shell space-y-3"
     >
       {error ? (
         <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">

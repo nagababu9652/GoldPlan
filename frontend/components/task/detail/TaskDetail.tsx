@@ -136,7 +136,7 @@ export default function TaskDetail({
   const overdue = isOverdue(task);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="mb-2 flex flex-wrap gap-2">
@@ -225,7 +225,7 @@ export default function TaskDetail({
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+        <div className="space-y-3 lg:col-span-2">
           <section className="rounded-xl border border-line bg-bone p-6">
             <h2 className="text-lg font-semibold">
               Task Information

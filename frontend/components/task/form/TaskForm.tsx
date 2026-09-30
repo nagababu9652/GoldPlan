@@ -216,7 +216,7 @@ export default function TaskForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="dashboard-form-shell space-y-6"
+      className="dashboard-form-shell space-y-3"
     >
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">

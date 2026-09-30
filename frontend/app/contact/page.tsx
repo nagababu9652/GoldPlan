@@ -24,7 +24,7 @@ export default function ContactPage() {
       <Navigation />
       <div className="page-frame grain">
         <section className="shell-body">
-          <div className="grid grid-cols-12 gap-6 lg:gap-10 mb-16">
+          <div className="grid grid-cols-12 gap-3 lg:gap-5 mb-8">
             <div className="col-span-12 lg:col-span-8">
               <div className="label-mono text-ash mb-4">&mdash; 008 &middot; Contact</div>
               <h1 className="display text-[44px] lg:text-[64px]">
@@ -103,7 +103,7 @@ export default function ContactPage() {
             </div>
 
             <div className="col-span-12 lg:col-span-4 lg:col-start-9">
-              <div className="border border-obsidian bg-bone p-6 lg:p-8 space-y-6">
+              <div className="border border-obsidian bg-bone p-6 lg:p-8 space-y-3">
                 <div>
                   <div className="label-mono text-ash mb-3">Contact Info</div>
                   <div className="space-y-4">

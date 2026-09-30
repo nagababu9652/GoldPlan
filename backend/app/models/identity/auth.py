@@ -2,6 +2,7 @@
 Authentication models: users, authentication_methods, password_history, otp_requests,
 user_sessions, refresh_tokens, login_history.
 """
+from sqlalchemy import text
 from datetime import datetime
 from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, SmallInteger, String, Text
 from sqlalchemy.dialects.postgresql import INET, UUID
@@ -27,9 +28,9 @@ class User(Base):
     account_status = Column(String(20), default="ACTIVE")
     last_login_at = Column(DateTime, nullable=True)
     last_password_change_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     created_by = Column(BigInteger, nullable=True)
-    updated_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True, server_default=text("CURRENT_TIMESTAMP"))
     updated_by = Column(BigInteger, nullable=True)
     deleted_at = Column(DateTime, nullable=True)
     deleted_by = Column(BigInteger, nullable=True)
@@ -55,9 +56,9 @@ class AuthenticationMethod(Base):
     password_expiry_date = Column(Date, nullable=True)
     is_primary = Column(Boolean, default=True)
     is_enabled = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     created_by = Column(BigInteger, nullable=True)
-    updated_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True, server_default=text("CURRENT_TIMESTAMP"))
     updated_by = Column(BigInteger, nullable=True)
     version_no = Column(Integer, default=1)
 
@@ -71,7 +72,7 @@ class PasswordHistory(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     user_id = Column(BigInteger, ForeignKey("identity.users.id"), nullable=False)
     password_hash = Column(Text, nullable=False)
-    changed_at = Column(DateTime, default=datetime.utcnow)
+    changed_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     changed_by = Column(BigInteger, nullable=True)
 
     user = relationship("User", lazy="selectin")
@@ -90,7 +91,7 @@ class OTPRequest(Base):
     verified_at = Column(DateTime, nullable=True)
     failed_attempts = Column(SmallInteger, default=0)
     is_used = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
     user = relationship("User", lazy="selectin")
 
@@ -102,7 +103,7 @@ class UserSession(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     user_id = Column(BigInteger, ForeignKey("identity.users.id"), nullable=False)
     session_uuid = Column(UUID, nullable=False)
-    login_time = Column(DateTime, default=datetime.utcnow)
+    login_time = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     last_activity_at = Column(DateTime, nullable=True)
     logout_time = Column(DateTime, nullable=True)
     ip_address = Column(INET, nullable=True)
@@ -125,7 +126,7 @@ class RefreshToken(Base):
     token_hash = Column(Text, nullable=False)
     expires_at = Column(DateTime, nullable=False)
     revoked_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
     session = relationship("UserSession", back_populates="refresh_tokens", lazy="selectin")
 
@@ -136,7 +137,7 @@ class LoginHistory(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     user_id = Column(BigInteger, ForeignKey("identity.users.id"), nullable=True)
-    login_timestamp = Column(DateTime, default=datetime.utcnow)
+    login_timestamp = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     login_result = Column(String(20), nullable=True)
     failure_reason = Column(String(200), nullable=True)
     ip_address = Column(INET, nullable=True)

@@ -1,5 +1,6 @@
 """Audit history for advisor/customer financial transactions."""
 
+from sqlalchemy import text
 from sqlalchemy import (
     BigInteger,
     Column,
@@ -43,6 +44,7 @@ class TransactionHistory(Base):
     changed_at = Column(
         DateTime,
         nullable=False,
+        server_default=text("CURRENT_TIMESTAMP"),
     )
 
     old_values = Column(

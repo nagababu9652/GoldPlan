@@ -134,7 +134,7 @@ export default function TransactionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-3">
 
       {error && (
         <div className="rounded-lg border border-red-200 bg-bone p-3">

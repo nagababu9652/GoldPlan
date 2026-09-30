@@ -103,7 +103,7 @@ export default function ClientDetailsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <ClientHeader client={client} />
 
       <ClientSummaryCards client={client} />

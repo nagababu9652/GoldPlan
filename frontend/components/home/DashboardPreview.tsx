@@ -24,7 +24,7 @@ export default function DashboardPreview() {
   return (
     <section id="dashboard" className="hairline-b" data-testid="dashboard-section">
       {/* Header */}
-      <SectionContainer className="py-16 lg:py-24 grid grid-cols-12 gap-6 hairline-b">
+      <SectionContainer className="py-8 lg:py-12 grid grid-cols-12 gap-6 hairline-b">
         <div className="col-span-12 lg:col-span-5">
           <div className="label-mono text-ash mb-3">&mdash; 004 &middot; Console</div>
           <h2 className="display text-[44px] lg:text-[64px]">
@@ -40,7 +40,7 @@ export default function DashboardPreview() {
       </SectionContainer>
 
       {/* Mock console */}
-      <SectionContainer className="py-16 lg:py-24">
+      <SectionContainer className="py-8 lg:py-12">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}

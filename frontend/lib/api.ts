@@ -1,4 +1,39 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+/**
+ * Turns FastAPI error payloads into a readable message.
+ *
+ * `detail` is a plain string for normal HTTPExceptions, but an array of
+ * objects for validation errors (422). Passing that array straight into
+ * `new Error()` stringifies it as the literal text "[object Object]".
+ */
+function formatApiError(detail: unknown, fallback: string): string {
+  if (typeof detail === 'string' && detail.trim()) {
+    return detail;
+  }
+
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((item) => {
+        if (item && typeof item === 'object' && 'msg' in item) {
+          return String((item as { msg: unknown }).msg);
+        }
+
+        return typeof item === 'string' ? item : null;
+      })
+      .filter((message): message is string => Boolean(message));
+
+    if (messages.length > 0) {
+      return messages.join('; ');
+    }
+  }
+
+  if (detail && typeof detail === 'object') {
+    return JSON.stringify(detail);
+  }
+
+  return fallback;
+}
 
 // ==================== AUTH TYPES ====================
 
@@ -44,22 +79,18 @@ export interface RegisterData {
   aadhaar_number?: string;
   legal_name?: string;
   remarks?: string;
+  country?: string;
 }
 
-export interface RegisterResponse {
-  access_token: string;
-  token_type: string;
-  refresh_token: string;
-  expires_in: number;
-  user: User;
-}
+export type RegisterResponse = User;
 
 // ==================== AUTH API ====================
 
 export async function registerUser(data: RegisterData): Promise<RegisterResponse> {
+  const { phone, ...fields } = data;
   const payload = {
-    ...data,
-    mobile_number: data.mobile_number || data.phone,
+    ...fields,
+    mobile_number: data.mobile_number || phone,
   };
 
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
@@ -73,7 +104,7 @@ export async function registerUser(data: RegisterData): Promise<RegisterResponse
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.detail || 'Registration failed');
+    throw new Error(formatApiError(error.detail, 'Registration failed'));
   }
 
   return response.json();
@@ -107,7 +138,7 @@ export async function sendOTP(email: string, purpose: string = 'registration'): 
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.detail || 'Failed to send OTP');
+    throw new Error(formatApiError(error.detail, 'Failed to send OTP'));
   }
 
   return response.json();
@@ -125,7 +156,7 @@ export async function verifyOTP(email: string, otpCode: string, purpose: string 
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.detail || 'Invalid or expired OTP');
+    throw new Error(formatApiError(error.detail, 'Invalid or expired OTP'));
   }
 
   return response.json();
@@ -150,7 +181,7 @@ export async function loginUser(credentials: LoginCredentials & { role?: string 
     const errorText = await response.text();
     try {
       const errorJson = JSON.parse(errorText);
-      throw new Error(errorJson.detail || 'Login failed');
+      throw new Error(formatApiError(errorJson.detail, 'Login failed'));
     } catch (e) {
       if (e instanceof SyntaxError) {
         throw new Error('Login failed. Please try again.');
@@ -202,7 +233,7 @@ export async function refreshToken(): Promise<TokenResponse> {
 
     try {
       const error = await response.json();
-      errorMessage = error.detail || errorMessage;
+      errorMessage = formatApiError(error.detail, errorMessage);
     } catch {
       // Ignore JSON parsing errors
     }
@@ -294,7 +325,7 @@ export async function forgotPassword(email: string): Promise<ForgotPasswordRespo
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.detail || 'Failed to send password reset OTP');
+    throw new Error(formatApiError(error.detail, 'Failed to send password reset OTP'));
   }
 
   return response.json();
@@ -316,7 +347,7 @@ export async function resetPassword(email: string, otpCode: string, newPassword:
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.detail || 'Password reset failed');
+    throw new Error(formatApiError(error.detail, 'Password reset failed'));
   }
 
   return response.json();
@@ -366,25 +397,8 @@ export interface AdvisorReports {
   }>;
 }
 
-export interface AdvisorDocuments {
-  documents: Array<{
-    id: number;
-    name: string;
-    date: string;
-    category: string;
-    size: string;
-  }>;
-}
-
-export interface AdvisorMessages {
-  messages: Array<{
-    id: number;
-    from: string;
-    subject: string;
-    date: string;
-    unread: boolean;
-  }>;
-}
+export type AdvisorDocuments = DocumentListResponse;
+export type AdvisorMessages = MessageListResponse;
 
 export interface AdvisorProfile {
   first_name: string;
@@ -394,8 +408,8 @@ export interface AdvisorProfile {
   role: string;
   member_since: string;
   plan_type: string;
-  client_name: string;
-  risk_profile: string;
+  display_name?: string | null;
+  mobile_number?: string | null;
 }
 
 export async function advisorFetch<T>(
@@ -410,7 +424,7 @@ export async function advisorFetch<T>(
 
     try {
       const error = await response.json();
-      errorMessage = error.detail || errorMessage;
+      errorMessage = formatApiError(error.detail, errorMessage);
     } catch {
       // Ignore JSON parsing errors
     }
@@ -434,11 +448,11 @@ export function getAdvisorReports(token: string): Promise<AdvisorReports> {
 }
 
 export function getAdvisorDocuments(token: string): Promise<AdvisorDocuments> {
-  return advisorFetch('/documents', token);
+  return getDocuments(token);
 }
 
 export function getAdvisorMessages(token: string): Promise<AdvisorMessages> {
-  return advisorFetch('/messages', token);
+  return getMessages(token);
 }
 
 export function getAdvisorProfile(token: string): Promise<AdvisorProfile> {
@@ -505,7 +519,6 @@ export interface ClientCreate {
   phone?: string;
   alternate_phone?: string;
   date_of_birth?: string;
-  age?: number;
   gender?: string;
   marital_status?: string;
   occupation?: string;
@@ -520,28 +533,24 @@ export interface ClientCreate {
   annual_income?: number;
   net_worth?: number;
   risk_profile?: string;
-  investment_experience?: string;
-  financial_goals?: string;
-  nominee_name?: string;
-  nominee_relation?: string;
-  nominee_contact?: string;
   bank_name?: string;
   account_number?: string;
   ifsc_code?: string;
   account_type?: string;
   kyc_status?: string;
   notes?: string;
-  group_id?: number;
 }
 
+// Updates can explicitly clear optional values with null.
+export type ClientUpdate = {
+  [K in keyof ClientCreate]?: ClientCreate[K] | null;
+};
+
 export interface ClientListResponse {
-  advisor_id: number;
-  employee_id: number | null;
   clients: Client[];
   total: number;
-  page?: number;
-  page_size?: number;
-  total_pages?: number;
+  page: number;
+  page_size: number;
 }
 
 export async function advisorPost(
@@ -563,9 +572,10 @@ export async function advisorPost(
     });
 
     throw new Error(
-      typeof errorBody === 'string'
-        ? errorBody
-        : errorBody?.detail || JSON.stringify(errorBody, null, 2),
+      formatApiError(
+        errorBody?.detail,
+        errorBody ? JSON.stringify(errorBody, null, 2) : 'Request failed',
+      ),
     );
   }
 
@@ -585,7 +595,7 @@ export async function advisorPut(
   if (!response.ok) {
     const error = await response.json().catch(() => null);
 
-    throw new Error(error?.detail || 'Request failed');
+    throw new Error(formatApiError(error?.detail, 'Request failed'));
   }
 
   return response.json();
@@ -602,7 +612,7 @@ export async function advisorDelete(
   if (!response.ok) {
     const error = await response.json().catch(() => null);
 
-    throw new Error(error?.detail || 'Request failed');
+    throw new Error(formatApiError(error?.detail, 'Request failed'));
   }
 
   return response.json();
@@ -636,7 +646,7 @@ export function getClientById(
 export function updateClient(
   token: string,
   clientId: string,
-  data: Partial<ClientCreate>,
+  data: ClientUpdate,
 ): Promise<Client> {
   return advisorPut(`/clients/${clientId}`, token, data);
 }
@@ -702,36 +712,44 @@ export async function fetchMarketData(): Promise<MarketData> {
   
 }
 
-export interface AdvisorMeeting {
-  id: number;
-  advisor_id: number;
-  client_id: number;
-  client_name: string;
-  title: string;
-  meeting_date: string;
-  meeting_time: string;
-  meeting_type: "virtual" | "in_person" | "phone";
-  status: "scheduled" | "completed" | "cancelled";
-  notes?: string | null;
-  created_at: string;
-  updated_at?: string | null;
-}
+/**
+ * Local (timezone-naive) datetime string for the `from_date` / `to_date`
+ * query params, matching how meetings are stored in the database.
+ */
+function toLocalDateTimeParam(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, "0");
 
-export interface AdvisorMeetingsResponse {
-  meetings: AdvisorMeeting[];
-  total: number;
-}
-
-export async function getAdvisorMeetings(
-  token: string
-): Promise<AdvisorMeetingsResponse> {
-  return advisorFetch("/meetings", token);
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+  );
 }
 
 export async function getAdvisorTodayMeetings(
   token: string
-): Promise<AdvisorMeetingsResponse> {
-  return advisorFetch("/meetings/today", token);
+): Promise<MeetingListResponse> {
+  const now = new Date();
+  const startOfDay = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    0,
+    0,
+    0
+  );
+  const endOfDay = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23,
+    59,
+    59
+  );
+
+  return getMeetings(token, {
+    from_date: toLocalDateTimeParam(startOfDay),
+    to_date: toLocalDateTimeParam(endOfDay),
+  });
 }
 
 
@@ -740,7 +758,6 @@ export async function getAdvisorTodayMeetings(
 // ============================================================
 
 export type GroupType =
-  | 'INDIVIDUAL'
   | 'HOUSEHOLD'
   | 'FAMILY'
   | 'BUSINESS'
@@ -825,7 +842,6 @@ export interface GroupUpdatePayload {
 export interface GroupMemberAddPayload {
   customer_id: number;
   relationship_type?: string;
-  is_primary?: boolean;
   is_group_head?: boolean;
   remarks?: string | null;
 }
@@ -881,13 +897,20 @@ export async function getGroupById(
 
 export async function getGroupMembers(
   token: string,
-  id: string | number,
-  includeHistory = false
+  id: string | number
 ): Promise<GroupMemberListResponse> {
-  const query = includeHistory ? '?include_history=true' : '';
-
   return advisorFetch<GroupMemberListResponse>(
-    `/groups/${id}/members${query}`,
+    `/groups/${id}/members`,
+    token
+  );
+}
+
+export async function getGroupMembershipHistory(
+  token: string,
+  id: string | number
+): Promise<GroupMemberListResponse> {
+  return advisorFetch<GroupMemberListResponse>(
+    `/groups/${id}/members/history`,
     token
   );
 }
@@ -935,23 +958,6 @@ export async function changeGroupHead(
 ): Promise<GroupActionResponse> {
   return advisorFetch<GroupActionResponse>(
     `/groups/${groupId}/head`,
-    token,
-    {
-      method: 'PUT',
-      body: JSON.stringify({
-        customer_id: customerId,
-      }),
-    }
-  );
-}
-
-export async function setPrimaryGroup(
-  token: string,
-  groupId: string | number,
-  customerId: number
-): Promise<GroupActionResponse> {
-  return advisorFetch<GroupActionResponse>(
-    `/groups/${groupId}/primary`,
     token,
     {
       method: 'PUT',
@@ -1692,3 +1698,22 @@ export function archiveDocument(
     method: "POST",
   });
 }
+
+export interface MoveHouseholdRequest {
+  customer_id: number;
+  relationship_type?: string;
+  new_head_customer_id?: number | null;
+}
+
+export function moveClientToHousehold(
+  token: string,
+  groupId: number,
+  data: MoveHouseholdRequest
+) {
+  return advisorPost(
+    `/groups/${groupId}/move-client`,
+    token,
+    data
+  );
+}
+

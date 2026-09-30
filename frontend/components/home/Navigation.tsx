@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { logoutUser } from '@/lib/api';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -169,10 +170,7 @@ export default function Navigation() {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:8000/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await logoutUser();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

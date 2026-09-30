@@ -12,7 +12,7 @@ export default function TaxSavingCDPage() {
       <Navigation />
       <div className="page-frame grain">
         <section className="shell-body">
-          <div className="grid grid-cols-12 gap-6 lg:gap-10 mb-16">
+          <div className="grid grid-cols-12 gap-3 lg:gap-5 mb-8">
             <div className="col-span-12 lg:col-span-8">
               <div className="label-mono text-ash mb-4">&mdash; 018 &middot; Tax</div>
               <h1 className="display text-[44px] lg:text-[64px]">Tax Saving 80C 80D</h1>

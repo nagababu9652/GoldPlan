@@ -37,7 +37,7 @@ export default function AdvisorProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <section className="dashboard-panel p-6 lg:p-8">
         <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
           Profile

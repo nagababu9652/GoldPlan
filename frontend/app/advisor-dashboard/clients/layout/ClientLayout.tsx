@@ -24,12 +24,12 @@ export default function ClientLayout({
       )}
     >
       {sidebar && (
-        <aside className="space-y-6">
+        <aside className="space-y-3">
           {sidebar}
         </aside>
       )}
 
-      <main className="min-w-0 space-y-6">
+      <main className="min-w-0 space-y-3">
         {children}
       </main>
     </div>

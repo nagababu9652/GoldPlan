@@ -31,7 +31,7 @@ const testimonials = [
 export default function Testimonials() {
   return (
     <section className="hairline-b bg-obsidian text-bone" data-testid="testimonials-section">
-      <SectionContainer className="py-16 lg:py-24">
+      <SectionContainer className="py-8 lg:py-12">
         <div className="grid grid-cols-12 gap-6 mb-14">
           <div className="col-span-12 lg:col-span-5">
             <div className="label-mono text-bone/50 mb-3">— 006 · Letters</div>

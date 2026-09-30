@@ -122,7 +122,7 @@ export default function EnterpriseTable<TData>({
   return (
     <div
       className={cn(
-        "space-y-6",
+        "space-y-3",
         className
       )}
     >

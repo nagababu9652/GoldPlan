@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { FinPlanGuide } from "@/components/assistant";
 import "./globals.css";
 
 const inter = Inter({
@@ -26,6 +27,8 @@ export default function RootLayout({
         className={`${inter.className} bg-bone text-obsidian antialiased`}
       >
         {children}
+
+        <FinPlanGuide />
       </body>
     </html>
   );

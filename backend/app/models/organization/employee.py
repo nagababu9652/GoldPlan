@@ -1,6 +1,7 @@
 """
 Employee models: employees, employee_roles, employee_reporting, employee_branch_history, employee_department_history.
 """
+from sqlalchemy import text
 from datetime import datetime
 from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -42,7 +43,7 @@ class EmployeeRole(Base):
     effective_to = Column(Date, nullable=True)
     is_primary = Column(Boolean, default=False)
     assigned_by = Column(BigInteger, nullable=True)
-    assigned_at = Column(DateTime, default=datetime.utcnow)
+    assigned_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
     employee = relationship("Employee", lazy="selectin")
     role = relationship("Role", lazy="selectin")

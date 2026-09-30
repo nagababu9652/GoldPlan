@@ -4,7 +4,7 @@ import { MeetingForm } from "@/components/meetings/form";
 
 export default function NewMeetingPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="dashboard-panel p-6 lg:p-8">
         <Link
           href="/advisor-dashboard/meetings"

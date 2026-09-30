@@ -14,7 +14,8 @@ from sqlalchemy.orm import Session
 import hashlib
 
 from ..core.config import settings
-from ..models.foundation.party import Party, PartyAddress, PartyContact
+from ..models.foundation.party import Party, PartyContact
+from .party_profile import save_address
 from ..models.identity.auth import (
     User, AuthenticationMethod, PasswordHistory,
     UserSession, RefreshToken, LoginHistory
@@ -164,30 +165,7 @@ def get_lookup_id(db: Session, table: str, column: str, value_code: str) -> Opti
 
 def create_party_profile(db: Session, party: Party, user_data: dict) -> None:
     """Attach supporting party address and contact records from the registration payload."""
-    address_line1 = user_data.get("address_line1")
-    city = user_data.get("city")
-    state = user_data.get("state")
-    pincode = user_data.get("pincode")
-
-    if address_line1 or city or state or pincode:
-        address_type_id = get_lookup_id(db, "foundation.lookup_values", "value_code", "PERMANENT")
-        city_id = db.execute(text("SELECT id FROM foundation.cities LIMIT 1")).scalar()
-        state_id = db.execute(text("SELECT id FROM foundation.states LIMIT 1")).scalar()
-        country_id = db.execute(text("SELECT id FROM foundation.countries LIMIT 1")).scalar()
-
-        if address_type_id and city_id and state_id and country_id:
-            address = PartyAddress(
-                party_id=party.id,
-                address_type_id=address_type_id,
-                address_line1=address_line1 or "",
-                address_line2=user_data.get("address_line2"),
-                city_id=city_id,
-                state_id=state_id,
-                country_id=country_id,
-                postal_code=pincode,
-                is_primary=True,
-            )
-            db.add(address)
+    save_address(db, party, user_data)
 
     mobile_number = user_data.get("mobile_number")
     if mobile_number:

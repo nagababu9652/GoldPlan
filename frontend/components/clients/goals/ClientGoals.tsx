@@ -22,7 +22,7 @@ export default function ClientGoals({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
 
       <GoalsSummary
         total={goals.length}

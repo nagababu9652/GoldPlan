@@ -34,7 +34,7 @@ export default function TransactionDetails({
   const amount = Number(transaction.amount);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
 
       <div className="grid gap-5 md:grid-cols-2">
 

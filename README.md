@@ -64,7 +64,7 @@ finplan/
 │       ├── database/        # SQLAlchemy engine & session
 │       ├── middleware/      # CORS setup
 │       ├── models/          # SQLAlchemy ORM models
-│       ├── routers/         # items, market endpoints
+│       ├── routers/         # authentication, advisor CRM, market endpoints
 │       ├── schemas/         # Pydantic request/response schemas
 │       ├── services/        # Business logic
 │       └── tests/           # pytest test suite
@@ -151,11 +151,6 @@ docker compose up --build
 | Method | Path         | Description          |
 |--------|-------------|----------------------|
 | GET    | `/health`   | Health check         |
-| GET    | `/items/`   | List items           |
-| POST   | `/items/`   | Create item          |
-| GET    | `/items/{id}` | Get item by ID     |
-| PUT    | `/items/{id}` | Update item        |
-| DELETE | `/items/{id}` | Delete item        |
 | GET    | `/api/market/gold`    | Gold price data     |
 | POST   | `/api/market/simulate`| Market simulation   |
 
@@ -201,6 +196,23 @@ This project follows a **Hybrid Swiss Brutalist + Luxury (Editorial Finance)** a
 - Media assets (gold texture, office lifestyle, architecture accents)
 
 ---
+
+## Documentation
+
+Full details live in [`docs/`](./docs/README.md):
+
+| Document | Contents |
+|----------|----------|
+| [Architecture](./docs/ARCHITECTURE.md) | System structure, domain schemas, implementation status |
+| [Business Rules](./docs/BUSINESS_RULES.md) | Product rules that must not be broken |
+| [Households](./docs/HOUSEHOLDS.md) | Household/Group model and lifecycle |
+| [Roadmap](./docs/ROADMAP.md) | Recommended order of work |
+| [Authentication](./docs/AUTHENTICATION.md) | Login/OTP flow, test user, troubleshooting |
+| [Database](./docs/DATABASE.md) | PostgreSQL setup, migrations, useful commands |
+| [Email](./docs/EMAIL.md) | SMTP/OTP setup and deliverability |
+| [FinPlan Guide](./docs/FINPLAN_GUIDE.md) | In-app help chatbot (integration & maintenance) |
+| [API Integration Audit](./docs/API_INTEGRATION_AUDIT.md) | Backend/frontend integration audit (2026-09-30) |
+| [Performance](./docs/PERFORMANCE_OPTIMIZATION.md) | Optimization backlog and quick wins |
 
 ## License
 

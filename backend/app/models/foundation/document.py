@@ -1,6 +1,7 @@
 """
 Document models: document_categories, document_types, documents, document_files.
 """
+from sqlalchemy import text
 from datetime import datetime
 from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -18,9 +19,9 @@ class DocumentCategory(Base):
     description = Column(Text, nullable=True)
     display_order = Column(Integer, default=1)
     is_system = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     created_by = Column(BigInteger, nullable=True)
-    updated_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True, server_default=text("CURRENT_TIMESTAMP"))
     updated_by = Column(BigInteger, nullable=True)
     version_no = Column(Integer, default=1)
     is_active = Column(Boolean, default=True)
@@ -40,9 +41,9 @@ class DocumentType(Base):
     max_file_size_mb = Column(Integer, default=10)
     requires_expiry = Column(Boolean, default=False)
     remarks = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     created_by = Column(BigInteger, nullable=True)
-    updated_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True, server_default=text("CURRENT_TIMESTAMP"))
     updated_by = Column(BigInteger, nullable=True)
     version_no = Column(Integer, default=1)
     is_active = Column(Boolean, default=True)
@@ -67,9 +68,9 @@ class Document(Base):
     verified_at = Column(DateTime, nullable=True)
     verified_by = Column(BigInteger, nullable=True)
     remarks = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     created_by = Column(BigInteger, nullable=True)
-    updated_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True, server_default=text("CURRENT_TIMESTAMP"))
     updated_by = Column(BigInteger, nullable=True)
     deleted_at = Column(DateTime, nullable=True)
     deleted_by = Column(BigInteger, nullable=True)
@@ -94,7 +95,7 @@ class DocumentFile(Base):
     storage_provider = Column(String(50), nullable=True)
     storage_path = Column(Text, nullable=True)
     checksum_sha256 = Column(String(64), nullable=True)
-    uploaded_at = Column(DateTime, default=datetime.utcnow)
+    uploaded_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     uploaded_by = Column(BigInteger, nullable=True)
     is_current = Column(Boolean, default=True)
 

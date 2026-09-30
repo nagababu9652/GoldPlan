@@ -27,6 +27,7 @@ export default function NewClientPage() {
     city: "",
     state: "",
     pincode: "",
+    country: "India",
     annual_income: "",
     net_worth: "",
     risk_profile: "",
@@ -89,7 +90,7 @@ export default function NewClientPage() {
     };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="dashboard-panel p-6 lg:p-8">
         <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
           Client onboarding
@@ -286,6 +287,14 @@ export default function NewClientPage() {
               name="state"
               placeholder="State"
               value={form.state}
+              onChange={handleChange}
+              className="rounded-lg border border-line bg-background px-4 py-3"
+            />
+
+            <input
+              name="country"
+              placeholder="Country"
+              value={form.country}
               onChange={handleChange}
               className="rounded-lg border border-line bg-background px-4 py-3"
             />

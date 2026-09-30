@@ -78,7 +78,7 @@ export default function LoginPage() {
 
       <div className="page-frame grain">
         <section className="shell-body">
-          <div className="grid grid-cols-12 gap-6 lg:gap-10">
+          <div className="grid grid-cols-12 gap-3 lg:gap-5">
             {/* Left: Form */}
             <div className="col-span-12 lg:col-span-5">
               <div className="label-mono text-ash mb-4">&mdash; 010 &middot; Sign In</div>

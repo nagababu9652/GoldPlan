@@ -1,14 +1,16 @@
 """Migration script to create client and group tables."""
 from app.database.session import engine
 from app.database.base import Base
-from app.models.client import Client
-from app.models.group import Group
+from app.models.crm import Customer, CustomerGroup
 
 
 def create_tables():
     """Create client and group tables."""
-    print("Creating client and group tables...")
-    Base.metadata.create_all(bind=engine, tables=[Client.__table__, Group.__table__])
+    print("Creating customer and customer group tables...")
+    Base.metadata.create_all(
+        bind=engine,
+        tables=[Customer.__table__, CustomerGroup.__table__],
+    )
     print("Tables created successfully!")
 
 

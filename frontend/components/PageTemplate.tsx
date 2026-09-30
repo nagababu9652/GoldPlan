@@ -16,8 +16,8 @@ export default function PageTemplate({ title, subtitle, number, children }: Page
       <Navigation />
 
       <div className="page-frame grain">
-        <section className="shell-pad py-16 lg:py-24">
-          <div className="grid grid-cols-12 gap-6 lg:gap-10 mb-16">
+        <section className="shell-pad py-8 lg:py-12">
+          <div className="grid grid-cols-12 gap-3 lg:gap-5 mb-8">
             <div className="col-span-12 lg:col-span-8">
               <div className="label-mono text-ash mb-4">&mdash; {number} &middot; {subtitle}</div>
               <h1 className="display text-[44px] lg:text-[64px]">{title}</h1>

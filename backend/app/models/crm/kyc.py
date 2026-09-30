@@ -2,6 +2,7 @@
 Customer KYC & Compliance models: customer_kyc, customer_fatca, customer_risk_profiles,
 customer_communication_preferences, customer_kyc_history.
 """
+from sqlalchemy import text
 from datetime import datetime
 from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -26,8 +27,8 @@ class CustomerKYC(Base):
     minor_customer = Column(Boolean, default=False)
     guardian_customer_id = Column(BigInteger, ForeignKey("crm.customers.id"), nullable=True)
     remarks = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(DateTime, nullable=True, server_default=text("CURRENT_TIMESTAMP"))
 
     customer = relationship(
         "Customer",
@@ -85,7 +86,7 @@ class CustomerCommunicationPreference(Base):
     postal_enabled = Column(Boolean, default=False)
     marketing_consent = Column(Boolean, default=False)
     do_not_disturb = Column(Boolean, default=False)
-    updated_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True, server_default=text("CURRENT_TIMESTAMP"))
 
     customer = relationship("Customer", lazy="selectin")
 
@@ -98,7 +99,7 @@ class CustomerKYCHistory(Base):
     customer_id = Column(BigInteger, ForeignKey("crm.customers.id"), nullable=False)
     previous_status = Column(String(30), nullable=True)
     new_status = Column(String(30), nullable=True)
-    reviewed_on = Column(DateTime, default=datetime.utcnow)
+    reviewed_on = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     reviewed_by = Column(BigInteger, ForeignKey("organization.employees.id"), nullable=True)
     review_reason = Column(Text, nullable=True)
 

@@ -43,9 +43,11 @@
   --border: #E2DED5;
 }
 
-* {
-  margin: 0;
-  padding: 0;
+/* Global reset — nav and header (site chrome) are excluded, along with
+   everything inside them, so their own Tailwind spacing wins. */
+*:not(nav, nav *):not(header, header *):not(body, body *):not(main, main *):not(html, html *) {
+  margin: 2px;
+  padding: 5px;
   box-sizing: border-box;
 }
 
@@ -192,58 +194,58 @@ a, button { cursor: pointer; }
 
 .shell-gutter {
   width: 100%;
-  padding-inline: 16px;
+  /* padding-inline: 12px; */
 }
 
 @media (min-width: 640px) {
-  .shell-gutter { padding-inline: 24px; }
+  .shell-gutter { padding-inline: 16px; }
 }
 
 @media (min-width: 1024px) {
-  .shell-gutter { padding-inline: 30px; }
+  .shell-gutter { padding-inline: 24px; }
 }
 
 @media (min-width: 1440px) {
-  .shell-gutter { padding-inline: 44px; }
+  .shell-gutter { padding-inline: 30px; }
 }
 
 .shell-body {
   width: 100%;
   max-width: 1320px;
   margin-inline: auto;
-  padding-inline: 20px;
-  padding-block: 26px;
+  /* padding-inline: 3px;
+  padding-block: 3px; */
 }
 
 @media (min-width: 640px) {
-  .shell-body { padding-inline: 32px; padding-block: 34px; }
+  .shell-body { padding-inline: 24px; padding-block: 12px; }
 }
 
 @media (min-width: 1024px) {
-  .shell-body { padding-inline: 44px; }
+  .shell-body { padding-inline: 30px; }
 }
 
 @media (min-width: 1440px) {
-  .shell-body { padding-inline: 60px; padding-block: 42px; }
+  .shell-body { padding-inline: 44px; padding-block: 15px; }
 }
 
 /* Horizontal inset for page bodies defined outside .shell-body (the framed
    marketing column). Mirrors .shell-body's gutter scale so every page in
-   the site lines up on the same 20/32/44/60 rhythm. */
+   the site lines up on the same 16/24/30/44 rhythm. */
 .shell-pad {
-  padding-inline: 20px;
+  padding-inline: 16px;
 }
 
 @media (min-width: 640px) {
-  .shell-pad { padding-inline: 32px; }
+  .shell-pad { padding-inline: 24px; }
 }
 
 @media (min-width: 1024px) {
-  .shell-pad { padding-inline: 44px; }
+  .shell-pad { padding-inline: 30px; }
 }
 
 @media (min-width: 1440px) {
-  .shell-pad { padding-inline: 60px; }
+  .shell-pad { padding-inline: 44px; }
 }
 
 /* Interactive card surface — lifts, darkens its hairline and takes a

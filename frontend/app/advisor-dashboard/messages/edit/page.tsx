@@ -9,7 +9,7 @@ export default function EditMessagePage() {
   const id = Number(params.id);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="dashboard-panel p-6 lg:p-8">
         <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
           Message update

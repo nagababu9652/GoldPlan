@@ -1,7 +1,9 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from .group_options import GROUP_RELATIONSHIPS
 
 
 # ============================================================
@@ -16,8 +18,16 @@ class GroupCreate(BaseModel):
     remarks: Optional[str] = None
 
     # Optional initial member/head.
-    # If supplied, the client becomes both head and primary member.
+    # If supplied, the client becomes head; only household membership is primary.
     head_customer_id: Optional[int] = None
+
+    @field_validator("group_type")
+    @classmethod
+    def validate_group_type(cls, value: str) -> str:
+        normalized = value.strip().upper()
+        if normalized not in GROUP_RELATIONSHIPS:
+            raise ValueError("Group type must be one of: " + ", ".join(GROUP_RELATIONSHIPS))
+        return normalized
 
 
 class GroupUpdate(BaseModel):
@@ -31,7 +41,6 @@ class GroupUpdate(BaseModel):
 class GroupMemberAdd(BaseModel):
     customer_id: int
     relationship_type: Optional[str] = Field(default="OTHER", max_length=50)
-    is_primary: bool = False
     is_group_head: bool = False
     remarks: Optional[str] = None
 
@@ -40,8 +49,13 @@ class GroupHeadUpdate(BaseModel):
     customer_id: int
 
 
-class GroupPrimaryUpdate(BaseModel):
+class MoveHouseholdRequest(BaseModel):
     customer_id: int
+    relationship_type: Optional[str] = Field(
+        default="SELF",
+        max_length=50,
+    )
+    new_head_customer_id: Optional[int] = None
 
 
 class GroupMemberResponse(BaseModel):

@@ -17,7 +17,7 @@ export default function ClientTimeline({
   ).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
 
       <TimelineSummary
         total={events.length}

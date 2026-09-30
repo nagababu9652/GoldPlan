@@ -15,7 +15,7 @@ export default function ClientSettings({
   settings,
 }: Props) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
 
       <RiskProfileCard
         riskProfile={settings.riskProfile}

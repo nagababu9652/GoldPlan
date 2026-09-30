@@ -31,6 +31,7 @@ host    all             all             ::1/128                 scram-sha-256
 
 ### Available Databases
 - `postgres` - Default administrative database
+- `finplan_db` - Application database (in use by the backend)
 - `template0` - Template database (do not modify)
 - `template1` - Template database (do not modify)
 
@@ -40,129 +41,65 @@ host    all             all             ::1/128                 scram-sha-256
 ## Current Backend Configuration
 
 ### Database URL (Current)
-The backend is currently configured to use **SQLite**:
+
+The backend runs against **PostgreSQL** (`finplan_db`) through `backend/.env`:
+
 ```
-DATABASE_URL=sqlite:///./dev.db
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/finplan_db
 ```
 
-**Location**: `backend/app/core/config.py`
-```python
-database_url: str = "sqlite:///./dev.db"
-```
+`backend/app/core/config.py` keeps a PostgreSQL default as a fallback (port 5432); the active
+`.env` points at the local instance on port 5433. The root `dev.db` (SQLite) is a leftover from
+early development and is not used by the current configuration.
 
 ### Environment Configuration
-**File**: `backend/.env` (does not exist - needs to be created)
+**File**: `backend/.env`
 
-**Required Environment Variables**:
+**Environment Variables**:
 ```env
 APP_NAME=FinPlan API
 FRONTEND_ORIGINS=http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000
-DATABASE_URL=sqlite:///./dev.db  # Change to PostgreSQL URL when ready
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/finplan_db
 SECRET_KEY=CHANGE_ME
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
 ## Database Models
 
-### Current Models
-The application uses SQLAlchemy ORM with the following structure:
+The application uses SQLAlchemy ORM domain schemas — full model inventory in `ARCHITECTURE.md` §3.
 
 **Location**: `backend/app/models/`
-- `item.py` - Item model (example/sample model)
 
-**Database Session**: `backend/app/database/session.py`
-```python
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+- `foundation/` — Party (person/entity identity), addresses, contacts, bank accounts, lookups, geography
+- `identity/` — User, sessions, refresh tokens, OTP requests, roles/permissions, security events
+- `organization/` — Organization, branches, departments, designations, employees, assignments
+- `crm/` — Customer, CustomerGroup, GroupMember, KYC/FATCA/risk, transactions, meetings, tasks, messages, documents
 
-connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
-engine = create_engine(settings.database_url, connect_args=connect_args)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-```
+**Database Session**: `backend/app/database/session.py` — builds the SQLAlchemy engine from
+`settings.database_url` and provides `SessionLocal`.
 
-## Migration to PostgreSQL
+Schema changes go through Alembic migrations (see §Migrations below).
 
-### Required Changes
+## Migrations (Alembic)
 
-#### 1. Update PostgreSQL Configuration (Optional)
-If you want to use the standard port 5432 instead of 5433:
-- Edit `C:\Program Files\PostgreSQL\18\data\postgresql.conf`
-- Change `port = 5433` to `port = 5432`
-- Restart PostgreSQL service
+The schema is managed with Alembic from the `backend` directory:
 
-#### 2. Create Application Database
-```sql
-CREATE DATABASE finplan_db;
-```
-
-#### 3. Create Application User (Optional - can use postgres)
-```sql
-CREATE USER finplan_user WITH PASSWORD 'your_secure_password';
-GRANT ALL PRIVILEGES ON DATABASE finplan_db TO finplan_user;
-```
-
-#### 4. Update Backend Configuration
-**Option A**: Create `backend/.env` file:
-```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/finplan_db
-```
-
-**Option B**: Update `backend/app/core/config.py`:
-```python
-database_url: str = "postgresql://postgres:postgres@localhost:5433/finplan_db"
-```
-
-#### 5. Install PostgreSQL Driver
-```bash
+```powershell
 cd backend
-pip install psycopg2-binary
+alembic current    # current applied revision
+alembic heads      # available head revisions
+alembic upgrade head
 ```
 
-#### 6. Update Docker Configuration
-Edit `docker-compose.yml` to add PostgreSQL service:
-```yaml
-version: "3.9"
-services:
-  postgres:
-    image: postgres:18-alpine
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=finplan_db
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+Migration history lives in `backend/alembic/versions/`. Recent migrations cover group membership
+history support, active primary/head protection, database timestamp defaults, and retirement of
+the legacy `advisor.meetings` table (see `LEGACY_CLEANUP.md`).
 
-  backend:
-    build: ./backend
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    volumes:
-      - ./backend:/app
-    ports:
-      - "8000:8000"
-    environment:
-      - APP_NAME=FinPlan API
-      - FRONTEND_ORIGINS=http://localhost:3000
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/finplan_db
-      - SECRET_KEY=replace_with_secure_value
-      - ACCESS_TOKEN_EXPIRE_MINUTES=30
-    depends_on:
-      - postgres
+Do not use `Base.metadata.create_all()` (or the legacy `create_tables.py` script) as the normal
+migration strategy.
 
-  frontend:
-    build: ./frontend
-    command: npm run dev -- --hostname 0.0.0.0 --port 3000
-    volumes:
-      - ./frontend:/app
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://backend:8000
-
-volumes:
-  postgres_data:
-```
+Docker: the repository `docker-compose.yml` runs PostgreSQL (published on port 5433), the
+backend (port 8000), and the frontend (port 3000).
 
 ## Testing Connectivity
 
@@ -179,16 +116,15 @@ $env:PGPASSWORD="postgres"
 (1 row)
 ```
 
-## Pending Tasks
+## Current state (2026-09-30)
 
-- [ ] Create application database `finplan_db`
-- [ ] Create `backend/.env` file with PostgreSQL connection string
-- [ ] Install `psycopg2-binary` package
-- [ ] Update `backend/app/core/config.py` to use PostgreSQL URL
-- [ ] Create database models for the application
-- [ ] Set up Alembic for database migrations (if needed)
-- [ ] Test backend connectivity with PostgreSQL
-- [ ] Update docker-compose.yml for PostgreSQL container
+- [x] Application database `finplan_db` created and in use
+- [x] `backend/.env` configured with the PostgreSQL connection string
+- [x] Driver installed (`psycopg` v3, `postgresql+psycopg://` dialect)
+- [x] Domain models built (foundation / identity / organization / crm — see `ARCHITECTURE.md`)
+- [x] Alembic migrations in place and applied
+- [x] `docker-compose.yml` includes the PostgreSQL container
+- [x] Legacy `advisor.meetings` table retired (see `LEGACY_CLEANUP.md`)
 
 ## Useful Commands
 
@@ -228,11 +164,10 @@ Get-Service postgresql-x64-18
 
 ## Notes
 
-- PostgreSQL 18 is installed and running on port 5433 (non-standard)
+- PostgreSQL 18 is installed and running on port 5433 (non-standard; `docker-compose.yml` publishes 5433 as well)
 - Default credentials are working: postgres/postgres
-- Current backend uses SQLite (dev.db)
-- No application database has been created yet
-- No .env file exists in the backend directory
+- The active backend configuration uses PostgreSQL (`finplan_db`); root `dev.db` (SQLite) is an unused leftover from early development
+- `backend/.env` exists and is configured
 - Authentication method is scram-sha-256 (secure)
 
 ## Security Recommendations

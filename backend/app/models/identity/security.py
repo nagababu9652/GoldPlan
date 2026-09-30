@@ -1,6 +1,7 @@
 """
 Security models: devices, user_devices, account_lockouts, security_events, audit_logs.
 """
+from sqlalchemy import text
 from datetime import datetime
 from sqlalchemy import Column, BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import INET, JSONB, UUID
@@ -22,7 +23,7 @@ class Device(Base):
     browser = Column(String(100), nullable=True)
     browser_version = Column(String(100), nullable=True)
     device_fingerprint = Column(Text, nullable=False, unique=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
 
 class UserDevice(Base):
@@ -37,7 +38,7 @@ class UserDevice(Base):
     trusted_until = Column(DateTime, nullable=True)
     is_trusted = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
     user = relationship("User", lazy="selectin")
     device = relationship("Device", lazy="selectin")
@@ -55,7 +56,7 @@ class AccountLockout(Base):
     unlocked_by = Column(BigInteger, nullable=True)
     reason = Column(String(250), nullable=True)
     is_locked = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
     user = relationship("User", lazy="selectin")
 
@@ -68,12 +69,12 @@ class SecurityEvent(Base):
     user_id = Column(BigInteger, ForeignKey("identity.users.id"), nullable=True)
     event_type = Column(String(100), nullable=False)
     severity = Column(String(20), nullable=True)
-    event_timestamp = Column(DateTime, default=datetime.utcnow)
+    event_timestamp = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     ip_address = Column(INET, nullable=True)
     device_id = Column(BigInteger, ForeignKey("identity.devices.id"), nullable=True)
     session_id = Column(BigInteger, ForeignKey("identity.user_sessions.id"), nullable=True)
     description = Column(Text, nullable=True)
-    event_metadata = Column(JSONB, nullable=True)
+    event_metadata = Column("metadata", JSONB, nullable=True)
 
     user = relationship("User", lazy="selectin")
     device = relationship("Device", lazy="selectin")
@@ -96,7 +97,7 @@ class AuditLog(Base):
     ip_address = Column(INET, nullable=True)
     session_id = Column(BigInteger, ForeignKey("identity.user_sessions.id"), nullable=True)
     correlation_id = Column(UUID, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
     user = relationship("User", lazy="selectin")
     session = relationship("UserSession", lazy="selectin")

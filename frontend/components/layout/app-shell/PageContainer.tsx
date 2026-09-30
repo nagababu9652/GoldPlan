@@ -58,7 +58,7 @@ export default function PageContainer({
       )}
 
       {/* Main Content */}
-      <section className="space-y-6">
+      <section className="space-y-3">
         {children}
       </section>
 

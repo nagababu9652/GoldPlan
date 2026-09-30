@@ -78,3 +78,6 @@ credentials.json
 *.key
 .credentials
 *.db
+
+# Local database backups (may contain client data)
+.local-backups/

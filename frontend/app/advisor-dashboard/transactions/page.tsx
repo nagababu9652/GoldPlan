@@ -218,7 +218,7 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
 
       {/* Header */}
       <div className="dashboard-panel flex flex-col gap-4 p-6 lg:flex-row lg:items-end lg:justify-between lg:p-8">

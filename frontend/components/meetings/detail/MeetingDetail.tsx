@@ -128,7 +128,7 @@ export default function MeetingDetail({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4">
           <p className="text-sm text-red-600">
@@ -296,7 +296,7 @@ export default function MeetingDetail({
             Notes & Outcome
           </h2>
 
-          <div className="mt-6 space-y-6">
+          <div className="mt-6 space-y-3">
             {meeting.description && (
               <div>
                 <p className="text-sm font-medium">

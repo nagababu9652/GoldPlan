@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { sendOTP, verifyOTP, registerUser } from '@/lib/api';
 
 // Floating goal icons
 const goals = [
@@ -32,27 +33,6 @@ interface FloatingParticle {
 }
 
 type Step = 'email' | 'otp' | 'details';
-
-async function handleApiError(response: Response): Promise<string> {
-  try {
-    const data = await response.json();
-    if (typeof data.detail === 'string') return data.detail;
-    if (Array.isArray(data.detail)) {
-      return data.detail
-        .map((entry: unknown) => {
-          if (entry && typeof entry === 'object' && 'msg' in entry && typeof entry.msg === 'string') {
-            return entry.msg;
-          }
-          return JSON.stringify(entry);
-        })
-        .join('; ');
-    }
-    if (typeof data.detail === 'object') return JSON.stringify(data.detail);
-    return 'Request failed';
-  } catch {
-    return `Request failed with status ${response.status}`;
-  }
-}
 
 export default function RegisterPage() {
   const [step, setStep] = useState<Step>('email');
@@ -143,18 +123,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ destination: email, purpose: 'registration' }),
-      });
+      const data = await sendOTP(email, 'registration');
 
-      if (!response.ok) {
-        throw new Error(await handleApiError(response));
-      }
-
-      const data = await response.json();
-      
       if (data.otp_code) {
         setSuccessMessage(`✅ OTP sent to ${email}\n\nYour OTP is: ${data.otp_code}\n\n(Valid for 10 minutes)`);
       } else {
@@ -178,15 +148,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ destination: email, otp_code: otp, purpose: 'registration' }),
-      });
-
-      if (!response.ok) {
-        throw new Error(await handleApiError(response));
-      }
+      await verifyOTP(email, otp, 'registration');
 
       setStep('details');
     } catch (err) {
@@ -229,15 +191,7 @@ export default function RegisterPage() {
         mobile_number: phone || undefined,
         role: 'advisor',
       };
-      const response = await fetch('http://localhost:8000/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        throw new Error(await handleApiError(response));
-      }
+      await registerUser(userData);
 
       setSuccessMessage('Account created successfully! Please login with your credentials.');
       setTimeout(() => router.push('/login'), 1500);

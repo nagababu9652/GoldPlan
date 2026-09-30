@@ -2,6 +2,7 @@
 Authorization models: permissions, roles, permission_profiles, profile_permissions,
 role_permission_profiles, user_roles.
 """
+from sqlalchemy import text
 from datetime import datetime
 from sqlalchemy import Column, BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
@@ -18,9 +19,9 @@ class Permission(Base):
     permission_name = Column(String(200), nullable=False)
     module_name = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     created_by = Column(BigInteger, nullable=True)
-    updated_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True, server_default=text("CURRENT_TIMESTAMP"))
     updated_by = Column(BigInteger, nullable=True)
     version_no = Column(Integer, default=1)
     is_system = Column(Boolean, default=True)
@@ -38,9 +39,9 @@ class Role(Base):
     description = Column(Text, nullable=True)
     is_system = Column(Boolean, default=False)
     is_default = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     created_by = Column(BigInteger, nullable=True)
-    updated_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True, server_default=text("CURRENT_TIMESTAMP"))
     updated_by = Column(BigInteger, nullable=True)
     version_no = Column(Integer, default=1)
     is_active = Column(Boolean, default=True)
@@ -57,9 +58,9 @@ class PermissionProfile(Base):
     profile_code = Column(String(50), nullable=False)
     profile_name = Column(String(150), nullable=False)
     description = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     created_by = Column(BigInteger, nullable=True)
-    updated_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True, server_default=text("CURRENT_TIMESTAMP"))
     updated_by = Column(BigInteger, nullable=True)
     version_no = Column(Integer, default=1)
     is_active = Column(Boolean, default=True)
@@ -72,7 +73,7 @@ class ProfilePermission(Base):
     profile_id = Column(BigInteger, ForeignKey("identity.permission_profiles.id"), primary_key=True)
     permission_id = Column(BigInteger, ForeignKey("identity.permissions.id"), primary_key=True)
     allow_access = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
 
 class RolePermissionProfile(Base):
@@ -81,7 +82,7 @@ class RolePermissionProfile(Base):
 
     role_id = Column(BigInteger, ForeignKey("identity.roles.id"), primary_key=True)
     profile_id = Column(BigInteger, ForeignKey("identity.permission_profiles.id"), primary_key=True)
-    assigned_at = Column(DateTime, default=datetime.utcnow)
+    assigned_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     assigned_by = Column(BigInteger, nullable=True)
 
 
@@ -92,10 +93,10 @@ class UserRole(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     user_id = Column(BigInteger, ForeignKey("identity.users.id"), nullable=False)
     role_id = Column(BigInteger, ForeignKey("identity.roles.id"), nullable=False)
-    effective_from = Column(DateTime, default=datetime.utcnow)
+    effective_from = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     effective_to = Column(DateTime, nullable=True)
     assigned_by = Column(BigInteger, nullable=True)
-    assigned_at = Column(DateTime, default=datetime.utcnow)
+    assigned_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     is_primary = Column(Boolean, default=False)
 
     user = relationship("User", back_populates="roles", lazy="selectin")

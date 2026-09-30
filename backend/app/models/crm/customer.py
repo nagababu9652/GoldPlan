@@ -2,7 +2,7 @@
 Customer core models: customer_groups, customers, group_members, customer_status_history.
 """
 from datetime import datetime
-from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Index, Integer, Numeric, String, Text, text
 from sqlalchemy.orm import relationship
 
 from ..base import Base, AuditMixin
@@ -16,7 +16,7 @@ class CustomerGroup(AuditMixin, Base):
     organization_id = Column(BigInteger, ForeignKey("organization.organizations.id"), nullable=False)
     group_code = Column(String(30), nullable=False)
     group_name = Column(String(250), nullable=False)
-    group_type = Column(String(30), default="INDIVIDUAL")
+    group_type = Column(String(30), default="HOUSEHOLD")
     head_customer_id = Column(BigInteger, nullable=True)
     primary_branch_id = Column(BigInteger, ForeignKey("organization.branches.id"), nullable=True)
     primary_advisor_employee_id = Column(BigInteger, ForeignKey("organization.employees.id"), nullable=True)
@@ -70,7 +70,23 @@ class Customer(AuditMixin, Base):
 
 class GroupMember(Base):
     __tablename__ = "group_members"
-    __table_args__ = {"schema": "crm"}
+    __table_args__ = (
+        Index(
+            "uq_group_member_active", "customer_group_id", "customer_id",
+            unique=True, postgresql_where=text("left_on IS NULL"),
+        ),
+        Index(
+            "uq_group_member_active_primary", "customer_id",
+            unique=True,
+            postgresql_where=text("left_on IS NULL AND is_primary IS TRUE"),
+        ),
+        Index(
+            "uq_group_member_active_head", "customer_group_id",
+            unique=True,
+            postgresql_where=text("left_on IS NULL AND is_group_head IS TRUE"),
+        ),
+        {"schema": "crm"},
+    )
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     customer_group_id = Column(BigInteger, ForeignKey("crm.customer_groups.id"), nullable=False)
@@ -94,7 +110,7 @@ class CustomerStatusHistory(Base):
     customer_id = Column(BigInteger, ForeignKey("crm.customers.id"), nullable=False)
     old_status = Column(String(30), nullable=True)
     new_status = Column(String(30), nullable=False)
-    changed_on = Column(DateTime, default=datetime.utcnow)
+    changed_on = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
     changed_by = Column(BigInteger, nullable=True)
     reason = Column(Text, nullable=True)
 

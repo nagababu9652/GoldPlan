@@ -11,14 +11,19 @@ import {
 } from "lucide-react";
 import {
   getAdvisorTodayMeetings,
-  type AdvisorMeeting,
+  type Meeting,
 } from "@/lib/api";
 
-function formatTime(time: string) {
-  const [hours, minutes] = time.split(":");
+function formatTime(value?: string | null) {
+  if (typeof value !== "string" || !value.trim()) {
+    return "--:--";
+  }
 
-  const date = new Date();
-  date.setHours(Number(hours), Number(minutes), 0, 0);
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "--:--";
+  }
 
   return date.toLocaleTimeString("en-IN", {
     hour: "numeric",
@@ -27,38 +32,52 @@ function formatTime(time: string) {
   });
 }
 
-function meetingTypeLabel(
-  type: AdvisorMeeting["meeting_type"]
-) {
-  switch (type) {
-    case "in_person":
-      return "In Person";
-    case "phone":
-      return "Phone";
+function formatType(value?: string | null) {
+  if (!value) {
+    return "Meeting";
+  }
+
+  return value
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char: string) => char.toUpperCase());
+}
+
+function MeetingTypeIcon({ type }: { type?: string | null }) {
+  switch ((type || "").toUpperCase()) {
+    case "IN_PERSON":
+      return <MapPin size={13} />;
+
+    case "PHONE":
+      return <Phone size={13} />;
+
+    case "VIRTUAL":
+    case "VIDEO":
+      return <Video size={13} />;
+
     default:
-      return "Virtual";
+      return <CalendarDays size={13} />;
   }
 }
 
-function MeetingTypeIcon({
-  type,
-}: {
-  type: AdvisorMeeting["meeting_type"];
-}) {
-  switch (type) {
-    case "in_person":
-      return <MapPin size={13} />;
+function statusColor(status?: string | null) {
+  switch ((status || "").toUpperCase()) {
+    case "SCHEDULED":
+      return "text-emerald-700";
 
-    case "phone":
-      return <Phone size={13} />;
+    case "COMPLETED":
+      return "text-ash";
+
+    case "CANCELLED":
+    case "NO_SHOW":
+      return "text-red-600";
 
     default:
-      return <Video size={13} />;
+      return "text-ash";
   }
 }
 
 export default function TodaySchedule() {
-  const [meetings, setMeetings] = useState<AdvisorMeeting[]>([]);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -123,7 +142,7 @@ export default function TodaySchedule() {
       {/* Content */}
       <div className="p-6 lg:p-7">
         {loading ? (
-          <div className="space-y-6">
+          <div className="space-y-3">
             {[1, 2, 3].map((item) => (
               <div
                 key={item}
@@ -179,7 +198,7 @@ export default function TodaySchedule() {
                   <div className="w-[58px] shrink-0 pt-0.5">
                     <p className="text-xs font-medium text-obsidian">
                       {formatTime(
-                        meeting.meeting_time
+                        meeting.scheduled_start
                       )}
                     </p>
                   </div>
@@ -200,7 +219,9 @@ export default function TodaySchedule() {
                     </p>
 
                     <p className="mt-1 truncate text-xs text-ash">
-                      {meeting.client_name}
+                      {meeting.customer_name ||
+                        meeting.group_name ||
+                        "No client linked"}
                     </p>
 
                     <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -209,13 +230,17 @@ export default function TodaySchedule() {
                           type={meeting.meeting_type}
                         />
 
-                        {meetingTypeLabel(
+                        {formatType(
                           meeting.meeting_type
                         )}
                       </span>
 
-                      <span className="text-[10px] font-medium capitalize text-emerald-700">
-                        {meeting.status}
+                      <span
+                        className={`text-[10px] font-medium ${statusColor(
+                          meeting.status
+                        )}`}
+                      >
+                        {formatType(meeting.status)}
                       </span>
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 """
 Base model with common audit columns for all tables.
 """
+from sqlalchemy import text
 from datetime import datetime
 from sqlalchemy import Column, BigInteger, Boolean, DateTime, Integer, Text
 from sqlalchemy.orm import declarative_base, declared_attr
@@ -13,7 +14,7 @@ class AuditMixin:
 
     @declared_attr
     def created_at(cls):
-        return Column(DateTime, default=datetime.utcnow, nullable=False)
+        return Column(DateTime, default=datetime.utcnow, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
 
     @declared_attr
     def created_by(cls):
@@ -21,7 +22,7 @@ class AuditMixin:
 
     @declared_attr
     def updated_at(cls):
-        return Column(DateTime, onupdate=datetime.utcnow, nullable=True)
+        return Column(DateTime, onupdate=datetime.utcnow, nullable=True, server_default=text("CURRENT_TIMESTAMP"))
 
     @declared_attr
     def updated_by(cls):
