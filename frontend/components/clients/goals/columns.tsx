@@ -6,9 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Goal } from "./types";
 
 const variants = {
+  "Active": "info",
   "On Track": "success",
   "Needs Attention": "warning",
   "Achieved": "secondary",
+  "Paused": "outline",
+  "Cancelled": "danger",
 } as const;
 
 export const goalColumns: ColumnDef<Goal>[] = [

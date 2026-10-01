@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import {
   createTask,
@@ -38,13 +39,14 @@ export default function TaskForm({
   task,
 }: TaskFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const isEdit = Boolean(task);
 
   const [clients, setClients] = useState<Client[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
 
-  const [title, setTitle] = useState(task?.title ?? "");
+  const [title, setTitle] = useState(task?.title ?? searchParams.get("title") ?? "");
   const [taskType, setTaskType] = useState(
     task?.task_type ?? "FOLLOW_UP"
   );
@@ -67,13 +69,13 @@ export default function TaskForm({
   const [customerId, setCustomerId] = useState(
     task?.customer_id
       ? String(task.customer_id)
-      : ""
+      : searchParams.get("customer_id") ?? ""
   );
 
   const [groupId, setGroupId] = useState(
     task?.customer_group_id
       ? String(task.customer_group_id)
-      : ""
+      : searchParams.get("customer_group_id") ?? ""
   );
 
   const [loading, setLoading] = useState(true);

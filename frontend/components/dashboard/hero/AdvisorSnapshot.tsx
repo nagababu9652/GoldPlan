@@ -35,7 +35,7 @@ export default function AdvisorSnapshot({
     0;
 
   return (
-    <section className="dashboard-panel flex flex-col bg-bone/80 p-6 lg:p-7">
+    <section className="dashboard-panel flex h-full flex-col bg-bone/80 p-6 lg:p-7">
       <div className="flex items-center justify-between">
         <div className="dashboard-pill border-obsidian/10 bg-obsidian/[0.02]">
           Today&apos;s Snapshot
@@ -105,7 +105,7 @@ export default function AdvisorSnapshot({
         </div>
       </div>
 
-      <div className="mt-5">
+      <div className="mt-auto pt-5">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-ash">
             Client satisfaction

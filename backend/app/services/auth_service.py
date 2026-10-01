@@ -22,7 +22,6 @@ from ..models.identity.auth import (
 )
 from ..models.identity.authorization import Role, UserRole
 from ..schemas.auth import TokenPayload
-from .onboarding_service import create_organization_onboarding
 
 
 # ============================================================================
@@ -138,23 +137,6 @@ def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
 # User Creation
 # ============================================================================
 
-def resolve_role_code(db: Session, role_input: Optional[str]) -> Optional[str]:
-    """Resolve a requested role to a persisted role code for identity.user_roles."""
-    if not role_input:
-        return None
-
-    normalized = role_input.strip().lower()
-    if normalized in {"user", "advisor", "employee", "org_admin"}:
-        return {
-            "user": "USER",
-            "advisor": "ADVISOR",
-            "employee": "EMPLOYEE",
-            "org_admin": "ORG_ADMIN",
-        }[normalized]
-
-    return normalized.upper()
-
-
 def get_lookup_id(db: Session, table: str, column: str, value_code: str) -> Optional[int]:
     """Return the first matching lookup id from a schema table when available."""
     query = text(
@@ -209,7 +191,7 @@ def create_user(db: Session, user_data: dict) -> User:
             raise ValueError("No party type lookup available for registration")
 
         party = Party(
-            organization_id=user_data.get("organization_id"),
+            organization_id=None,
             party_code=f"P{datetime.now(timezone.utc).replace(tzinfo=None).strftime('%Y%m%d%H%M%S')}",
             party_type_id=party_type_id,
             title=user_data.get("title"),
@@ -252,26 +234,24 @@ def create_user(db: Session, user_data: dict) -> User:
         db.add(user)
         db.flush()
 
-        role_code = resolve_role_code(db, user_data.get("role"))
-        if role_code:
-            role = db.query(Role).filter(Role.role_code == role_code).first()
-            if role is None:
-                role = Role(
-                    organization_id=user_data.get("organization_id"),
-                    role_code=role_code,
-                    role_name=role_code.replace("_", " ").title(),
-                    description=f"Auto-created role for {role_code}",
-                    is_system=True,
-                    is_default=True,
-                )
-                db.add(role)
-                db.flush()
-
-            db.add(UserRole(
-                user_id=user.id,
-                role_id=role.id,
-                is_primary=True,
-            ))
+        # Public registration never accepts a caller-selected role. A base USER
+        # grant carries no staff or organization authority.
+        role = db.query(Role).filter(
+            Role.role_code == "USER",
+            Role.organization_id.is_(None),
+        ).first()
+        if role is None:
+            role = Role(
+                organization_id=None,
+                role_code="USER",
+                role_name="User",
+                description="Base registered user",
+                is_system=True,
+                is_default=True,
+            )
+            db.add(role)
+            db.flush()
+        db.add(UserRole(user_id=user.id, role_id=role.id, is_primary=True))
         
         # Create primary password authentication method
         auth_method = AuthenticationMethod(
@@ -292,17 +272,6 @@ def create_user(db: Session, user_data: dict) -> User:
         )
         db.add(password_history)
         
-        if user_data.get("organization_name") or user_data.get("branch_name"):
-            organization_name = user_data.get("organization_name") or (user_data.get("firm_name") or "Default Organization")
-            branch_name = user_data.get("branch_name") or "Primary Branch"
-            create_organization_onboarding(
-                db=db,
-                organization_name=organization_name,
-                branch_name=branch_name,
-                party=party,
-                user_id=user.id,
-            )
-
         db.commit()
         db.refresh(user)
         return user

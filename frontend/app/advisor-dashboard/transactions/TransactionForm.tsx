@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FinancialAccount, InvestmentHolding, getAccountHoldings, getClientFinancialAccounts } from "@/lib/api";
 
 import {
   createTransaction,
@@ -33,13 +34,28 @@ export default function TransactionForm({
   const [transactionDate, setTransactionDate] = useState("");
   const [transactionType, setTransactionType] = useState("BUY");
   const [amount, setAmount] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [unitPrice, setUnitPrice] = useState("");
   const [status, setStatus] = useState("COMPLETED");
   const [description, setDescription] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
   const [notes, setNotes] = useState("");
+  const [accounts, setAccounts] = useState<FinancialAccount[]>([]);
+  const [holdings, setHoldings] = useState<InvestmentHolding[]>([]);
+  const [accountId, setAccountId] = useState("");
+  const [holdingId, setHoldingId] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    void getClientFinancialAccounts(token, customerId).then((result) => setAccounts(result.accounts));
+  }, [token, customerId]);
+
+  useEffect(() => {
+    if (!accountId) { setHoldings([]); setHoldingId(""); return; }
+    void getAccountHoldings(token, Number(accountId)).then((result) => setHoldings(result.holdings));
+  }, [token, accountId]);
 
   useEffect(() => {
     if (!initialData) {
@@ -48,10 +64,12 @@ export default function TransactionForm({
       setTransactionDate(today);
       setTransactionType("BUY");
       setAmount("");
+      setQuantity(""); setUnitPrice("");
       setStatus("COMPLETED");
       setDescription("");
       setReferenceNumber("");
       setNotes("");
+      setAccountId(""); setHoldingId("");
 
       return;
     }
@@ -59,10 +77,14 @@ export default function TransactionForm({
     setTransactionDate(initialData.transaction_date);
     setTransactionType(initialData.transaction_type);
     setAmount(String(initialData.amount));
+    setQuantity(initialData.quantity == null ? "" : String(initialData.quantity));
+    setUnitPrice(initialData.unit_price == null ? "" : String(initialData.unit_price));
     setStatus(initialData.status);
     setDescription(initialData.description ?? "");
     setReferenceNumber(initialData.reference_number ?? "");
     setNotes(initialData.notes ?? "");
+    setAccountId(initialData.financial_account_id ? String(initialData.financial_account_id) : "");
+    setHoldingId(initialData.holding_id ? String(initialData.holding_id) : "");
   }, [initialData]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -88,10 +110,14 @@ export default function TransactionForm({
           transaction_date: transactionDate,
           transaction_type: transactionType,
           amount: Number(amount),
+          quantity: quantity ? Number(quantity) : null,
+          unit_price: unitPrice ? Number(unitPrice) : null,
           status,
           description: description || undefined,
           reference_number: referenceNumber || undefined,
           notes: notes || undefined,
+          financial_account_id: accountId ? Number(accountId) : null,
+          holding_id: holdingId ? Number(holdingId) : null,
         };
 
         const updatedTransaction = await updateTransaction(
@@ -107,10 +133,14 @@ export default function TransactionForm({
           transaction_date: transactionDate,
           transaction_type: transactionType,
           amount: Number(amount),
+          quantity: quantity ? Number(quantity) : undefined,
+          unit_price: unitPrice ? Number(unitPrice) : undefined,
           status,
           description: description || undefined,
           reference_number: referenceNumber || undefined,
           notes: notes || undefined,
+          financial_account_id: accountId ? Number(accountId) : undefined,
+          holding_id: holdingId ? Number(holdingId) : undefined,
         };
 
         const createdTransaction = await createTransaction(
@@ -145,6 +175,8 @@ export default function TransactionForm({
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2"><label className="text-sm font-medium">Financial Account</label><select value={accountId} onChange={(e) => { setAccountId(e.target.value); setHoldingId(""); }} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">Unallocated</option>{accounts.map((account) => <option key={account.id} value={account.id}>{account.account_name}</option>)}</select></div>
+        <div className="space-y-2"><label className="text-sm font-medium">Holding</label><select value={holdingId} onChange={(e) => setHoldingId(e.target.value)} disabled={!accountId} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">No holding</option>{holdings.map((holding) => <option key={holding.id} value={holding.id}>{holding.security_name}</option>)}</select></div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium">
@@ -159,6 +191,9 @@ export default function TransactionForm({
             required
           />
         </div>
+
+        <div className="space-y-2"><label className="text-sm font-medium">Quantity</label><Input type="number" min="0.00000001" step="any" value={quantity} onChange={(e) => setQuantity(e.target.value)} required={Boolean(holdingId) && ["BUY", "SELL"].includes(transactionType)} /></div>
+        <div className="space-y-2"><label className="text-sm font-medium">Unit Price</label><Input type="number" min="0" step="0.0001" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} required={Boolean(holdingId) && ["BUY", "SELL"].includes(transactionType)} /></div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium">

@@ -1,6 +1,6 @@
 """Client management routes for advisors."""
 
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -15,6 +15,10 @@ from ..schemas.client import (
     ClientResponse,
     ClientListResponse,
 )
+from ..schemas.compliance import (
+    EmployeeOptionResponse, KYCHistoryResponse, KYCResponse, KYCUpdate,
+    ServiceTeamCreate, ServiceTeamMemberResponse,
+)
 from .advisors import get_current_advisor
 from ..models.identity.auth import User
 from ..models.crm.customer import Customer
@@ -24,6 +28,7 @@ from ..models.organization.assignment import EmployeeAssignment
 from ..models.foundation.lookup import LookupValue
 from ..models.crm.kyc import CustomerKYC, CustomerKYCHistory
 from ..services.party_profile import save_address, save_bank_account, primary_record, lookup_id
+from ..services.access import AccessContext, get_access_context
 from ..models.crm.customer import CustomerGroup, GroupMember
 
 router = APIRouter(
@@ -111,6 +116,20 @@ def get_advisor_customer_ids(
     )
 
     return [row.entity_id for row in assignments]
+
+
+def get_assigned_customer(advisor: User, db: Session, client_id: int) -> tuple[Employee, Customer]:
+    employee = get_advisor_employee(advisor, db)
+    if client_id not in get_advisor_customer_ids(advisor, db):
+        raise HTTPException(404, "Client not found")
+    customer = db.query(Customer).filter(
+        Customer.id == client_id,
+        Customer.organization_id == employee.organization_id,
+        Customer.is_active.is_(True),
+    ).first()
+    if not customer:
+        raise HTTPException(404, "Client not found")
+    return employee, customer
 
 
 def save_client_profile(db, customer, party, data):
@@ -223,7 +242,6 @@ def build_client_response(
         net_worth=customer.net_worth,
         risk_profile=customer.risk_profile,
         investment_experience=None,
-        financial_goals=None,
 
         # Identity
         pan_number=party.pan_number,
@@ -382,8 +400,18 @@ def create_client(
     client_data: ClientCreate,
     advisor: User = Depends(get_current_advisor),
     db: Session = Depends(get_db),
+    context: AccessContext = Depends(get_access_context),
 ):
     employee = get_advisor_employee(advisor, db)
+    if employee.organization_id != context.organization_id:
+        raise HTTPException(status_code=403, detail="Organization access mismatch")
+    active_client_count = db.query(Customer).filter(
+        Customer.organization_id == context.organization_id,
+        Customer.customer_status == "ACTIVE",
+        Customer.is_active.is_(True),
+        Customer.deleted_at.is_(None),
+    ).count()
+    context.check_limit("LIMIT.CLIENTS", active_client_count)
 
     gender_id = lookup_id(db, "GENDER", client_data.gender)
     marital_status_id = lookup_id(db, "MARITAL_STATUS", client_data.marital_status)
@@ -731,3 +759,129 @@ def delete_client(
     return {
         "message": "Client deactivated successfully"
     }
+
+
+@router.get("/{client_id}/kyc", response_model=KYCResponse)
+def get_client_kyc(client_id: int, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+    _, customer = get_assigned_customer(advisor, db, client_id)
+    kyc = customer.kyc
+    return KYCResponse(
+        customer_id=customer.id, kyc_status=kyc.kyc_status if kyc else "PENDING",
+        kyc_verified_date=kyc.kyc_verified_date if kyc else None,
+        kyc_expiry_date=kyc.kyc_expiry_date if kyc else None,
+        verification_method=kyc.verification_method if kyc else None,
+        verification_reference=kyc.verification_reference if kyc else None,
+        politically_exposed_person=bool(kyc and kyc.politically_exposed_person),
+        remarks=kyc.remarks if kyc else None,
+    )
+
+
+@router.put("/{client_id}/kyc", response_model=KYCResponse)
+def update_client_kyc(client_id: int, payload: KYCUpdate, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+    employee, customer = get_assigned_customer(advisor, db, client_id)
+    kyc, previous = customer.kyc, customer.kyc.kyc_status if customer.kyc else None
+    if kyc is None:
+        kyc = CustomerKYC(customer_id=customer.id, kyc_status=payload.kyc_status)
+        db.add(kyc)
+    for field, value in payload.model_dump(exclude={"review_reason"}).items():
+        setattr(kyc, field, value)
+    kyc.updated_at = datetime.utcnow()
+    if previous != payload.kyc_status:
+        db.add(CustomerKYCHistory(
+            customer_id=customer.id, previous_status=previous, new_status=payload.kyc_status,
+            reviewed_by=employee.id, review_reason=payload.review_reason,
+        ))
+    db.commit()
+    db.refresh(kyc)
+    return get_client_kyc(client_id, advisor, db)
+
+
+@router.get("/{client_id}/kyc/history", response_model=list[KYCHistoryResponse])
+def get_client_kyc_history(client_id: int, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+    get_assigned_customer(advisor, db, client_id)
+    return db.query(CustomerKYCHistory).filter(
+        CustomerKYCHistory.customer_id == client_id,
+    ).order_by(CustomerKYCHistory.reviewed_on.desc(), CustomerKYCHistory.id.desc()).all()
+
+
+@router.get("/{client_id}/service-team/employees", response_model=list[EmployeeOptionResponse])
+def list_service_team_employees(client_id: int, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+    employee = get_advisor_employee(advisor, db)
+    get_assigned_customer(advisor, db, client_id)
+    employees = db.query(Employee).filter(
+        Employee.organization_id == employee.organization_id, Employee.is_active.is_(True),
+    ).order_by(Employee.employee_code.asc()).all()
+    party_ids = [item.party_id for item in employees]
+    parties = {party.id: party for party in db.query(Party).filter(Party.id.in_(party_ids)).all()} if party_ids else {}
+    return [
+        EmployeeOptionResponse(
+            id=item.id,
+            display_name=parties[item.party_id].display_name if item.party_id in parties else item.employee_code,
+            employee_code=item.employee_code,
+        ) for item in employees
+    ]
+
+
+@router.get("/{client_id}/service-team", response_model=list[ServiceTeamMemberResponse])
+def get_client_service_team(client_id: int, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+    _, customer = get_assigned_customer(advisor, db, client_id)
+    assignments = db.query(EmployeeAssignment).filter(
+        EmployeeAssignment.entity_type == "CUSTOMER", EmployeeAssignment.entity_id == customer.id,
+        EmployeeAssignment.is_active.is_(True), EmployeeAssignment.effective_to.is_(None),
+    ).all()
+    employees = {item.id: item for item in db.query(Employee).filter(Employee.id.in_([a.employee_id for a in assignments])).all()} if assignments else {}
+    party_ids = [item.party_id for item in employees.values()]
+    parties = {party.id: party for party in db.query(Party).filter(Party.id.in_(party_ids)).all()} if party_ids else {}
+    return [
+        ServiceTeamMemberResponse(
+            assignment_id=a.id, employee_id=a.employee_id,
+            employee_name=parties[employees[a.employee_id].party_id].display_name if a.employee_id in employees and employees[a.employee_id].party_id in parties else str(a.employee_id),
+            role=a.assignment_type, effective_from=a.effective_from, remarks=a.remarks,
+        ) for a in assignments
+    ]
+
+
+@router.post("/{client_id}/service-team", response_model=ServiceTeamMemberResponse, status_code=201)
+def add_client_service_team_member(client_id: int, payload: ServiceTeamCreate, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+    employee, customer = get_assigned_customer(advisor, db, client_id)
+    member = db.query(Employee).filter(
+        Employee.id == payload.employee_id, Employee.organization_id == employee.organization_id,
+        Employee.is_active.is_(True),
+    ).first()
+    if not member:
+        raise HTTPException(404, "Employee not found")
+    existing = db.query(EmployeeAssignment).filter(
+        EmployeeAssignment.employee_id == member.id, EmployeeAssignment.entity_type == "CUSTOMER",
+        EmployeeAssignment.entity_id == customer.id, EmployeeAssignment.assignment_type == payload.role,
+        EmployeeAssignment.is_active.is_(True), EmployeeAssignment.effective_to.is_(None),
+    ).first()
+    if existing:
+        raise HTTPException(409, "Employee already has this service role")
+    assignment = EmployeeAssignment(
+        employee_id=member.id, entity_type="CUSTOMER", entity_id=customer.id,
+        assignment_type=payload.role, effective_from=date.today(), remarks=payload.remarks,
+        created_by=advisor.id,
+    )
+    db.add(assignment)
+    db.commit()
+    db.refresh(assignment)
+    return next(item for item in get_client_service_team(client_id, advisor, db) if item.assignment_id == assignment.id)
+
+
+@router.delete("/{client_id}/service-team/{assignment_id}", status_code=204)
+def remove_client_service_team_member(client_id: int, assignment_id: int, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+    _, customer = get_assigned_customer(advisor, db, client_id)
+    assignment = db.query(EmployeeAssignment).filter(
+        EmployeeAssignment.id == assignment_id, EmployeeAssignment.entity_type == "CUSTOMER",
+        EmployeeAssignment.entity_id == customer.id, EmployeeAssignment.is_active.is_(True),
+    ).first()
+    if not assignment:
+        raise HTTPException(404, "Service-team assignment not found")
+    if assignment.assignment_type == "ADVISOR":
+        raise HTTPException(409, "The primary advisor assignment cannot be removed here")
+    assignment.is_active = False
+    assignment.effective_to = date.today()
+    assignment.deleted_at = datetime.utcnow()
+    assignment.deleted_by = advisor.id
+    db.commit()
+    return None

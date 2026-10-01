@@ -381,7 +381,31 @@ Household should eventually aggregate:
 - tasks
 - reports
 
-Goals should become first-class records rather than only free-text descriptions.
+Goals are first-class records owned by exactly one customer or customer group.
+They carry a type, target/current amount, target date, priority, planning
+assumptions, and lifecycle status. Advisors may access a goal only through an
+authorized customer assignment or group. Archiving uses audit state rather than
+deleting the financial-planning record.
+
+Until accounts and holdings can be allocated to goals, `current_amount` is entered
+by the advisor and must not be presented as an automatically calculated balance.
+
+Financial accounts are owned by exactly one customer or customer group. Account
+types represent the ownership container; they do not substitute for security-level
+holdings. The backend determines asset or liability classification, account balances
+must be non-negative, and archive operations retain the audited record.
+
+Generated financial report versions are immutable snapshots. Each version stores
+its report date, cash-flow period, calculation assumptions, and complete calculated
+payload. Opening or downloading a saved version must use that stored payload and
+must not recalculate it from current account, holding, goal, or transaction values.
+Snapshots are restricted to the advisor and organization that generated them.
+
+Advisor workflow records may reference only customers actively assigned to that
+advisor or groups managed by them. Task, meeting, message, and document lifecycle
+values are validated. KYC status changes append review history. Client service-team
+assignments are effective-dated; ending an assignment preserves its history, and
+the primary advisor assignment cannot be removed through the service-team screen.
 
 ---
 

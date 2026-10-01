@@ -179,10 +179,6 @@ export default function ClientDetailsPage() {
               {client.investment_experience ?? "—"}
             </p>
 
-            <p>
-              <span className="font-medium">Financial Goals:</span>{" "}
-              {client.financial_goals ?? "—"}
-            </p>
           </div>
         </section>
 

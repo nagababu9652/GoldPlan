@@ -186,10 +186,6 @@ export default function ClientOverview({ client }: Props) {
             value={client.investment_experience}
           />
 
-          <InfoItem
-            label="Financial Goals"
-            value={client.financial_goals}
-          />
         </div>
       </Card>
 

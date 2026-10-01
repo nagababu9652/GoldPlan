@@ -2,7 +2,7 @@
 Authentication Router - handles registration, login, logout, OTP, password management.
 Uses the new identity schema with session management.
 """
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request, BackgroundTasks
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -16,10 +16,19 @@ from ..schemas.auth import (
     MessageResponse
 )
 from ..services import auth_service as auth
+from ..services.access import AccessContext, get_access_context
 from ..services.otp_service import create_otp, verify_otp
+from ..models.identity.auth import OTPRequest as OTPRequestModel
 from ..core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
+
+
+@router.get("/access-context", response_model=AccessContext)
+def current_access_context(context: AccessContext = Depends(get_access_context)):
+    return context
+
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/swagger-login")
 
 
@@ -72,9 +81,24 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
             detail="Email already registered"
         )
     
-    # Create new user
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    verified_registration = db.query(OTPRequestModel).filter(
+        OTPRequestModel.destination == str(user_data.email),
+        OTPRequestModel.purpose == "registration",
+        OTPRequestModel.verified_at.is_not(None),
+        OTPRequestModel.verified_at >= now - timedelta(minutes=30),
+    ).order_by(OTPRequestModel.verified_at.desc()).first()
+    if verified_registration is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Verify the registration email before creating the account",
+        )
+
+    # Create a verified base identity. Organization roles are granted elsewhere.
     try:
-        user = auth.create_user(db, user_data.model_dump())
+        payload = user_data.model_dump()
+        payload["email_verified"] = True
+        user = auth.create_user(db, payload)
         return UserResponse(
             id=user.id,
             party_id=user.party_id,

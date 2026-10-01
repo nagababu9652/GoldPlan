@@ -5,15 +5,13 @@ import Link from "next/link";
 
 import EnterpriseTable from "@/components/ui/table/EnterpriseTable";
 import {
-  completeTask,
   getTasks,
-  reopenTask,
   type Task,
 } from "@/lib/api";
 
 import { taskColumns } from "./columns";
 
-export default function TaskTable() {
+export default function TaskTable({ customerId, customerGroupId }: { customerId?: number; customerGroupId?: number } = {}) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -21,8 +19,6 @@ export default function TaskTable() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   const loadTasks = useCallback(async () => {
     try {
@@ -39,6 +35,8 @@ export default function TaskTable() {
       const response = await getTasks(token, {
         status: status || undefined,
         priority: priority || undefined,
+        customer_id: customerId,
+        customer_group_id: customerGroupId,
       });
 
       setTasks(response.tasks);
@@ -53,7 +51,7 @@ export default function TaskTable() {
     } finally {
       setLoading(false);
     }
-  }, [status, priority]);
+  }, [status, priority, customerId, customerGroupId]);
 
   useEffect(() => {
     loadTasks();
@@ -84,70 +82,29 @@ export default function TaskTable() {
     );
   }, [tasks, search]);
 
-  async function handleComplete(task: Task) {
-    try {
-      const token = localStorage.getItem("finplan_token");
-
-      if (!token) {
-        setError("Please login.");
-        return;
-      }
-
-      setActionLoading(task.id);
-
-      const updated = await completeTask(token, task.id);
-
-      setTasks((current) =>
-        current.map((item) =>
-          item.id === updated.id ? updated : item
-        )
-      );
-    } catch (err) {
-      console.error("Failed to complete task:", err);
-
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to complete task."
-      );
-    } finally {
-      setActionLoading(null);
-    }
-  }
-
-  async function handleReopen(task: Task) {
-    try {
-      const token = localStorage.getItem("finplan_token");
-
-      if (!token) {
-        setError("Please login.");
-        return;
-      }
-
-      setActionLoading(task.id);
-
-      const updated = await reopenTask(token, task.id);
-
-      setTasks((current) =>
-        current.map((item) =>
-          item.id === updated.id ? updated : item
-        )
-      );
-    } catch (err) {
-      console.error("Failed to reopen task:", err);
-
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to reopen task."
-      );
-    } finally {
-      setActionLoading(null);
-    }
-  }
+  const workflowCounts = useMemo(() => {
+    const now = Date.now();
+    return {
+      overdue: tasks.filter((task) => !["COMPLETED", "CANCELLED"].includes(task.status) && new Date(task.due_at).getTime() < now).length,
+      upcoming: tasks.filter((task) => !["COMPLETED", "CANCELLED"].includes(task.status) && new Date(task.due_at).getTime() >= now).length,
+      completed: tasks.filter((task) => task.status === "COMPLETED").length,
+    };
+  }, [tasks]);
 
   return (
     <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        {[
+          ["Overdue", workflowCounts.overdue],
+          ["Upcoming", workflowCounts.upcoming],
+          ["Completed", workflowCounts.completed],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-xl border border-line bg-bone p-4">
+            <p className="text-xs uppercase tracking-wider2 text-ash">{label}</p>
+            <p className="mt-1 text-2xl font-semibold text-obsidian">{value}</p>
+          </div>
+        ))}
+      </div>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-1 flex-col gap-3 sm:flex-row">
           <input
@@ -229,32 +186,7 @@ export default function TaskTable() {
           )}
         </div>
       ) : (
-        <>
-          <EnterpriseTable
-            columns={taskColumns}
-            data={filteredTasks}
-          />
-
-          <div className="flex flex-wrap gap-2">
-            {filteredTasks
-              .filter(
-                (task) =>
-                  task.status !== "CANCELLED"
-              )
-              .map((task) => (
-                <div
-                  key={task.id}
-                  className="hidden"
-                >
-                  {actionLoading === task.id
-                    ? "Loading"
-                    : task.status === "COMPLETED"
-                    ? "Reopen"
-                    : "Complete"}
-                </div>
-              ))}
-          </div>
-        </>
+        <EnterpriseTable columns={taskColumns} data={filteredTasks} />
       )}
     </div>
   );

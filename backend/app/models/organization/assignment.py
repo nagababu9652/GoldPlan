@@ -3,7 +3,7 @@ Assignment models: employee_assignments, employee_skills, employee_certification
 """
 from sqlalchemy import text
 from datetime import datetime
-from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, SmallInteger, String, Text
+from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Index, Integer, SmallInteger, String, Text
 from sqlalchemy.orm import relationship
 
 from ..base import Base, AuditMixin
@@ -11,7 +11,11 @@ from ..base import Base, AuditMixin
 
 class EmployeeAssignment(AuditMixin, Base):
     __tablename__ = "employee_assignments"
-    __table_args__ = {"schema": "organization"}
+    __table_args__ = (
+        Index("uq_employee_assignment_active", "employee_id", "assignment_type", "entity_type", "entity_id",
+              unique=True, postgresql_where=text("effective_to IS NULL AND is_active IS TRUE AND deleted_at IS NULL")),
+        {"schema": "organization"},
+    )
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     employee_id = Column(BigInteger, ForeignKey("organization.employees.id"), nullable=False)

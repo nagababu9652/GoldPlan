@@ -13,6 +13,10 @@ const tabs = [
     href: "/portfolio",
   },
   {
+    label: "Accounts",
+    href: "/accounts",
+  },
+  {
     label: "Transactions",
     href: "/transactions",
   },
@@ -23,6 +27,18 @@ const tabs = [
   {
     label: "Documents",
     href: "/documents",
+  },
+  {
+    label: "Tasks",
+    href: "/tasks",
+  },
+  {
+    label: "KYC",
+    href: "/kyc",
+  },
+  {
+    label: "Service Team",
+    href: "/service-team",
   },
   {
     label: "Notes",

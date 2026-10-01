@@ -18,6 +18,7 @@ import {
   Receipt,
   Settings,
 } from "lucide-react";
+import { getAccessContext } from "@/lib/api";
 
 interface NavItem {
   label: string;
@@ -165,6 +166,13 @@ export default function AdvisorDashboardLayout({
       router.replace("/login");
       return;
     }
+
+    void getAccessContext(token)
+      .then((access) => {
+        if (!access) router.replace("/onboarding/organization");
+        else if (!access.subscription_active) router.replace("/admin/subscription");
+      })
+      .catch(() => router.replace("/login"));
 
     if (userStr) {
       try {

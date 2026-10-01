@@ -73,7 +73,7 @@ The application uses SQLAlchemy ORM domain schemas — full model inventory in `
 - `foundation/` — Party (person/entity identity), addresses, contacts, bank accounts, lookups, geography
 - `identity/` — User, sessions, refresh tokens, OTP requests, roles/permissions, security events
 - `organization/` — Organization, branches, departments, designations, employees, assignments
-- `crm/` — Customer, CustomerGroup, GroupMember, KYC/FATCA/risk, transactions, meetings, tasks, messages, documents
+- `crm/` — Customer, CustomerGroup, GroupMember, KYC/FATCA/risk, financial goals/accounts, transactions, meetings, tasks, messages, documents
 
 **Database Session**: `backend/app/database/session.py` — builds the SQLAlchemy engine from
 `settings.database_url` and provides `SessionLocal`.
@@ -92,8 +92,9 @@ alembic upgrade head
 ```
 
 Migration history lives in `backend/alembic/versions/`. Recent migrations cover group membership
-history support, active primary/head protection, database timestamp defaults, and retirement of
-the legacy `advisor.meetings` table (see `LEGACY_CLEANUP.md`).
+history support, active primary/head protection, database timestamp defaults, first-class
+financial goals and accounts, and retirement of the legacy `advisor.meetings` table
+(see `LEGACY_CLEANUP.md`).
 
 Do not use `Base.metadata.create_all()` (or the legacy `create_tables.py` script) as the normal
 migration strategy.
@@ -125,6 +126,7 @@ $env:PGPASSWORD="postgres"
 - [x] Alembic migrations in place and applied
 - [x] `docker-compose.yml` includes the PostgreSQL container
 - [x] Legacy `advisor.meetings` table retired (see `LEGACY_CLEANUP.md`)
+- [x] Immutable generated reports stored in `crm.report_snapshots`
 
 ## Useful Commands
 

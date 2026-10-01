@@ -125,6 +125,9 @@ Key models currently include:
 - `Task`
 - `Message`
 - `CrmDocument`
+- `FinancialGoal`
+- `FinancialAccount`
+- `Holding`
 
 ---
 
@@ -270,6 +273,30 @@ CRM document model/router and uploaded-file serving are present. Backend mounts 
 ### KYC/Risk
 
 CRM contains KYC, FATCA, risk-profile, communication-preference and KYC-history models.
+
+### Financial goals
+
+`crm.financial_goals` stores a goal owned by exactly one customer or one customer
+group. The database enforces exclusive ownership, positive target amounts,
+non-negative current funding, and priorities from 1 through 5. Advisor routes are
+scoped through the existing customer assignment and group authorization paths.
+
+Current funding is advisor-maintained state in this phase. It should be derived
+from linked financial accounts and holdings after those domains are implemented.
+
+### Financial accounts
+
+`crm.financial_accounts` provides the ownership layer for bank/cash accounts,
+investment folios, demat accounts, deposits, retirement accounts, insurance cash
+value, and loans. Every account belongs to exactly one customer or customer group.
+The backend derives whether it is an asset or liability and archives records with
+audit state. Holdings and transaction-to-account allocation remain separate later
+domains.
+
+`crm.holdings` stores security-level positions within financial accounts. Invested
+value, current value, gain, and gain percentage are calculated from quantity,
+average cost, and current price. Transaction-led position updates remain the next
+integration step.
 
 ---
 
@@ -426,7 +453,7 @@ The retired advisor meetings migration is an example of deliberate cleanup.
 - financial account ownership model
 - holdings/investment ledger
 - household portfolio aggregation
-- first-class financial goals
+- goal-to-account funding allocation and projections
 - production-grade report engine
 - comprehensive notifications
 - advanced advisor service-team model
@@ -453,7 +480,10 @@ Household
    └── Reports
 ```
 
-The future portfolio/reporting layer should be built from real financial-account/holding data, not from static placeholder UI data.
+The portfolio/reporting layer is built from real financial-account, holding, goal,
+and transaction data. Live reports calculate current values, while
+`crm.report_snapshots` stores immutable JSONB payloads and explicit assumptions
+for historical viewing and downloads.
 
 ---
 

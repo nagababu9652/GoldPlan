@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_
@@ -8,6 +8,7 @@ from ...database.session import get_db
 from ...models.crm.customer import Customer, CustomerGroup
 from ...models.crm.task import Task
 from ...models.organization.employee import Employee
+from ...models.organization.assignment import EmployeeAssignment
 from ...routers.advisors import get_current_advisor as get_current_user
 from ...schemas.task import (
     TaskCreate,
@@ -88,6 +89,19 @@ def validate_customer_and_group(
         )
 
     if customer_id:
+        today = date.today()
+        assignment = db.query(EmployeeAssignment).filter(
+            EmployeeAssignment.employee_id == employee.id,
+            EmployeeAssignment.assignment_type == "ADVISOR",
+            EmployeeAssignment.entity_type == "CUSTOMER",
+            EmployeeAssignment.entity_id == customer_id,
+            EmployeeAssignment.effective_from <= today,
+            (
+                EmployeeAssignment.effective_to.is_(None)
+                | (EmployeeAssignment.effective_to >= today)
+            ),
+            EmployeeAssignment.is_active.is_(True),
+        ).first()
         customer = (
             db.query(Customer)
             .filter(
@@ -97,7 +111,7 @@ def validate_customer_and_group(
             .first()
         )
 
-        if not customer:
+        if not customer or not assignment:
             raise HTTPException(
                 status_code=404,
                 detail="Customer not found",
@@ -118,6 +132,8 @@ def validate_customer_and_group(
                 status_code=404,
                 detail="Customer group not found",
             )
+        if group.primary_advisor_employee_id not in {None, employee.id}:
+            raise HTTPException(status_code=403, detail="You are not assigned to this customer group")
 
 
 @router.get(
@@ -410,6 +426,8 @@ def complete_task(
             detail="Task not found",
         )
 
+    if task.status not in {"PENDING", "IN_PROGRESS"}:
+        raise HTTPException(409, "Only pending or in-progress tasks can be completed")
     task.status = "COMPLETED"
     task.completed_at = datetime.utcnow()
 
@@ -449,6 +467,8 @@ def reopen_task(
             detail="Task not found",
         )
 
+    if task.status != "COMPLETED":
+        raise HTTPException(409, "Only completed tasks can be reopened")
     task.status = "PENDING"
     task.completed_at = None
 

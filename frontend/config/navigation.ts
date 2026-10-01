@@ -230,11 +230,14 @@ export const navigation: NavigationItem[] = [
         icon: Building2,
 
         children: [
+          { id: "organization-profile", title: "Profile", href: routes.admin.organization.profile },
           {
             id: "branches",
             title: "Branches",
             href: routes.admin.organization.branches,
           },
+          { id: "departments", title: "Departments", href: routes.admin.organization.departments },
+          { id: "designations", title: "Designations", href: routes.admin.organization.designations },
           {
             id: "employees",
             title: "Employees",

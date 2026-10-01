@@ -1,7 +1,10 @@
-export type GoalStatus =
+export type GoalDisplayStatus =
+  | "Active"
   | "On Track"
   | "Needs Attention"
-  | "Achieved";
+  | "Achieved"
+  | "Paused"
+  | "Cancelled";
 
 export interface Goal {
 
@@ -21,6 +24,6 @@ export interface Goal {
 
   progress: number;
 
-  status: GoalStatus;
+  status: GoalDisplayStatus;
 
 }

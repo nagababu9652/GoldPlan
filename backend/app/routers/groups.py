@@ -11,9 +11,14 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
+from decimal import Decimal
 
 from ..database.session import get_db
 from ..models.crm.customer import Customer, CustomerGroup, GroupMember
+from ..models.crm.financial_account import FinancialAccount
+from ..models.crm.holding import Holding
+from ..models.crm.goal import FinancialGoal
 from ..models.identity.auth import User
 from ..models.organization.employee import Employee
 from ..schemas.group import (
@@ -27,6 +32,7 @@ from ..schemas.group import (
     MoveHouseholdRequest,
     GroupResponse,
     GroupUpdate,
+    GroupFinancialSummary,
 )
 from .advisors import get_current_advisor
 from ..schemas.group_options import GROUP_RELATIONSHIPS
@@ -41,6 +47,25 @@ HOUSEHOLD_GROUP_TYPES = {
     "HOUSEHOLD",
     "FAMILY",
 }
+
+@router.get("/{group_id}/financial-summary", response_model=GroupFinancialSummary)
+def get_group_financial_summary(group_id: int, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+    employee = get_advisor_employee(db, advisor)
+    group = get_group_for_advisor(db, group_id, employee)
+    member_ids = [row.customer_id for row in db.query(GroupMember).filter(
+        GroupMember.customer_group_id == group.id, GroupMember.left_on.is_(None)).all()]
+    owner_filter = or_(FinancialAccount.customer_group_id == group.id, FinancialAccount.customer_id.in_(member_ids))
+    accounts = db.query(FinancialAccount).filter(owner_filter, FinancialAccount.is_active.is_(True), FinancialAccount.deleted_at.is_(None)).all()
+    assets = sum((a.current_balance for a in accounts if a.account_nature == "ASSET"), Decimal(0))
+    liabilities = sum((a.current_balance for a in accounts if a.account_nature == "LIABILITY"), Decimal(0))
+    account_ids = [a.id for a in accounts]
+    holdings = db.query(Holding).filter(Holding.financial_account_id.in_(account_ids), Holding.is_active.is_(True), Holding.deleted_at.is_(None)).all() if account_ids else []
+    invested = sum((h.quantity * h.average_cost for h in holdings), Decimal(0))
+    current = sum((h.quantity * h.current_price for h in holdings), Decimal(0))
+    goal_filter = or_(FinancialGoal.customer_group_id == group.id, FinancialGoal.customer_id.in_(member_ids))
+    goals = db.query(FinancialGoal).filter(goal_filter, FinancialGoal.is_active.is_(True), FinancialGoal.deleted_at.is_(None)).all()
+    target = sum((g.target_amount for g in goals), Decimal(0)); funded = sum((g.current_amount for g in goals), Decimal(0))
+    return GroupFinancialSummary(group_id=group.id, active_member_count=len(member_ids), account_count=len(accounts), holding_count=len(holdings), total_assets=assets, total_liabilities=liabilities, net_worth=assets-liabilities, invested_value=invested, holdings_value=current, unrealized_gain=current-invested, goal_count=len(goals), goal_target_amount=target, goal_current_amount=funded)
 
 def is_household_group_type(
     group_type: str | None,

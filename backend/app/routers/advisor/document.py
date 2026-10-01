@@ -10,6 +10,7 @@ from ...database.session import get_db
 from app.models.crm.customer import Customer, CustomerGroup
 from app.models.crm.document import CrmDocument
 from app.models.organization.employee import Employee
+from app.models.organization.assignment import EmployeeAssignment
 from ...routers.advisors import get_current_advisor as get_current_user
 from app.schemas.document import (
     DocumentCreate,
@@ -87,13 +88,23 @@ def validate_document_target(
     customer_id: Optional[int],
     customer_group_id: Optional[int],
 ):
-    if not customer_id and not customer_group_id:
+    if (customer_id is None) == (customer_group_id is None):
         raise HTTPException(
             status_code=400,
-            detail="Either customer_id or customer_group_id is required.",
+            detail="Exactly one document owner is required.",
         )
 
     if customer_id:
+        today = date.today()
+        assignment = db.query(EmployeeAssignment).filter(
+            EmployeeAssignment.employee_id == employee.id,
+            EmployeeAssignment.assignment_type == "ADVISOR",
+            EmployeeAssignment.entity_type == "CUSTOMER",
+            EmployeeAssignment.entity_id == customer_id,
+            EmployeeAssignment.effective_from <= today,
+            (EmployeeAssignment.effective_to.is_(None) | (EmployeeAssignment.effective_to >= today)),
+            EmployeeAssignment.is_active.is_(True),
+        ).first()
         customer = (
             db.query(Customer)
             .filter(
@@ -103,7 +114,7 @@ def validate_document_target(
             .first()
         )
 
-        if not customer:
+        if not customer or not assignment:
             raise HTTPException(
                 status_code=404,
                 detail="Customer not found.",
@@ -124,6 +135,8 @@ def validate_document_target(
                 status_code=404,
                 detail="Customer group not found.",
             )
+        if group.primary_advisor_employee_id not in {None, employee.id}:
+            raise HTTPException(403, "You are not assigned to this customer group")
 
 
 def build_document_response(
@@ -279,20 +292,7 @@ async def upload_document(
 ):
     employee = get_advisor_employee(db, current_user)
 
-    # ---------------------------------------------------------
-    # Validate customer/group target
-    # ---------------------------------------------------------
-    if not customer_id and not customer_group_id:
-        raise HTTPException(
-            status_code=400,
-            detail="Either customer_id or customer_group_id is required.",
-        )
-
-    if customer_id and customer_group_id:
-        raise HTTPException(
-            status_code=400,
-            detail="Provide either customer_id or customer_group_id, not both.",
-        )
+    validate_document_target(db, employee, customer_id, customer_group_id)
 
     customer = None
     customer_group = None
@@ -520,6 +520,10 @@ def update_document(
 
     new_customer_id = update_data.get("customer_id")
     new_group_id = update_data.get("customer_group_id")
+
+    effective_customer_id = update_data.get("customer_id", document.customer_id)
+    effective_group_id = update_data.get("customer_group_id", document.customer_group_id)
+    validate_document_target(db, employee, effective_customer_id, effective_group_id)
 
     if (
         new_customer_id is not None

@@ -32,7 +32,7 @@ export default function WelcomePanel({
   );
 
   return (
-    <section className="dashboard-panel relative overflow-hidden bg-obsidian p-7 text-bone lg:p-10">
+    <section className="dashboard-panel relative h-full overflow-hidden bg-obsidian p-7 text-bone lg:p-10">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(212,180,122,0.14),transparent_32%),linear-gradient(135deg,rgba(12,11,10,1),rgba(26,24,22,0.96))]" />
       <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full border border-bone/10" />
       <div className="pointer-events-none absolute bottom-0 right-0 h-48 w-48 rounded-full border border-antique/30" />

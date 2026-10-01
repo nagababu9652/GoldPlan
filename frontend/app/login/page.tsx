@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navigation from '@/components/home/Navigation';
 import Footer from '@/components/home/Footer';
-import { loginUser, type LoginCredentials } from '@/lib/api';
+import { getAccessContext, loginUser, type LoginCredentials } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,7 +18,16 @@ export default function LoginPage() {
   useEffect(() => {
     const token = localStorage.getItem('finplan_token');
     if (token) {
-      router.push('/advisor-dashboard');
+      void getAccessContext(token)
+        .then((access) => router.push(
+          !access ? '/onboarding/organization' :
+          access.subscription_active ? '/advisor-dashboard' : '/admin/subscription'
+        ))
+        .catch(() => {
+          localStorage.removeItem('finplan_token');
+          localStorage.removeItem('finplan_refresh_token');
+          localStorage.removeItem('finplan_user');
+        });
     }
   }, [router]);
 
@@ -64,8 +73,11 @@ export default function LoginPage() {
         expires_in: response.expires_in
       }));
 
-      // Redirect to advisor dashboard
-      router.push('/advisor-dashboard');
+      const access = await getAccessContext(response.access_token);
+      router.push(
+        !access ? '/onboarding/organization' :
+        access.subscription_active ? '/advisor-dashboard' : '/admin/subscription'
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
       setLoading(false);

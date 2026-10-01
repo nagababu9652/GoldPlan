@@ -189,7 +189,6 @@ export default function RegisterPage() {
         ...rest,
         email,
         mobile_number: phone || undefined,
-        role: 'advisor',
       };
       await registerUser(userData);
 

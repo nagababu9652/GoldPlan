@@ -21,6 +21,7 @@ from .foundation import (
 from .identity import (
     User, AuthenticationMethod, PasswordHistory, OTPRequest, UserSession, RefreshToken, LoginHistory,
     Permission, Role, PermissionProfile, ProfilePermission, RolePermissionProfile, UserRole,
+    EmployeePermissionProfile, EmployeePermissionOverride,
     Device, UserDevice, AccountLockout, SecurityEvent, AuditLog,
 )
 
@@ -29,6 +30,7 @@ from .organization import (
     Organization, Branch, Department, Designation, OrganizationSetting,
     Employee, EmployeeRole, EmployeeReporting, EmployeeBranchHistory, EmployeeDepartmentHistory,
     EmployeeAssignment, EmployeeSkill, EmployeeCertification, OrganizationHoliday,
+    SubscriptionPlan, OrganizationSubscription, SubscriptionEvent,
 )
 
 # CRM models
@@ -36,6 +38,10 @@ from .crm import (
     CustomerGroup, Customer, GroupMember, CustomerStatusHistory,
     CustomerRelationship, GroupMergeHistory, GroupSplitHistory, CustomerMergeHistory, GroupMemberOrder,
     CustomerKYC, CustomerFATCA, CustomerRiskProfile, CustomerCommunicationPreference, CustomerKYCHistory,
+    FinancialGoal,
+    FinancialAccount,
+    Holding,
+    ReportSnapshot,
 )
 
 __all__ = [
@@ -52,15 +58,21 @@ __all__ = [
     # Identity
     "User", "AuthenticationMethod", "PasswordHistory", "OTPRequest", "UserSession", "RefreshToken", "LoginHistory",
     "Permission", "Role", "PermissionProfile", "ProfilePermission", "RolePermissionProfile", "UserRole",
+    "EmployeePermissionProfile", "EmployeePermissionOverride",
     "Device", "UserDevice", "AccountLockout", "SecurityEvent", "AuditLog",
 
     # Organization
     "Organization", "Branch", "Department", "Designation", "OrganizationSetting",
     "Employee", "EmployeeRole", "EmployeeReporting", "EmployeeBranchHistory", "EmployeeDepartmentHistory",
     "EmployeeAssignment", "EmployeeSkill", "EmployeeCertification", "OrganizationHoliday",
+    "SubscriptionPlan", "OrganizationSubscription", "SubscriptionEvent",
 
     # CRM
     "CustomerGroup", "Customer", "GroupMember", "CustomerStatusHistory",
     "CustomerRelationship", "GroupMergeHistory", "GroupSplitHistory", "CustomerMergeHistory", "GroupMemberOrder",
     "CustomerKYC", "CustomerFATCA", "CustomerRiskProfile", "CustomerCommunicationPreference", "CustomerKYCHistory",
+    "FinancialGoal",
+    "FinancialAccount",
+    "Holding",
+    "ReportSnapshot",
 ]

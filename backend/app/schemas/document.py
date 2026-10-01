@@ -1,10 +1,14 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+DOCUMENT_TYPES = {"KYC", "PAN", "AADHAAR", "BANK", "INVESTMENT", "AGREEMENT", "TAX", "INSURANCE", "RISK_ASSESSMENT", "OTHER"}
+DOCUMENT_STATUSES = {"ACTIVE", "PENDING", "ARCHIVED"}
 
 
 class DocumentBase(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     document_type: str = "OTHER"
 
     document_name: str = Field(
@@ -40,12 +44,33 @@ class DocumentBase(BaseModel):
 
     customer_group_id: Optional[int] = None
 
+    @field_validator("document_type")
+    @classmethod
+    def validate_type(cls, value):
+        value = value.strip().upper()
+        if value not in DOCUMENT_TYPES: raise ValueError(f"Unsupported document type: {value}")
+        return value
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value):
+        value = value.strip().upper()
+        if value not in DOCUMENT_STATUSES: raise ValueError(f"Unsupported document status: {value}")
+        return value
+
+    @model_validator(mode="after")
+    def validate_owner(self):
+        if (self.customer_id is None) == (self.customer_group_id is None):
+            raise ValueError("Exactly one document owner is required")
+        return self
+
 
 class DocumentCreate(DocumentBase):
     pass
 
 
 class DocumentUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     document_type: Optional[str] = None
 
     document_name: Optional[str] = Field(
@@ -81,6 +106,22 @@ class DocumentUpdate(BaseModel):
 
     customer_group_id: Optional[int] = None
 
+    @field_validator("document_type")
+    @classmethod
+    def validate_type(cls, value):
+        if value is None: return value
+        value = value.strip().upper()
+        if value not in DOCUMENT_TYPES: raise ValueError(f"Unsupported document type: {value}")
+        return value
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value):
+        if value is None: return value
+        value = value.strip().upper()
+        if value not in DOCUMENT_STATUSES: raise ValueError(f"Unsupported document status: {value}")
+        return value
+
 
 class DocumentResponse(DocumentBase):
     id: int
@@ -97,8 +138,7 @@ class DocumentResponse(DocumentBase):
 
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DocumentListResponse(BaseModel):

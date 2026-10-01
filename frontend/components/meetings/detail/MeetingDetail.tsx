@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import {
   cancelMeeting,
+  completeMeeting,
   type Meeting,
 } from "@/lib/api";
 
@@ -75,6 +76,7 @@ export default function MeetingDetail({
 
   const [cancelling, setCancelling] =
     useState(false);
+  const [completing, setCompleting] = useState(false);
 
   const [error, setError] = useState("");
 
@@ -127,6 +129,24 @@ export default function MeetingDetail({
     }
   }
 
+  async function handleComplete() {
+    try {
+      setCompleting(true);
+      setError("");
+      const token = localStorage.getItem("finplan_token");
+      if (!token) {
+        setError("Please login.");
+        return;
+      }
+      await completeMeeting(token, meeting.id);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to complete meeting.");
+    } finally {
+      setCompleting(false);
+    }
+  }
+
   return (
     <div className="space-y-3">
       {error && (
@@ -161,11 +181,28 @@ export default function MeetingDetail({
 
           <div className="flex flex-wrap gap-2">
             <Link
+              href={`/advisor-dashboard/tasks/new?customer_id=${meeting.customer_id ?? ""}&customer_group_id=${meeting.customer_group_id ?? ""}&title=${encodeURIComponent(`Follow up: ${meeting.title}`)}`}
+              className="rounded-lg border border-line bg-bone px-4 py-2.5 text-sm font-medium transition hover:bg-muted"
+            >
+              Create Follow-up
+            </Link>
+            <Link
               href={`/advisor-dashboard/meetings/${meeting.id}/edit`}
               className="rounded-lg border border-line bg-bone px-4 py-2.5 text-sm font-medium transition hover:bg-muted"
             >
               Edit
             </Link>
+
+            {canCancel && (
+              <button
+                type="button"
+                onClick={handleComplete}
+                disabled={completing || cancelling}
+                className="rounded-lg bg-obsidian px-4 py-2.5 text-sm font-medium text-bone transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {completing ? "Completing..." : "Mark Complete"}
+              </button>
+            )}
 
             {canCancel && (
               <button

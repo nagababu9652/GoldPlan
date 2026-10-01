@@ -1,10 +1,15 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+TASK_TYPES = {"FOLLOW_UP", "CALL", "EMAIL", "DOCUMENT", "REVIEW", "REMINDER", "OTHER"}
+TASK_PRIORITIES = {"LOW", "MEDIUM", "HIGH"}
+TASK_STATUSES = {"PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"}
 
 
 class TaskBase(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     title: str = Field(
         ...,
         min_length=1,
@@ -27,12 +32,43 @@ class TaskBase(BaseModel):
 
     customer_group_id: Optional[int] = None
 
+    @field_validator("task_type")
+    @classmethod
+    def validate_type(cls, value: str) -> str:
+        value = value.strip().upper()
+        if value not in TASK_TYPES:
+            raise ValueError(f"Unsupported task type: {value}")
+        return value
+
+    @field_validator("priority")
+    @classmethod
+    def validate_priority(cls, value: str) -> str:
+        value = value.strip().upper()
+        if value not in TASK_PRIORITIES:
+            raise ValueError(f"Unsupported task priority: {value}")
+        return value
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: str) -> str:
+        value = value.strip().upper()
+        if value not in TASK_STATUSES:
+            raise ValueError(f"Unsupported task status: {value}")
+        return value
+
+    @model_validator(mode="after")
+    def validate_owner(self):
+        if self.customer_id is None and self.customer_group_id is None:
+            raise ValueError("A customer or customer group is required")
+        return self
+
 
 class TaskCreate(TaskBase):
     pass
 
 
 class TaskUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     title: Optional[str] = Field(
         default=None,
         min_length=1,
@@ -55,6 +91,30 @@ class TaskUpdate(BaseModel):
 
     customer_group_id: Optional[int] = None
 
+    @field_validator("task_type")
+    @classmethod
+    def validate_type(cls, value):
+        if value is None: return value
+        value = value.strip().upper()
+        if value not in TASK_TYPES: raise ValueError(f"Unsupported task type: {value}")
+        return value
+
+    @field_validator("priority")
+    @classmethod
+    def validate_priority(cls, value):
+        if value is None: return value
+        value = value.strip().upper()
+        if value not in TASK_PRIORITIES: raise ValueError(f"Unsupported task priority: {value}")
+        return value
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value):
+        if value is None: return value
+        value = value.strip().upper()
+        if value not in TASK_STATUSES: raise ValueError(f"Unsupported task status: {value}")
+        return value
+
 
 class TaskResponse(TaskBase):
     id: int
@@ -73,8 +133,7 @@ class TaskResponse(TaskBase):
 
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TaskListResponse(BaseModel):

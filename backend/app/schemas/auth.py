@@ -42,6 +42,8 @@ class TokenPayload(BaseModel):
 
 
 class UserRegister(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     # Party fields
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
@@ -60,18 +62,8 @@ class UserRegister(BaseModel):
 
     # Auth fields
     password: str = Field(..., min_length=8)
-    role: str = Field(default="user", pattern="^(user|advisor|employee|org_admin)$")
-
-    # Optional org/branch assignment
-    organization_id: Optional[int] = None
-    branch_id: Optional[int] = None
-    organization_name: Optional[str] = None
-    branch_name: Optional[str] = None
-
-    # Advisor-specific
-    firm_name: Optional[str] = None
-    registration_number: Optional[str] = None
-    experience_years: Optional[int] = None
+    # Public registration creates an identity only. Roles and organization
+    # membership are granted through authenticated onboarding/invitation flows.
 
 
 class UserLogin(BaseModel):

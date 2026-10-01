@@ -134,7 +134,10 @@ export const routes = {
     root: "/admin",
 
     organization: {
+      profile: "/admin/organization",
       branches: "/admin/organization/branches",
+      departments: "/admin/organization/departments",
+      designations: "/admin/organization/designations",
       employees: "/admin/organization/employees",
       associates: "/admin/organization/associates",
       agencies: "/admin/organization/agencies",

@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from typing import Optional
+from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -121,3 +122,18 @@ class GroupMemberListResponse(BaseModel):
 class GroupActionResponse(BaseModel):
     message: str
     group: GroupResponse
+
+class GroupFinancialSummary(BaseModel):
+    group_id: int
+    active_member_count: int
+    account_count: int
+    holding_count: int
+    total_assets: Decimal
+    total_liabilities: Decimal
+    net_worth: Decimal
+    invested_value: Decimal
+    holdings_value: Decimal
+    unrealized_gain: Decimal
+    goal_count: int
+    goal_target_amount: Decimal
+    goal_current_amount: Decimal

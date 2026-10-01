@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
 import { Plus, RefreshCw, X } from "lucide-react";
 
@@ -21,13 +22,16 @@ import {
 import TransactionHistoryDialog from "./TransactionHistoryDialog";
 
 export default function TransactionsPage() {
+  const params = useParams<{ id?: string }>();
+  const parsedCustomerId = params.id ? Number(params.id) : undefined;
+  const customerId = Number.isFinite(parsedCustomerId) ? parsedCustomerId : undefined;
   const [transactions, setTransactions] = useState<
     AdvisorTransaction[]
   >([]);
 
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] =
-    useState<number | null>(null);
+    useState<number | null>(customerId ?? null);
 
   const [transactionStatus, setTransactionStatus] = useState("");
   const [transactionType, setTransactionType] = useState("");
@@ -71,6 +75,7 @@ export default function TransactionsPage() {
       setError("");
 
       const data = await getTransactions(token, {
+        customer_id: customerId ?? selectedCustomerId ?? undefined,
         transaction_status: transactionStatus || undefined,
         transaction_type: transactionType || undefined,
       });
@@ -87,9 +92,15 @@ export default function TransactionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, transactionStatus, transactionType]);
+  }, [token, customerId, selectedCustomerId, transactionStatus, transactionType]);
 
   const loadClients = useCallback(async () => {
+    if (customerId) {
+      setSelectedCustomerId(customerId);
+      setClientsLoading(false);
+      return;
+    }
+
     if (!token) {
       setClientsLoading(false);
       return;
@@ -116,7 +127,7 @@ export default function TransactionsPage() {
     } finally {
       setClientsLoading(false);
     }
-  }, [token]);
+  }, [token, customerId]);
 
   useEffect(() => {
     loadTransactions();
@@ -233,7 +244,9 @@ export default function TransactionsPage() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-ash">
-            Manage financial transactions for your clients.
+            {customerId
+              ? "Manage financial transactions for this client."
+              : "Manage financial transactions for your clients."}
           </p>
         </div>
 
@@ -265,7 +278,7 @@ export default function TransactionsPage() {
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
 
-          {clients.length > 1 && (
+          {!customerId && clients.length > 1 && (
             <select
               value={selectedCustomerId ?? ""}
               onChange={(e) =>

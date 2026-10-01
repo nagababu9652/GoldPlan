@@ -17,6 +17,8 @@ import {
   type Group,
   type GroupMember,
   type GroupUpdatePayload,
+  getGroupFinancialSummary,
+  type GroupFinancialSummary,
   type Client,
 } from '@/lib/api';
 
@@ -29,6 +31,7 @@ export default function GroupDetailPage() {
   const groupId = Number(params.id);
 
   const [group, setGroup] = useState<Group | null>(null);
+  const [financialSummary, setFinancialSummary] = useState<GroupFinancialSummary | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [membershipHistory, setMembershipHistory] = useState<GroupMember[]>([]);
   const [historyError, setHistoryError] = useState<string | null>(null);
@@ -90,6 +93,7 @@ export default function GroupDetailPage() {
         ]);
 
       setGroup(groupData);
+      setFinancialSummary(await getGroupFinancialSummary(token, groupId));
       setSelectedRelationship((current) =>
         getGroupRelationships(groupData.group_type).includes(current) ? current : 'OTHER'
       );
@@ -431,6 +435,10 @@ export default function GroupDetailPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
+          <button onClick={() => router.push(`/advisor-dashboard/groups/${group.id}/accounts`)} className="rounded-full border border-obsidian px-4 py-2 text-[11px] uppercase tracking-[0.2em]">Accounts</button>
+          <button onClick={() => router.push(`/advisor-dashboard/groups/${group.id}/portfolio`)} className="rounded-full border border-obsidian px-4 py-2 text-[11px] uppercase tracking-[0.2em]">Portfolio</button>
+          <button onClick={() => router.push(`/advisor-dashboard/groups/${group.id}/goals`)} className="rounded-full border border-obsidian px-4 py-2 text-[11px] uppercase tracking-[0.2em]">Goals</button>
+          <button onClick={() => router.push(`/advisor-dashboard/groups/${group.id}/tasks`)} className="rounded-full border border-obsidian px-4 py-2 text-[11px] uppercase tracking-[0.2em]">Tasks</button>
           <button
             onClick={() => router.push('/advisor-dashboard/groups')}
             className="rounded-full border border-obsidian bg-transparent px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-bone-deep"
@@ -772,6 +780,29 @@ export default function GroupDetailPage() {
               </p>
             </div>
           )}
+        </div>
+      )}
+
+      {financialSummary && (
+        <div className="dashboard-panel p-6 lg:p-8">
+          <h2 className="mb-5 text-[11px] font-medium uppercase tracking-[0.18em] text-ash">Financial Summary</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ['Assets', financialSummary.total_assets],
+              ['Liabilities', financialSummary.total_liabilities],
+              ['Net Worth', financialSummary.net_worth],
+              ['Holdings Value', financialSummary.holdings_value],
+              ['Unrealized Gain', financialSummary.unrealized_gain],
+              ['Goal Targets', financialSummary.goal_target_amount],
+              ['Goal Funding', financialSummary.goal_current_amount],
+            ].map(([label, value]) => (
+              <div key={String(label)} className="border border-line bg-bone p-4">
+                <p className="text-xs uppercase text-ash">{label}</p>
+                <p className="mt-2 text-xl">₹{Number(value).toLocaleString('en-IN')}</p>
+              </div>
+            ))}
+            <div className="border border-line bg-bone p-4"><p className="text-xs uppercase text-ash">Records</p><p className="mt-2 text-sm">{financialSummary.account_count} accounts · {financialSummary.holding_count} holdings · {financialSummary.goal_count} goals</p></div>
+          </div>
         </div>
       )}
 

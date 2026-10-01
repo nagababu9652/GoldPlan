@@ -3,8 +3,8 @@
 ## Result
 
 The core CRM integrations exist, but the application is **not fully connected**.
-After the corrections below, all 67 mapped tables can be selected from PostgreSQL.
-There are 68 registered backend operations; frontend HTTP call sites cover 60 of
+After the corrections below, all 69 mapped tables can be selected from PostgreSQL.
+There are 78 registered backend operations; frontend HTTP call sites cover 70 of
 them (including helpers with no UI caller). Six frontend calls target nonexistent
 endpoints. API availability is not the same as a completed user workflow.
 
@@ -21,11 +21,12 @@ endpoints. API availability is not the same as a completed user workflow.
   membership history, transaction history, portfolio, and reports. All returned 200.
   Authentication was overridden with an existing advisor for these read checks;
   this does not certify login/refresh or cross-advisor authorization end to end.
-- Backend tests: **92 passed**, including opt-in database checks.
+- Backend tests: **100 passed**, including opt-in PostgreSQL round-trip checks.
 - Frontend TypeScript: passed. Changed-file ESLint: no errors, seven existing
   unused-variable/import warnings.
-- No live client registrations, OTP sends, password resets, uploads, or CRM writes
-  were exercised. Static payload checks do not prove persistence or browser UX.
+- Client create/update persistence and registration address mapping were exercised
+  inside rolled-back PostgreSQL transactions. No OTP sends, password resets,
+  uploads, or browser workflows were exercised.
 
 ## Corrections made
 
@@ -48,40 +49,39 @@ endpoints. API availability is not the same as a completed user workflow.
 8. Advisor client-password reset now checks the assigned client ID and verifies
    that the requested email belongs to that customer's Party before consuming an
    OTP or resetting a password. Regression tests cover mismatched clients/emails.
+9. Client create/update now persists address, bank account, and KYC status through
+   their domain tables and returns the stored values. Unsupported planning,
+   nominee, KYC-document, age, and group-membership inputs are rejected by the
+   request schema instead of being accepted and discarded. Household changes stay
+   in the group membership endpoints.
+10. Registration and client addresses now resolve country, state, and city by the
+    submitted names and parent relationships. Unknown, ambiguous, incomplete, or
+    mismatched geography returns 422. Registration no longer selects the first
+    geography rows and now uses the seeded HOME address lookup.
+11. Financial goals are stored in `crm.financial_goals` with exclusive customer or
+    household ownership, database constraints, advisor-scoped CRUD endpoints, and
+    a connected client Goals screen. CRUD lifecycle tests run in a rolled-back
+    PostgreSQL transaction.
+12. Financial accounts are stored in `crm.financial_accounts` with exclusive
+    customer or household ownership, asset/liability classification, advisor-scoped
+    CRUD, soft archival, and a connected client Accounts screen.
 
 ## Remaining issues, in priority order
 
-### Client forms accept data that is not fully persisted
+### Remaining client lifecycle consistency
 
-`app/schemas/client.py` accepts more than `app/routers/clients.py` writes:
+Client activation uses `is_active`, while some dashboard/group checks use
+`customer_status`. These need one lifecycle policy. Investment experience,
+first-class goals, nominees, and KYC documents still need dedicated workflows and
+remain response-only placeholders until those domain features are built.
 
-- Investment experience, financial goals, nominee details, bank fields, KYC inputs,
-  and `group_id` are accepted on client requests but are not implemented as complete
-  persistence workflows. Responses explicitly return `None` for several of these.
-- Address creation has limited lookup resolution; address edits are absent from
-  the update handler's supported field sets.
-- `age` is derived from date of birth; it should not be an independent saved input.
-- Client activation uses `is_active`, while some dashboard/group checks use
-  `customer_status`. These need one consistent lifecycle policy.
-
-Do not describe these form sections as saved successfully until they round-trip
-through their proper domain tables. Implement bank/KYC/relationship/goal writes or
-make unsupported fields explicitly unavailable; do not add flat duplicate columns.
-
-### Registration geography is not resolved from submitted values
-
-`create_party_profile()` in `app/services/auth_service.py` selects the first city,
-state, and country rows using `LIMIT 1`. Submitted city/state text does not determine
-the stored foreign keys. Resolve and validate the actual geography before saving.
-
-### Portfolio, Reports, and Notifications pages have missing endpoints
+### Portfolio and Notifications pages have missing endpoints
 
 No Next.js route handlers or backend operations implement these calls:
 
 | Caller | Missing calls |
 |---|---|
 | `frontend/app/advisor-dashboard/portfolio/portfolio.service.ts` | GET `/api/portfolios`; DELETE `/api/portfolios/{id}` |
-| `frontend/app/advisor-dashboard/reports/report.service.ts` | GET `/api/reports`; DELETE `/api/reports/{id}` |
 | `frontend/app/advisor-dashboard/notifications/notification.service.ts` | GET `/api/notifications`; DELETE `/api/notifications/{id}` |
 
 The pages import these services. Their fetch calls do not check `response.ok`, and
@@ -89,12 +89,20 @@ the page loading promises lack rejection handling. A 404 can leave the UI loadin
 Build the real feature APIs/contracts or explicitly mark these features unavailable;
 do not substitute unrelated response shapes or fabricated financial data.
 
-### Existing financial responses are placeholders
+### Remaining financial placeholder response
 
-`GET /advisors/portfolio` and `/advisors/reports` return hardcoded records.
+`GET /advisors/portfolio` returns hardcoded records.
 `useDashboard` overwrites dashboard totals with the placeholder portfolio values.
 The profile endpoint also hardcodes its plan to Premium. A successful HTTP response
 does not mean these values are database-backed.
+
+The Reports page now uses `GET /advisors/reports/financial-summary`, which derives
+its advisor-scoped snapshot from active financial accounts, holdings, and goals.
+It also uses `GET /advisors/reports/cash-flow` for twelve-month completed
+transaction inflows and outflows.
+Generated versions use `POST /advisors/reports/snapshots` and the corresponding
+list/detail endpoints. Snapshot payloads and assumptions are stored rather than
+recalculated when an advisor reopens or downloads a historical version.
 
 ### Timezone and authorization consistency require dedicated integration tests
 
@@ -123,8 +131,8 @@ Feature APIs not wired into frontend flows:
 - POST `/advisors/verify-email`
 - POST `/onboarding/organization`
 
-Additional helper-only APIs include `/auth/me`, POST `/advisors/documents/`, DELETE
-`/advisors/clients/{client_id}`, and `/advisors/reports`. Their helpers exist but have
+Additional helper-only APIs include `/auth/me`, POST `/advisors/documents/`, and DELETE
+`/advisors/clients/{client_id}`. Their helpers exist but have
 no external UI references. Refresh is used internally by the shared request transport.
 
 ## Recommended next work
@@ -163,6 +171,13 @@ test exercised the workflow. Paths are normalized for parameter names/trailing s
 | GET | `/advisors/meetings/{meeting_id}` | `getMeeting` | Referenced in frontend source |
 | PUT | `/advisors/meetings/{meeting_id}` | `updateMeeting` | Referenced in frontend source |
 | POST | `/advisors/meetings/{meeting_id}/cancel` | `cancelMeeting` | Referenced in frontend source |
+| POST | `/advisors/meetings/{meeting_id}/complete` | `completeMeeting` | Referenced in frontend source |
+| GET | `/advisors/clients/{client_id}/kyc` | `getClientKYC` | Referenced in frontend source |
+| PUT | `/advisors/clients/{client_id}/kyc` | `updateClientKYC` | Referenced in frontend source |
+| GET | `/advisors/clients/{client_id}/kyc/history` | `getClientKYCHistory` | Referenced in frontend source |
+| GET | `/advisors/clients/{client_id}/service-team` | `getClientServiceTeam` | Referenced in frontend source |
+| POST | `/advisors/clients/{client_id}/service-team` | `addClientServiceTeamMember` | Referenced in frontend source |
+| DELETE | `/advisors/clients/{client_id}/service-team/{assignment_id}` | `removeClientServiceTeamMember` | Referenced in frontend source |
 | GET | `/advisors/messages/` | `getMessages` | Referenced in frontend source |
 | POST | `/advisors/messages/` | `createMessage` | Referenced in frontend source |
 | GET | `/advisors/messages/{message_id}` | `getMessage` | Referenced in frontend source |
@@ -177,7 +192,11 @@ test exercised the workflow. Paths are normalized for parameter names/trailing s
 | POST | `/advisors/documents/{document_id}/archive` | `archiveDocument` | Referenced in frontend source |
 | GET | `/advisors/dashboard` | `getAdvisorDashboard` | Referenced in frontend source |
 | GET | `/advisors/portfolio` | `getAdvisorPortfolio` | Referenced in frontend source |
-| GET | `/advisors/reports` | `getAdvisorReports` | Helper only / no external reference |
+| GET | `/advisors/reports/financial-summary` | `getFinancialSummaryReport` | Referenced in frontend source |
+| GET | `/advisors/reports/cash-flow` | `getCashFlowReport` | Referenced in frontend source |
+| GET | `/advisors/reports/snapshots` | `listReportSnapshots` | Referenced in frontend source |
+| POST | `/advisors/reports/snapshots` | `createReportSnapshot` | Referenced in frontend source |
+| GET | `/advisors/reports/snapshots/{snapshot_id}` | `getReportSnapshot` | Referenced in frontend source |
 | GET | `/advisors/profile` | `getAdvisorProfile` | Referenced in frontend source |
 | POST | `/advisors/clients/{client_id}/reset-password` | ? | No HTTP caller found |
 | GET | `/advisors/transactions` | `getTransactions` | Referenced in frontend source |

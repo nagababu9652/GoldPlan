@@ -5,7 +5,7 @@ Uses the new 4-schema architecture (foundation, identity, organization, crm).
 import time
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
 
@@ -30,6 +30,7 @@ from .models.identity import (
     UserSession, RefreshToken, LoginHistory,
     Permission, Role, PermissionProfile, ProfilePermission,
     RolePermissionProfile, UserRole,
+    EmployeePermissionProfile, EmployeePermissionOverride,
     Device, UserDevice, AccountLockout, SecurityEvent, AuditLog,
 )
 # Organization
@@ -39,6 +40,7 @@ from .models.organization import (
     EmployeeBranchHistory, EmployeeDepartmentHistory,
     EmployeeAssignment, EmployeeSkill, EmployeeCertification,
     OrganizationHoliday,
+    SubscriptionPlan, OrganizationSubscription, SubscriptionEvent,
 )
 # CRM
 from .models.crm import (
@@ -47,7 +49,8 @@ from .models.crm import (
     CustomerMergeHistory, GroupMemberOrder,
     CustomerKYC, CustomerFATCA, CustomerRiskProfile,
     CustomerCommunicationPreference, CustomerKYCHistory,
-    Transaction,transaction_history 
+    Transaction, transaction_history, FinancialGoal, FinancialAccount, Holding,
+    ReportSnapshot,
 )
 
 # Routers
@@ -58,6 +61,14 @@ from .routers.advisor.task import router as tasks_router
 from .routers.clients import router as clients_router
 from .routers.groups import router as groups_router
 from .routers.onboarding import router as onboarding_router
+from .routers.goals import router as goals_router
+from .routers.financial_accounts import router as financial_accounts_router
+from .routers.holdings import router as holdings_router
+from .routers.admin_access import router as admin_access_router
+from .routers.admin_organization import router as admin_organization_router
+from .routers.admin_employees import router as admin_employees_router
+from .routers.admin_permissions import router as admin_permissions_router
+from .services.access import require_active_subscription, require_subscription_entitlement
 
 
 def create_app() -> FastAPI:
@@ -90,11 +101,46 @@ def create_app() -> FastAPI:
     setup_cors(app)
     app.include_router(market_router)
     app.include_router(auth_router)
-    app.include_router(advisors_router)
-    app.include_router(tasks_router, prefix="/advisors")
-    app.include_router(clients_router)
-    app.include_router(groups_router)
+    active_subscription = [Depends(require_active_subscription)]
+    app.include_router(advisors_router, dependencies=active_subscription)
+    app.include_router(
+        tasks_router, prefix="/advisors",
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.TASKS"))],
+    )
+    app.include_router(
+        clients_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.CRM"))],
+    )
+    app.include_router(
+        groups_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.GROUPS"))],
+    )
     app.include_router(onboarding_router)
+    app.include_router(
+        goals_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.GOALS"))],
+    )
+    app.include_router(
+        financial_accounts_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.PORTFOLIO"))],
+    )
+    app.include_router(
+        holdings_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.PORTFOLIO"))],
+    )
+    app.include_router(
+        admin_access_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.EMPLOYEE_MANAGEMENT"))],
+    )
+    app.include_router(admin_organization_router, dependencies=active_subscription)
+    app.include_router(
+        admin_employees_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.EMPLOYEE_MANAGEMENT"))],
+    )
+    app.include_router(
+        admin_permissions_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.EMPLOYEE_MANAGEMENT"))],
+    )
 
 
     @app.get("/health")

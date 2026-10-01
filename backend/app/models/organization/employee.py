@@ -3,7 +3,7 @@ Employee models: employees, employee_roles, employee_reporting, employee_branch_
 """
 from sqlalchemy import text
 from datetime import datetime
-from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from ..base import Base, AuditMixin
@@ -11,7 +11,10 @@ from ..base import Base, AuditMixin
 
 class Employee(AuditMixin, Base):
     __tablename__ = "employees"
-    __table_args__ = {"schema": "organization"}
+    __table_args__ = (
+        UniqueConstraint("organization_id", "employee_code", name="uq_employee_org_code"),
+        {"schema": "organization"},
+    )
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     organization_id = Column(BigInteger, ForeignKey("organization.organizations.id"), nullable=False)
@@ -21,11 +24,13 @@ class Employee(AuditMixin, Base):
     department_id = Column(BigInteger, ForeignKey("organization.departments.id"), nullable=False)
     designation_id = Column(BigInteger, ForeignKey("organization.designations.id"), nullable=False)
     joining_date = Column(Date, nullable=False)
+    employment_type = Column(String(30), nullable=False, default="FULL_TIME")
     confirmation_date = Column(Date, nullable=True)
     relieving_date = Column(Date, nullable=True)
     employment_status = Column(String(30), default="ACTIVE")
     official_email = Column(String(150), nullable=True)
     official_mobile = Column(String(30), nullable=True)
+    remarks = Column(Text, nullable=True)
 
     organization = relationship("Organization", back_populates="employees", lazy="selectin")
     reporting = relationship("EmployeeReporting", back_populates="employee", lazy="selectin",

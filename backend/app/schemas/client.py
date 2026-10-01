@@ -73,7 +73,6 @@ class ClientResponse(ClientBase):
 
     age: Optional[int] = None
     investment_experience: Optional[str] = None
-    financial_goals: Optional[str] = None
     nominee_name: Optional[str] = None
     nominee_relation: Optional[str] = None
     nominee_contact: Optional[str] = None

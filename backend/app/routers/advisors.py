@@ -9,6 +9,9 @@ from typing import Optional
 from sqlalchemy import select
 
 from ..models.crm.transaction import Transaction
+from ..models.crm.financial_account import FinancialAccount
+from ..models.crm.holding import Holding
+from ..models.crm.report_snapshot import ReportSnapshot
 from ..models.crm.transaction_history import TransactionHistory
 from ..models.crm.customer import Customer
 from ..models.organization.employee import Employee
@@ -22,17 +25,24 @@ from ..schemas.transaction import (
 )
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone, date
 from ..models.crm.meeting import Meeting
 from ..database.session import get_db
 from ..services import auth_service as auth
+from ..services.access import require_permission
 from ..models.identity.auth import User
 from ..schemas.auth import (
     UserRegister, MessageResponse, PasswordResetConfirm
 )
 from ..schemas.otp import OTPVerifyRequest
+from ..schemas.report import (
+    ReportSnapshotCreate,
+    ReportSnapshotListResponse,
+    ReportSnapshotResponse,
+)
 from ..services.otp_service import verify_otp
 from ..models.crm.customer import Customer
 from ..models.organization.assignment import EmployeeAssignment
@@ -231,20 +241,7 @@ def get_advisor_portfolio(advisor: User = Depends(get_current_advisor)):
     }
 
 
-@router.get("/reports")
-def get_advisor_reports(advisor: User = Depends(get_current_advisor)):
-    """Get advisor investor reports."""
-    return {
-        "reports": [
-            {"id": 1, "title": "Q4 2025 Performance Report", "date": "2025-04-15", "type": "quarterly", "status": "ready"},
-            {"id": 2, "title": "Annual Portfolio Review 2025", "date": "2025-03-01", "type": "annual", "status": "ready"},
-            {"id": 3, "title": "Tax Harvesting Report", "date": "2025-02-20", "type": "special", "status": "pending"},
-            {"id": 4, "title": "Q3 2025 Performance Report", "date": "2025-01-15", "type": "quarterly", "status": "ready"},
-        ]
-    }
-
-
-@router.get("/profile")
+@router.get("/profile", dependencies=[Depends(require_permission("PROFILE.READ"))])
 def get_advisor_profile(
     advisor: User = Depends(get_current_advisor),
     db: Session = Depends(get_db),
@@ -312,6 +309,239 @@ def get_advisor_customer_ids(
     )
 
     return [row.entity_id for row in assignments]
+
+
+@router.get("/reports/financial-summary")
+def get_financial_summary_report(
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    """Return a dated financial snapshot for the advisor's active clients."""
+    as_of = date.today()
+    customer_ids = get_advisor_customer_ids(advisor, db)
+
+    if not customer_ids:
+        return {
+            "report_date": as_of, "client_count": 0,
+            "total_assets": 0, "total_liabilities": 0, "net_worth": 0,
+            "invested_value": 0, "current_value": 0, "unrealized_gain": 0,
+            "goal_target": 0, "goal_funding": 0, "clients": [],
+        }
+
+    customers = db.query(Customer).filter(
+        Customer.id.in_(customer_ids), Customer.is_active.is_(True),
+    ).all()
+    accounts = db.query(FinancialAccount).filter(
+        FinancialAccount.customer_id.in_(customer_ids),
+        FinancialAccount.is_active.is_(True),
+        FinancialAccount.status == "ACTIVE",
+    ).all()
+    account_ids = [account.id for account in accounts]
+    holdings = db.query(Holding).filter(
+        Holding.financial_account_id.in_(account_ids), Holding.is_active.is_(True),
+    ).all() if account_ids else []
+
+    from ..models.crm.goal import FinancialGoal
+    goals = db.query(FinancialGoal).filter(
+        FinancialGoal.customer_id.in_(customer_ids),
+        FinancialGoal.is_active.is_(True), FinancialGoal.status == "ACTIVE",
+    ).all()
+
+    rows = []
+    for customer in customers:
+        client_accounts = [a for a in accounts if a.customer_id == customer.id]
+        client_account_ids = {a.id for a in client_accounts}
+        client_holdings = [h for h in holdings if h.financial_account_id in client_account_ids]
+        client_goals = [g for g in goals if g.customer_id == customer.id]
+        assets = sum(float(a.current_balance or 0) for a in client_accounts if a.account_nature == "ASSET")
+        liabilities = sum(float(a.current_balance or 0) for a in client_accounts if a.account_nature == "LIABILITY")
+        invested = sum(float(h.quantity or 0) * float(h.average_cost or 0) for h in client_holdings)
+        current = sum(float(h.quantity or 0) * float(h.current_price or 0) for h in client_holdings)
+        goal_target = sum(float(g.target_amount or 0) for g in client_goals)
+        goal_funding = sum(float(g.current_amount or 0) for g in client_goals)
+        rows.append({
+            "customer_id": customer.id,
+            "customer_name": customer.party.display_name if customer.party else customer.customer_code,
+            "assets": assets, "liabilities": liabilities, "net_worth": assets - liabilities,
+            "invested_value": invested, "current_value": current,
+            "unrealized_gain": current - invested,
+            "goal_target": goal_target, "goal_funding": goal_funding,
+        })
+
+    return {
+        "report_date": as_of, "client_count": len(rows),
+        "total_assets": sum(row["assets"] for row in rows),
+        "total_liabilities": sum(row["liabilities"] for row in rows),
+        "net_worth": sum(row["net_worth"] for row in rows),
+        "invested_value": sum(row["invested_value"] for row in rows),
+        "current_value": sum(row["current_value"] for row in rows),
+        "unrealized_gain": sum(row["unrealized_gain"] for row in rows),
+        "goal_target": sum(row["goal_target"] for row in rows),
+        "goal_funding": sum(row["goal_funding"] for row in rows),
+        "clients": sorted(rows, key=lambda row: row["net_worth"], reverse=True),
+    }
+
+
+INFLOW_TRANSACTION_TYPES = {"SELL", "DEPOSIT", "INCOME", "DIVIDEND", "INTEREST", "REFUND"}
+OUTFLOW_TRANSACTION_TYPES = {"BUY", "WITHDRAWAL", "EXPENSE", "FEE", "TAX"}
+
+
+def _shift_month(month: date, offset: int) -> date:
+    month_index = month.year * 12 + month.month - 1 + offset
+    return date(month_index // 12, month_index % 12 + 1, 1)
+
+
+def build_monthly_cash_flow(transactions, as_of: date) -> list[dict]:
+    """Group completed transaction amounts into the latest twelve calendar months."""
+    current_month = as_of.replace(day=1)
+    months = {
+        _shift_month(current_month, offset): {"inflows": 0.0, "outflows": 0.0}
+        for offset in range(-11, 1)
+    }
+    for transaction in transactions:
+        month = transaction.transaction_date.replace(day=1)
+        if month not in months:
+            continue
+        amount = float(transaction.amount or 0)
+        kind = transaction.transaction_type.upper()
+        if kind in INFLOW_TRANSACTION_TYPES:
+            months[month]["inflows"] += amount
+        elif kind in OUTFLOW_TRANSACTION_TYPES:
+            months[month]["outflows"] += amount
+
+    return [
+        {
+            "month": month.isoformat(),
+            "inflows": values["inflows"],
+            "outflows": values["outflows"],
+            "net_cash_flow": values["inflows"] - values["outflows"],
+        }
+        for month, values in sorted(months.items())
+    ]
+
+
+@router.get("/reports/cash-flow")
+def get_cash_flow_report(
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    """Return twelve months of completed transaction cash flow."""
+    as_of = date.today()
+    period_start = _shift_month(as_of.replace(day=1), -11)
+    customer_ids = get_advisor_customer_ids(advisor, db)
+    transactions = []
+    if customer_ids:
+        transactions = db.query(Transaction).filter(
+            Transaction.customer_id.in_(customer_ids),
+            Transaction.is_active.is_(True),
+            Transaction.status == "COMPLETED",
+            Transaction.transaction_date >= period_start,
+            Transaction.transaction_date <= as_of,
+        ).all()
+    months = build_monthly_cash_flow(transactions, as_of)
+    return {
+        "period_start": period_start,
+        "period_end": as_of,
+        "total_inflows": sum(month["inflows"] for month in months),
+        "total_outflows": sum(month["outflows"] for month in months),
+        "net_cash_flow": sum(month["net_cash_flow"] for month in months),
+        "months": months,
+    }
+
+
+REPORT_ASSUMPTIONS = {
+    "currency": "INR",
+    "account_scope": "Active customer-owned financial accounts assigned to the advisor",
+    "assets": "Sum of active ASSET account current balances",
+    "liabilities": "Sum of active LIABILITY account current balances",
+    "holding_current_value": "quantity multiplied by current_price",
+    "holding_invested_value": "quantity multiplied by average_cost",
+    "goal_scope": "Active customer-owned goals",
+    "cash_flow_scope": "Completed active transactions in the latest twelve calendar months",
+    "cash_flow_inflows": sorted(INFLOW_TRANSACTION_TYPES),
+    "cash_flow_outflows": sorted(OUTFLOW_TRANSACTION_TYPES),
+}
+
+
+def get_report_snapshot_for_advisor(
+    db: Session, advisor: User, snapshot_id: int,
+) -> ReportSnapshot:
+    employee = get_advisor_employee(advisor, db)
+    snapshot = db.query(ReportSnapshot).filter(
+        ReportSnapshot.id == snapshot_id,
+        ReportSnapshot.organization_id == employee.organization_id,
+        ReportSnapshot.advisor_employee_id == employee.id,
+        ReportSnapshot.is_active.is_(True),
+        ReportSnapshot.deleted_at.is_(None),
+    ).first()
+    if not snapshot:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Report snapshot not found")
+    return snapshot
+
+
+@router.get("/reports/snapshots", response_model=ReportSnapshotListResponse)
+def list_report_snapshots(
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    employee = get_advisor_employee(advisor, db)
+    reports = db.query(ReportSnapshot).filter(
+        ReportSnapshot.organization_id == employee.organization_id,
+        ReportSnapshot.advisor_employee_id == employee.id,
+        ReportSnapshot.is_active.is_(True),
+        ReportSnapshot.deleted_at.is_(None),
+    ).order_by(
+        ReportSnapshot.report_date.desc(),
+        ReportSnapshot.created_at.desc(),
+        ReportSnapshot.id.desc(),
+    ).all()
+    return ReportSnapshotListResponse(reports=reports, total=len(reports))
+
+
+@router.get("/reports/snapshots/{snapshot_id}", response_model=ReportSnapshotResponse)
+def get_report_snapshot(
+    snapshot_id: int,
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    return get_report_snapshot_for_advisor(db, advisor, snapshot_id)
+
+
+@router.post(
+    "/reports/snapshots",
+    response_model=ReportSnapshotResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_report_snapshot(
+    request: ReportSnapshotCreate,
+    advisor: User = Depends(get_current_advisor),
+    db: Session = Depends(get_db),
+):
+    employee = get_advisor_employee(advisor, db)
+    financial_summary = get_financial_summary_report(advisor=advisor, db=db)
+    cash_flow = get_cash_flow_report(advisor=advisor, db=db)
+    report_date = date.fromisoformat(str(financial_summary["report_date"]))
+    period_start = date.fromisoformat(str(cash_flow["period_start"]))
+    period_end = date.fromisoformat(str(cash_flow["period_end"]))
+    snapshot = ReportSnapshot(
+        organization_id=employee.organization_id,
+        advisor_employee_id=employee.id,
+        title=request.title or f"Financial Snapshot {report_date.isoformat()}",
+        report_type="FINANCIAL_SNAPSHOT",
+        report_date=report_date,
+        period_start=period_start,
+        period_end=period_end,
+        assumptions=jsonable_encoder(REPORT_ASSUMPTIONS),
+        payload=jsonable_encoder({
+            "financial_summary": financial_summary,
+            "cash_flow": cash_flow,
+        }),
+        created_by=advisor.id,
+    )
+    db.add(snapshot)
+    db.commit()
+    db.refresh(snapshot)
+    return snapshot
 
 
 @router.post("/clients/{client_id}/reset-password", response_model=MessageResponse)
@@ -494,6 +724,52 @@ def create_transaction_history(
 
     db.add(history)
 
+def validate_transaction_links(db, customer_id, account_id, holding_id):
+    if holding_id is not None and account_id is None:
+        raise HTTPException(status_code=422, detail="A holding requires a financial account")
+    if account_id is None:
+        return
+    account = db.query(FinancialAccount).filter(
+        FinancialAccount.id == account_id,
+        FinancialAccount.customer_id == customer_id,
+        FinancialAccount.is_active.is_(True),
+    ).first()
+    if not account:
+        raise HTTPException(status_code=422, detail="Financial account does not belong to this customer")
+    if holding_id is not None and not db.query(Holding).filter(
+        Holding.id == holding_id,
+        Holding.financial_account_id == account_id,
+        Holding.is_active.is_(True),
+    ).first():
+        raise HTTPException(status_code=422, detail="Holding does not belong to this financial account")
+
+def apply_position_effect(db, transaction, reverse=False):
+    if transaction.status != "COMPLETED" or not transaction.holding_id or transaction.transaction_type not in {"BUY", "SELL"}:
+        return
+    if transaction.quantity is None or transaction.unit_price is None:
+        raise HTTPException(status_code=422, detail="Linked BUY/SELL transactions require quantity and unit price")
+    holding = db.query(Holding).filter(Holding.id == transaction.holding_id).with_for_update().one()
+    quantity = transaction.quantity
+    if transaction.transaction_type == "SELL":
+        if reverse:
+            holding.quantity += quantity
+        else:
+            if holding.quantity < quantity:
+                raise HTTPException(status_code=422, detail="Sell quantity exceeds the holding position")
+            holding.quantity -= quantity
+    elif reverse:
+        old_value = holding.quantity * holding.average_cost
+        if holding.quantity < quantity:
+            raise HTTPException(status_code=422, detail="Cannot reverse transaction beyond the holding position")
+        holding.quantity -= quantity
+        holding.average_cost = 0 if holding.quantity == 0 else max(0, (old_value - quantity * transaction.unit_price) / holding.quantity)
+    else:
+        old_value = holding.quantity * holding.average_cost
+        new_quantity = holding.quantity + quantity
+        holding.average_cost = (old_value + quantity * transaction.unit_price) / new_quantity
+        holding.quantity = new_quantity
+    holding.current_price = transaction.unit_price
+
 @router.post(
     "/transactions",
     response_model=TransactionResponse,
@@ -512,12 +788,14 @@ def create_advisor_transaction(
             detail="You are not authorized to create transactions for this customer",
         )
 
+    validate_transaction_links(db, payload.customer_id, payload.financial_account_id, payload.holding_id)
     transaction = Transaction(
         **payload.model_dump(),
         created_by=advisor.id,
     )
 
     db.add(transaction)
+    apply_position_effect(db, transaction)
 
     # Generate the transaction ID before creating its history record.
     db.flush()
@@ -573,10 +851,19 @@ def update_advisor_transaction(
         transaction
     ).model_dump(mode="json")
 
+    apply_position_effect(db, transaction, reverse=True)
     updates = payload.model_dump(exclude_unset=True)
+
+    validate_transaction_links(
+        db, transaction.customer_id,
+        updates.get("financial_account_id", transaction.financial_account_id),
+        updates.get("holding_id", transaction.holding_id),
+    )
 
     for field, value in updates.items():
         setattr(transaction, field, value)
+
+    apply_position_effect(db, transaction)
 
     transaction.updated_by = advisor.id
 
@@ -635,6 +922,7 @@ def delete_advisor_transaction(
     ).model_dump(mode="json")
 
     transaction.is_active = False
+    apply_position_effect(db, transaction, reverse=True)
     transaction.deleted_at = datetime.utcnow()
     transaction.deleted_by = advisor.id
 

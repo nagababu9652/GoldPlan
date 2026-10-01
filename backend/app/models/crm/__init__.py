@@ -7,3 +7,7 @@ from app.models.crm.meeting import Meeting
 from app.models.crm.task import Task
 from app.models.crm.message import Message
 from app.models.crm.document import CrmDocument
+from .goal import FinancialGoal
+from .financial_account import FinancialAccount
+from .holding import Holding
+from .report_snapshot import ReportSnapshot

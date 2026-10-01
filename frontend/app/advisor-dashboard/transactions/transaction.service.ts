@@ -8,9 +8,13 @@ import {
 export interface AdvisorTransaction {
   id: number;
   customer_id: number;
+  financial_account_id?: number | null;
+  holding_id?: number | null;
   transaction_date: string;
   transaction_type: string;
   amount: number | string;
+  quantity?: number | string | null;
+  unit_price?: number | string | null;
   description?: string | null;
   status: string;
   reference_number?: string | null;
@@ -31,9 +35,13 @@ export interface TransactionHistory {
 
 export interface TransactionCreate {
   customer_id: number;
+  financial_account_id?: number;
+  holding_id?: number;
   transaction_date: string;
   transaction_type: string;
   amount: number;
+  quantity?: number;
+  unit_price?: number;
   description?: string;
   status?: string;
   reference_number?: string;
@@ -41,9 +49,13 @@ export interface TransactionCreate {
 }
 
 export interface TransactionUpdate {
+  financial_account_id?: number | null;
+  holding_id?: number | null;
   transaction_date?: string;
   transaction_type?: string;
   amount?: number;
+  quantity?: number | null;
+  unit_price?: number | null;
   description?: string;
   status?: string;
   reference_number?: string;

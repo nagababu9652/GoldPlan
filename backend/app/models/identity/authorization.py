@@ -86,6 +86,35 @@ class RolePermissionProfile(Base):
     assigned_by = Column(BigInteger, nullable=True)
 
 
+class EmployeePermissionProfile(Base):
+    __tablename__ = "employee_permission_profiles"
+    __table_args__ = {"schema": "identity"}
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    organization_id = Column(BigInteger, nullable=False)
+    employee_id = Column(BigInteger, ForeignKey("organization.employees.id"), nullable=False)
+    profile_id = Column(BigInteger, ForeignKey("identity.permission_profiles.id"), nullable=False)
+    effective_from = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"), nullable=False)
+    effective_to = Column(DateTime, nullable=True)
+    assigned_by = Column(BigInteger, nullable=False)
+    assigned_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"), nullable=False)
+
+
+class EmployeePermissionOverride(Base):
+    __tablename__ = "employee_permission_overrides"
+    __table_args__ = {"schema": "identity"}
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    organization_id = Column(BigInteger, nullable=False)
+    employee_id = Column(BigInteger, ForeignKey("organization.employees.id"), nullable=False)
+    permission_id = Column(BigInteger, ForeignKey("identity.permissions.id"), nullable=False)
+    allow_access = Column(Boolean, nullable=False)
+    effective_from = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"), nullable=False)
+    effective_to = Column(DateTime, nullable=True)
+    assigned_by = Column(BigInteger, nullable=False)
+    assigned_at = Column(DateTime, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"), nullable=False)
+
+
 class UserRole(Base):
     __tablename__ = "user_roles"
     __table_args__ = {"schema": "identity"}

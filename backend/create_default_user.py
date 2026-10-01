@@ -1,60 +1,59 @@
 #!/usr/bin/env python3
-"""
-Script to create the default auth users used for local testing.
-"""
+"""Create local development identities using the production onboarding boundary."""
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
 from app.database.session import SessionLocal
+from app.models.foundation.party import Party
 from app.services import auth_service as auth
+from app.services.onboarding_service import bootstrap_head_organization
 
 
 def create_default_user():
     db = SessionLocal()
-
     try:
-        user_password = "Test@123456"
-        user_data = {
-            "email": "user@finplan.in",
-            "password": user_password,
-            "first_name": "Test",
-            "last_name": "User",
-            "mobile_number": "+91 9876543210",
-            "role": "user",
-            "organization_name": "FinPlan India",
-            "branch_name": "Head Office",
-        }
-        if not auth.get_user_by_email(db, user_data["email"]):
-            auth.create_user(db, user_data.copy())
-            print(f"✓ Created user: {user_data['email']} / {user_password}")
-        else:
-            print(f"✓ User already exists: {user_data['email']}")
+        accounts = (
+            ("user@finplan.in", "Test@123456", "Test", "User"),
+            ("advisor@finplan.in", "Advisor@123456", "Demo", "Advisor"),
+        )
+        created = {}
+        for email, password, first_name, last_name in accounts:
+            user = auth.get_user_by_email(db, email)
+            if not user:
+                user = auth.create_user(db, {
+                    "email": email,
+                    "password": password,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "email_verified": True,
+                })
+                print(f"Created user: {email} / {password}")
+            else:
+                print(f"User already exists: {email}")
+            created[email] = user
 
-        advisor_password = "Advisor@123456"
-        advisor_data = {
-            "email": "advisor@finplan.in",
-            "password": advisor_password,
-            "first_name": "Demo",
-            "last_name": "Advisor",
-            "mobile_number": "+91 9876543211",
-            "role": "advisor",
-        }
-        if not auth.get_user_by_email(db, advisor_data["email"]):
-            auth.create_user(db, advisor_data.copy())
-            print(f"✓ Created advisor: {advisor_data['email']} / {advisor_password}")
-        else:
-            print(f"✓ User already exists: {advisor_data['email']}")
+        advisor = created["advisor@finplan.in"]
+        party = db.query(Party).filter(Party.id == advisor.party_id).first()
+        if party and party.organization_id is None:
+            session, _, _ = auth.create_session(db, advisor, device_name="local-seed")
+            bootstrap_head_organization(
+                db,
+                organization_name="FinPlan India",
+                branch_name="Head Office",
+                party=party,
+                user_id=advisor.id,
+                session_id=session.id,
+            )
+            db.commit()
+            print("Bootstrapped advisor as the first organization Head")
 
-        print("\nLogin URLs:")
-        print("  http://localhost:3000/login")
-
-    except Exception as e:
-        print(f"✗ Error creating default user: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+        print("\nLogin URL: http://localhost:3000/login")
+    except Exception as exc:
+        db.rollback()
+        print(f"Error creating default users: {exc}")
+        raise
     finally:
         db.close()
 

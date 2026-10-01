@@ -32,6 +32,9 @@ class Transaction(Base, AuditMixin):
         index=True,
     )
 
+    financial_account_id = Column(BigInteger, ForeignKey("crm.financial_accounts.id"), nullable=True)
+    holding_id = Column(BigInteger, ForeignKey("crm.holdings.id"), nullable=True)
+
     transaction_date = Column(Date, nullable=False, index=True)
 
     transaction_type = Column(
@@ -68,8 +71,13 @@ class Transaction(Base, AuditMixin):
         back_populates="transactions",
     )
 
+    financial_account = relationship("FinancialAccount", lazy="selectin")
+    holding = relationship("Holding", lazy="selectin")
+
     history = relationship(
         "TransactionHistory",
         back_populates="transaction",
         lazy="selectin",
     )
+    quantity = Column(Numeric(24, 8), nullable=True)
+    unit_price = Column(Numeric(18, 4), nullable=True)
