@@ -9,6 +9,8 @@ from ..models.identity.auth import RefreshToken, User, UserSession
 from ..models.identity.authorization import Role, UserRole
 from ..models.identity.security import AuditLog
 from ..models.organization.employee import Employee
+from ..models.crm.customer import Customer
+from ..models.identity.invitation import AccessInvitation
 from .access import AccessContext, utc_naive
 
 
@@ -118,4 +120,57 @@ def set_employee_login_access(
         },
         session_id=actor.session_id,
     ))
+    return user, revoked_sessions
+
+
+def set_client_portal_access(
+    db: Session, *, customer_id: int, enabled: bool, actor: AccessContext,
+) -> tuple[User, int]:
+    customer = db.query(Customer).filter(
+        Customer.id == customer_id, Customer.organization_id == actor.organization_id,
+        Customer.is_active.is_(True), Customer.deleted_at.is_(None),
+    ).with_for_update().first()
+    if customer is None:
+        raise HTTPException(404, "Customer not found")
+    user = db.query(User).filter(User.party_id == customer.party_id,
+        User.deleted_at.is_(None)).with_for_update().first()
+    if user is None:
+        raise HTTPException(404, "Client portal account not found; create an invitation first")
+    role = db.query(Role).filter(Role.role_code == "CLIENT", Role.is_active.is_(True),
+        or_(Role.organization_id.is_(None), Role.organization_id == actor.organization_id)).first()
+    if role is None:
+        raise HTTPException(500, "CLIENT role is not configured")
+    timestamp = now_utc_naive()
+    active_links = db.query(UserRole).filter(UserRole.user_id == user.id,
+        UserRole.role_id == role.id, UserRole.effective_to.is_(None)).with_for_update().all()
+    revoked_sessions = 0
+    if enabled:
+        if not active_links:
+            db.add(UserRole(user_id=user.id, role_id=role.id, effective_from=timestamp,
+                assigned_by=actor.user_id, is_primary=True))
+        user.account_status = "ACTIVE"; user.is_active = True
+        action = "CLIENT_PORTAL_ENABLED"
+    else:
+        for link in active_links:
+            link.effective_to = timestamp
+        pending = db.query(AccessInvitation).filter(
+            AccessInvitation.customer_id == customer.id,
+            AccessInvitation.invitation_type == "CLIENT_PORTAL",
+            AccessInvitation.accepted_at.is_(None), AccessInvitation.revoked_at.is_(None),
+        ).with_for_update().all()
+        for invitation in pending:
+            invitation.revoked_at = timestamp
+        revoked_sessions = revoke_user_sessions(db, user.id)
+        other_active = db.query(UserRole).filter(UserRole.user_id == user.id,
+            UserRole.role_id != role.id, UserRole.effective_from <= timestamp,
+            or_(UserRole.effective_to.is_(None), UserRole.effective_to > timestamp)).first()
+        if other_active is None:
+            user.account_status = "DISABLED"; user.is_active = False
+        action = "CLIENT_PORTAL_DISABLED"
+    user.updated_by = actor.user_id
+    db.add(AuditLog(organization_id=actor.organization_id, user_id=actor.user_id,
+        module_name="CLIENT_PORTAL_ACCESS", table_name="users", record_id=user.id,
+        action=action, new_values={"customer_id": customer.id,
+            "is_active": user.is_active, "account_status": user.account_status,
+            "revoked_sessions": revoked_sessions}, session_id=actor.session_id))
     return user, revoked_sessions

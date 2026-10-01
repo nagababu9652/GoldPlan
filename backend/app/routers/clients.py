@@ -326,6 +326,8 @@ def list_clients(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
     search: Optional[str] = Query(None),
+    customer_status: Optional[str] = Query(None),
+    risk_profile: Optional[str] = Query(None),
     advisor: User = Depends(get_current_advisor),
     db: Session = Depends(get_db),
 ):
@@ -364,6 +366,12 @@ def list_clients(
                 Customer.customer_code.ilike(search_value),
             )
         )
+
+    if customer_status:
+        query = query.filter(Customer.customer_status == customer_status.strip().upper())
+
+    if risk_profile:
+        query = query.filter(Customer.risk_profile == risk_profile.strip().upper())
 
     total = query.count()
 

@@ -10,6 +10,7 @@ import Link from "next/link";
 
 import {
   archiveDocument,
+  downloadAdvisorDocument,
   getDocument,
   type Document,
 } from "@/lib/api";
@@ -261,6 +262,7 @@ export default function DocumentDetail({
           document.file_url,
         )
       : null;
+  async function openFile(download=false){const token=localStorage.getItem('finplan_token');if(!token||!document)return;try{const blob=await downloadAdvisorDocument(token,document.id);const url=URL.createObjectURL(blob);if(download){const link=window.document.createElement('a');link.href=url;link.download=document.file_name||document.document_name;link.click();}else window.open(url,'_blank','noopener,noreferrer');setTimeout(()=>URL.revokeObjectURL(url),60000);}catch(reason){setError(reason instanceof Error?reason.message:'Document download failed');}}
 
   return (
     <div className="mx-auto max-w-5xl space-y-3">
@@ -359,25 +361,21 @@ export default function DocumentDetail({
 
           {documentUrl && (
             <div className="flex gap-2">
-              <a
-                href={documentUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={()=>void openFile(false)}
                 className="inline-flex items-center justify-center rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800"
               >
                 Open Document
-              </a>
+              </button>
 
-              <a
-                href={documentUrl}
-                download={
-                  document.file_name ||
-                  document.document_name
-                }
+              <button
+                type="button"
+                onClick={()=>void openFile(true)}
                 className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Download
-              </a>
+              </button>
             </div>
           )}
         </div>

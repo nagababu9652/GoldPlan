@@ -23,12 +23,13 @@ from .identity import (
     Permission, Role, PermissionProfile, ProfilePermission, RolePermissionProfile, UserRole,
     EmployeePermissionProfile, EmployeePermissionOverride,
     Device, UserDevice, AccountLockout, SecurityEvent, AuditLog,
+    AccessInvitation,
 )
 
 # Organization models
 from .organization import (
     Organization, Branch, Department, Designation, OrganizationSetting,
-    Employee, EmployeeRole, EmployeeReporting, EmployeeBranchHistory, EmployeeDepartmentHistory,
+    Employee, EmployeeRole, EmployeeReporting, EmployeeBranchHistory, EmployeeDepartmentHistory, EmployeeDesignationHistory,
     EmployeeAssignment, EmployeeSkill, EmployeeCertification, OrganizationHoliday,
     SubscriptionPlan, OrganizationSubscription, SubscriptionEvent,
 )
@@ -60,10 +61,11 @@ __all__ = [
     "Permission", "Role", "PermissionProfile", "ProfilePermission", "RolePermissionProfile", "UserRole",
     "EmployeePermissionProfile", "EmployeePermissionOverride",
     "Device", "UserDevice", "AccountLockout", "SecurityEvent", "AuditLog",
+    "AccessInvitation",
 
     # Organization
     "Organization", "Branch", "Department", "Designation", "OrganizationSetting",
-    "Employee", "EmployeeRole", "EmployeeReporting", "EmployeeBranchHistory", "EmployeeDepartmentHistory",
+    "Employee", "EmployeeRole", "EmployeeReporting", "EmployeeBranchHistory", "EmployeeDepartmentHistory", "EmployeeDesignationHistory",
     "EmployeeAssignment", "EmployeeSkill", "EmployeeCertification", "OrganizationHoliday",
     "SubscriptionPlan", "OrganizationSubscription", "SubscriptionEvent",
 

@@ -1,13 +1,14 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..database.session import get_db
 from ..models.foundation.party import Party
 from ..models.identity.security import AuditLog
 from ..models.organization.core import Branch, Department, Designation
-from ..models.organization.employee import Employee, EmployeeBranchHistory, EmployeeDepartmentHistory, EmployeeReporting
+from ..models.organization.employee import Employee, EmployeeBranchHistory, EmployeeDepartmentHistory, EmployeeDesignationHistory, EmployeeReporting
 from ..schemas.admin_employee import EmployeeCreate, EmployeeResponse, EmployeeUpdate, EmploymentHistoryResponse
 from ..services.access import AccessContext, require_head, require_permission
 from ..services.party_profile import lookup_id
@@ -31,6 +32,8 @@ def scoped(db, model, record_id, organization_id, *, active=False):
 
 def employee_response(db, employee):
     party = db.query(Party).filter(Party.id == employee.party_id).first()
+    if party is None:
+        raise HTTPException(409, "Employee Party record is missing")
     manager = db.query(EmployeeReporting).filter(EmployeeReporting.employee_id == employee.id, EmployeeReporting.effective_to.is_(None)).first()
     values = {column.name: getattr(employee, column.name) for column in Employee.__table__.columns}
     values.update(first_name=party.first_name, middle_name=party.middle_name, last_name=party.last_name,
@@ -65,10 +68,21 @@ def audit(db, context, employee_id, action, old=None, new=None):
 
 
 @router.get("", response_model=list[EmployeeResponse], dependencies=permissions("ORG.EMPLOYEE.READ"))
-def list_employees(include_inactive: bool = False, context: AccessContext = Depends(require_head), db: Session = Depends(get_db)):
-    query = db.query(Employee).filter(Employee.organization_id == context.organization_id, Employee.deleted_at.is_(None))
+def list_employees(include_inactive: bool = False, search: str | None = Query(None),
+                   employment_status: str | None = Query(None), branch_id: int | None = Query(None),
+                   context: AccessContext = Depends(require_head), db: Session = Depends(get_db)):
+    query = db.query(Employee).join(Party, Party.id == Employee.party_id).filter(Employee.organization_id == context.organization_id, Employee.deleted_at.is_(None))
     if not include_inactive:
         query = query.filter(Employee.is_active.is_(True))
+    if search:
+        value = f"%{search.strip()}%"
+        query = query.filter(or_(Employee.employee_code.ilike(value), Employee.official_email.ilike(value),
+            Employee.official_mobile.ilike(value), Party.display_name.ilike(value),
+            Party.email.ilike(value), Party.mobile_number.ilike(value)))
+    if employment_status:
+        query = query.filter(Employee.employment_status == employment_status.strip().upper())
+    if branch_id is not None:
+        query = query.filter(Employee.branch_id == branch_id)
     return [employee_response(db, item) for item in query.order_by(Employee.employee_code).all()]
 
 
@@ -100,7 +114,8 @@ def create_employee(payload: EmployeeCreate, context: AccessContext = Depends(re
                         remarks=payload.remarks, created_by=context.user_id, updated_by=context.user_id)
     db.add(employee); db.flush()
     db.add_all([EmployeeBranchHistory(employee_id=employee.id, branch_id=employee.branch_id, effective_from=employee.joining_date),
-                EmployeeDepartmentHistory(employee_id=employee.id, department_id=employee.department_id, effective_from=employee.joining_date)])
+                EmployeeDepartmentHistory(employee_id=employee.id, department_id=employee.department_id, effective_from=employee.joining_date),
+                EmployeeDesignationHistory(employee_id=employee.id, designation_id=employee.designation_id, effective_from=employee.joining_date)])
     if payload.reporting_manager_employee_id:
         db.add(EmployeeReporting(employee_id=employee.id, manager_employee_id=payload.reporting_manager_employee_id, effective_from=payload.joining_date))
     audit(db, context, employee.id, "CREATE", new={"employee_code": code}); db.commit(); db.refresh(employee)
@@ -110,7 +125,19 @@ def create_employee(payload: EmployeeCreate, context: AccessContext = Depends(re
 @router.put("/{employee_id}", response_model=EmployeeResponse, dependencies=permissions("ORG.EMPLOYEE.UPDATE"))
 def update_employee(employee_id: int, payload: EmployeeUpdate, context: AccessContext = Depends(require_head), db: Session = Depends(get_db)):
     employee = scoped(db, Employee, employee_id, context.organization_id)
-    party = db.query(Party).filter(Party.id == employee.party_id, Party.organization_id == context.organization_id).first()
+    # The Employee has already established the organization boundary. Some Party
+    # rows created before Party organization ownership was enforced have a NULL
+    # organization_id, so filtering the linked row by organization loses it.
+    party = db.query(Party).filter(
+        Party.id == employee.party_id,
+        Party.deleted_at.is_(None),
+    ).first()
+    if party is None:
+        raise HTTPException(409, "Employee Party record is missing")
+    if party.organization_id not in {None, context.organization_id}:
+        raise HTTPException(409, "Employee Party belongs to another organization")
+    if party.organization_id is None:
+        party.organization_id = context.organization_id
     changes = payload.model_dump(exclude_unset=True)
     branch_id = changes.get("branch_id", employee.branch_id); department_id = changes.get("department_id", employee.department_id)
     designation_id = changes.get("designation_id", employee.designation_id)
@@ -126,6 +153,10 @@ def update_employee(employee_id: int, payload: EmployeeUpdate, context: AccessCo
         current = db.query(EmployeeDepartmentHistory).filter(EmployeeDepartmentHistory.employee_id == employee.id, EmployeeDepartmentHistory.effective_to.is_(None)).first()
         if current: current.effective_to = effective
         db.add(EmployeeDepartmentHistory(employee_id=employee.id, department_id=department_id, effective_from=effective))
+    if designation_id != employee.designation_id:
+        current = db.query(EmployeeDesignationHistory).filter(EmployeeDesignationHistory.employee_id == employee.id, EmployeeDesignationHistory.effective_to.is_(None)).first()
+        if current: current.effective_to = effective
+        db.add(EmployeeDesignationHistory(employee_id=employee.id, designation_id=designation_id, effective_from=effective))
     party_fields = {"first_name", "middle_name", "last_name", "display_name", "personal_email", "mobile_number", "date_of_birth"}
     for key in party_fields & changes.keys():
         setattr(party, {"personal_email": "email"}.get(key, key), changes[key])
@@ -165,4 +196,5 @@ def employee_history(employee_id: int, context: AccessContext = Depends(require_
     employee = scoped(db, Employee, employee_id, context.organization_id)
     return {"branches": db.query(EmployeeBranchHistory).filter(EmployeeBranchHistory.employee_id == employee.id).all(),
             "departments": db.query(EmployeeDepartmentHistory).filter(EmployeeDepartmentHistory.employee_id == employee.id).all(),
+            "designations": db.query(EmployeeDesignationHistory).filter(EmployeeDesignationHistory.employee_id == employee.id).all(),
             "reporting": db.query(EmployeeReporting).filter(EmployeeReporting.employee_id == employee.id).all()}

@@ -11,3 +11,4 @@ from .goal import FinancialGoal
 from .financial_account import FinancialAccount
 from .holding import Holding
 from .report_snapshot import ReportSnapshot
+from .portal_publication import PortalPublication

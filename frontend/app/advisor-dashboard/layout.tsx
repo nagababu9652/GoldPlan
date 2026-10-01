@@ -18,7 +18,7 @@ import {
   Receipt,
   Settings,
 } from "lucide-react";
-import { getAccessContext } from "@/lib/api";
+import { getAccessContext, logoutUser } from "@/lib/api";
 
 interface NavItem {
   label: string;
@@ -103,6 +103,30 @@ const navigation: NavModule[] = [
       {
         label: "Profile",
         path: "/advisor-dashboard/profile",
+      },
+      {
+        label: "Organization Profile",
+        path: "/admin/organization",
+      },
+      {
+        label: "Branches",
+        path: "/admin/organization/branches",
+      },
+      {
+        label: "Departments",
+        path: "/admin/organization/departments",
+      },
+      {
+        label: "Designations",
+        path: "/admin/organization/designations",
+      },
+      {
+        label: "Employees",
+        path: "/admin/organization/employees",
+      },
+      {
+        label: "Subscription",
+        path: "/admin/subscription",
       },
       {
         label: "Notifications",
@@ -202,7 +226,9 @@ export default function AdvisorDashboardLayout({
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const token = localStorage.getItem("finplan_token");
+    try { await logoutUser(token); } catch { /* Continue with local logout. */ }
     localStorage.removeItem("finplan_token");
     localStorage.removeItem(
       "finplan_refresh_token"
@@ -300,6 +326,8 @@ export default function AdvisorDashboardLayout({
                   </div>
                 </div>
               </Link>
+
+              <button type="button" onClick={()=>void handleLogout()} className="hidden items-center gap-2 rounded-md px-3 py-2 text-xs text-bone/75 hover:bg-obsidian-soft hover:text-bone lg:flex"><LogOut size={16}/>Logout</button>
 
               {/* Mobile menu */}
               <button

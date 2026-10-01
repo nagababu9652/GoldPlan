@@ -3121,37 +3121,37 @@ second address model.
 
 ### Pending A3 — Employee administration and access
 
-- [ ] Implement employee create/profile/edit/deactivate/reactivate with one Party.
-- [ ] Preserve branch, department, designation, and reporting history on changes.
+- [x] Implement employee create/profile/edit/deactivate/reactivate with one Party.
+- [x] Preserve branch, department, designation, and reporting history on changes.
 - [x] Implement permission-profile assignment and any required individual override model.
 - [x] Implement effective-dated client, group, and branch assignments.
-- [ ] Implement reporting-manager history.
-- [ ] Build employee Overview, Employment, Contact, Access, Assigned Clients,
+- [x] Implement reporting-manager history.
+- [x] Build employee Overview, Employment, Contact, Access, Assigned Clients,
   Reporting, and Activity tabs.
-- [ ] Prevent self-escalation and unauthorized permission administration.
-- [ ] Apply historical-access rules when assignments end, including multi-client
+- [x] Prevent self-escalation and unauthorized permission administration.
+- [x] Apply historical-access rules when assignments end, including multi-client
   snapshots and documents owned by former assignees.
 
 ### Pending A4 — Invitations and employee login
 
-- [ ] Add `AccessInvitation` with hashed token, expiry, purpose, status, inviter,
+- [x] Add `AccessInvitation` with hashed token, expiry, purpose, status, inviter,
   organization, Party, and intended role.
-- [ ] Implement invite, accept, resend, expire, and revoke flows.
-- [ ] Enforce atomic single-use acceptance, recipient/Party/organization binding,
+- [x] Implement invite, accept, resend, expire, and revoke flows.
+- [x] Enforce atomic single-use acceptance, recipient/Party/organization binding,
   resend invalidation, and concurrent-acceptance tests from section 58A.
-- [ ] Link login to the existing Employee Party; never create a duplicate Party.
-- [ ] Activate the EMPLOYEE role only after successful invitation acceptance.
-- [ ] Build permission-aware `/employee-dashboard` navigation and APIs.
+- [x] Link login to the existing Employee Party; never create a duplicate Party.
+- [x] Activate the EMPLOYEE role only after successful invitation acceptance.
+- [x] Build permission-aware `/employee-dashboard` navigation and APIs.
 
 ### Pending A5 — Client portal
 
-- [ ] Invite an existing Customer Party and attach the CLIENT role.
-- [ ] Build the read-only V1 `/client-portal` routes defined in section 23.
-- [ ] Enforce own-customer and approved-household visibility in the backend.
-- [ ] Separate client-visible content from internal notes, tasks, compliance notes,
+- [x] Invite an existing Customer Party and attach the CLIENT role.
+- [x] Build the read-only V1 `/client-portal` routes defined in section 23.
+- [x] Enforce own-customer and approved-household visibility in the backend.
+- [x] Separate client-visible content from internal notes, tasks, compliance notes,
   and unapproved documents.
-- [ ] Implement portal disable/revoke and session termination.
-- [ ] Add explicit client publication/approval for specific report versions and
+- [x] Implement portal disable/revoke and session termination.
+- [x] Add explicit client publication/approval for specific report versions and
   documents, with audience validation and publication revocation.
 
 ### Pending A6 — External organization records

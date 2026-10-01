@@ -192,11 +192,12 @@ export async function loginUser(credentials: LoginCredentials & { role?: string 
   return response.json();
 }
 
-export async function logoutUser(): Promise<void> {
+export async function logoutUser(token?:string|null): Promise<void> {
   await fetch(`${API_BASE_URL}/auth/logout`, {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
+      ...(token ? {'Authorization':`Bearer ${token}`} : {}),
     },
     credentials: 'include',
   });
@@ -525,12 +526,15 @@ export const getAdminOrganization=(token:string)=>adminOrganizationRequest<Organ
 export const updateAdminOrganization=(token:string,data:Partial<OrganizationAdminProfile>)=>adminOrganizationRequest<OrganizationAdminProfile>(token,'',{method:'PUT',body:JSON.stringify(data)});
 export const listAdminBranches=(token:string,all=true)=>adminOrganizationRequest<AdminBranch[]>(token,`/branches?include_inactive=${all}`);
 export const createAdminBranch=(token:string,data:Partial<AdminBranch>)=>adminOrganizationRequest<AdminBranch>(token,'/branches',{method:'POST',body:JSON.stringify(data)});
+export const updateAdminBranch=(token:string,id:number,data:Partial<AdminBranch>)=>adminOrganizationRequest<AdminBranch>(token,`/branches/${id}`,{method:'PUT',body:JSON.stringify(data)});
 export const setAdminBranchActive=(token:string,id:number,active:boolean)=>adminOrganizationRequest<AdminBranch>(token,`/branches/${id}/${active?'reactivate':'deactivate'}`,{method:'POST'});
 export const listAdminDepartments=(token:string,all=true)=>adminOrganizationRequest<AdminDepartment[]>(token,`/departments?include_inactive=${all}`);
 export const createAdminDepartment=(token:string,data:Partial<AdminDepartment>)=>adminOrganizationRequest<AdminDepartment>(token,'/departments',{method:'POST',body:JSON.stringify(data)});
+export const updateAdminDepartment=(token:string,id:number,data:Partial<AdminDepartment>)=>adminOrganizationRequest<AdminDepartment>(token,`/departments/${id}`,{method:'PUT',body:JSON.stringify(data)});
 export const setAdminDepartmentActive=(token:string,id:number,active:boolean)=>adminOrganizationRequest<AdminDepartment>(token,`/departments/${id}/${active?'reactivate':'deactivate'}`,{method:'POST'});
 export const listAdminDesignations=(token:string,all=true)=>adminOrganizationRequest<AdminDesignation[]>(token,`/designations?include_inactive=${all}`);
 export const createAdminDesignation=(token:string,data:Partial<AdminDesignation>)=>adminOrganizationRequest<AdminDesignation>(token,'/designations',{method:'POST',body:JSON.stringify(data)});
+export const updateAdminDesignation=(token:string,id:number,data:Partial<AdminDesignation>)=>adminOrganizationRequest<AdminDesignation>(token,`/designations/${id}`,{method:'PUT',body:JSON.stringify(data)});
 export const setAdminDesignationActive=(token:string,id:number,active:boolean)=>adminOrganizationRequest<AdminDesignation>(token,`/designations/${id}/${active?'reactivate':'deactivate'}`,{method:'POST'});
 
 export interface AdminEmployee {
@@ -551,12 +555,12 @@ export interface AdminEmployeeInput {
 }
 export interface AdminEmploymentHistory {
   id:number; effective_from?:string|null; effective_to?:string|null; remarks?:string|null;
-  branch_id?:number|null; department_id?:number|null; manager_employee_id?:number|null;
+  branch_id?:number|null; department_id?:number|null; designation_id?:number|null; manager_employee_id?:number|null;
 }
 export interface AdminEmployeeHistory {
-  branches:AdminEmploymentHistory[]; departments:AdminEmploymentHistory[]; reporting:AdminEmploymentHistory[];
+  branches:AdminEmploymentHistory[]; departments:AdminEmploymentHistory[]; designations:AdminEmploymentHistory[]; reporting:AdminEmploymentHistory[];
 }
-export const listAdminEmployees=(token:string,all=true)=>adminOrganizationRequest<AdminEmployee[]>(token,`/employees?include_inactive=${all}`);
+export const listAdminEmployees=(token:string,all=true,filters?:{search?:string;employment_status?:string;branch_id?:number})=>{const query=new URLSearchParams({include_inactive:String(all)});if(filters?.search)query.set('search',filters.search);if(filters?.employment_status)query.set('employment_status',filters.employment_status);if(filters?.branch_id)query.set('branch_id',String(filters.branch_id));return adminOrganizationRequest<AdminEmployee[]>(token,`/employees?${query}`);};
 export const getAdminEmployee=(token:string,id:number)=>adminOrganizationRequest<AdminEmployee>(token,`/employees/${id}`);
 export const createAdminEmployee=(token:string,data:AdminEmployeeInput)=>adminOrganizationRequest<AdminEmployee>(token,'/employees',{method:'POST',body:JSON.stringify(data)});
 export const updateAdminEmployee=(token:string,id:number,data:Partial<AdminEmployee>)=>adminOrganizationRequest<AdminEmployee>(token,`/employees/${id}`,{method:'PUT',body:JSON.stringify(data)});
@@ -582,6 +586,66 @@ export interface AdminEmployeeAssignmentInput { entity_type:AdminAssignmentEntit
 export const listAdminEmployeeAssignments=(token:string,id:number,history=true)=>adminAccessRequest<AdminEmployeeAssignment[]>(token,`/employees/${id}/assignments?include_history=${history}`);
 export const createAdminEmployeeAssignment=(token:string,id:number,data:AdminEmployeeAssignmentInput)=>adminAccessRequest<AdminEmployeeAssignment>(token,`/employees/${id}/assignments`,{method:'POST',body:JSON.stringify(data)});
 export const endAdminEmployeeAssignment=(token:string,employeeId:number,assignmentId:number,effectiveTo:string)=>adminAccessRequest<AdminEmployeeAssignment>(token,`/employees/${employeeId}/assignments/${assignmentId}/end`,{method:'POST',body:JSON.stringify({effective_to:effectiveTo})});
+export interface AdminEmployeeActivity { id:number; actor_user_id?:number|null; actor_name?:string|null; module_name?:string|null; action?:string|null; old_values?:Record<string,unknown>|null; new_values?:Record<string,unknown>|null; created_at:string; }
+export const listAdminEmployeeActivity=(token:string,id:number)=>adminAccessRequest<AdminEmployeeActivity[]>(token,`/employees/${id}/activity`);
+export interface AdminAgency {id:number;organization_id:number;party_id:number;agency_code:string;name:string;legal_name?:string|null;pan?:string|null;gstin?:string|null;email?:string|null;mobile_number?:string|null;registration_number?:string|null;branch_id?:number|null;primary_contact_party_id?:number|null;start_date:string;end_date?:string|null;status:string;remarks?:string|null;is_active:boolean;created_at:string;}
+export interface AdminAssociate {id:number;organization_id:number;party_id:number;associate_code:string;associate_type:string;name:string;legal_name?:string|null;pan?:string|null;email?:string|null;mobile_number?:string|null;branch_id?:number|null;agency_id?:number|null;joining_date:string;end_date?:string|null;status:string;referral_code?:string|null;remarks?:string|null;is_active:boolean;created_at:string;}
+export interface AdminArnHolder {id:number;organization_id:number;arn_number:string;holder_party_id:number;holder_name:string;holder_type:'ORGANIZATION'|'EMPLOYEE'|'ASSOCIATE'|'AGENCY'|'OTHER';branch_id?:number|null;employee_id?:number|null;associate_id?:number|null;agency_id?:number|null;registration_date?:string|null;valid_from?:string|null;valid_to?:string|null;status:'ACTIVE'|'EXPIRED'|'SUSPENDED'|'INACTIVE';remarks?:string|null;is_active:boolean;created_at:string;}
+type ExternalInput=Record<string,unknown>;
+export const listAdminAgencies=(token:string,all=true)=>adminOrganizationRequest<AdminAgency[]>(token,`/agencies?include_inactive=${all}`);
+export const createAdminAgency=(token:string,data:ExternalInput)=>adminOrganizationRequest<AdminAgency>(token,'/agencies',{method:'POST',body:JSON.stringify(data)});
+export const updateAdminAgency=(token:string,id:number,data:ExternalInput)=>adminOrganizationRequest<AdminAgency>(token,`/agencies/${id}`,{method:'PUT',body:JSON.stringify(data)});
+export const setAdminAgencyActive=(token:string,id:number,active:boolean)=>adminOrganizationRequest<AdminAgency>(token,`/agencies/${id}/${active?'reactivate':'deactivate'}`,{method:'POST'});
+export const listAdminAssociates=(token:string,all=true)=>adminOrganizationRequest<AdminAssociate[]>(token,`/associates?include_inactive=${all}`);
+export const createAdminAssociate=(token:string,data:ExternalInput)=>adminOrganizationRequest<AdminAssociate>(token,'/associates',{method:'POST',body:JSON.stringify(data)});
+export const updateAdminAssociate=(token:string,id:number,data:ExternalInput)=>adminOrganizationRequest<AdminAssociate>(token,`/associates/${id}`,{method:'PUT',body:JSON.stringify(data)});
+export const setAdminAssociateActive=(token:string,id:number,active:boolean)=>adminOrganizationRequest<AdminAssociate>(token,`/associates/${id}/${active?'reactivate':'deactivate'}`,{method:'POST'});
+export const listAdminArnHolders=(token:string,all=true)=>adminOrganizationRequest<AdminArnHolder[]>(token,`/arn-holders?include_inactive=${all}`);
+export const createAdminArnHolder=(token:string,data:ExternalInput)=>adminOrganizationRequest<AdminArnHolder>(token,'/arn-holders',{method:'POST',body:JSON.stringify(data)});
+export const updateAdminArnHolder=(token:string,id:number,data:ExternalInput)=>adminOrganizationRequest<AdminArnHolder>(token,`/arn-holders/${id}`,{method:'PUT',body:JSON.stringify(data)});
+export const setAdminArnStatus=(token:string,id:number,status:AdminArnHolder['status'],reason?:string)=>adminOrganizationRequest<AdminArnHolder>(token,`/arn-holders/${id}/status`,{method:'POST',body:JSON.stringify({status,reason:reason||null})});
+export interface AccessInvitation { id:number;employee_id?:number|null;customer_id?:number|null;invitation_type:string;email:string;status:string;expires_at:string;created_at:string;invitation_url?:string|null; }
+export async function createEmployeeInvitation(token:string,employeeId:number):Promise<AccessInvitation>{const response=await fetch(`${API_BASE_URL}/admin/invitations`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({employee_id:employeeId,expires_in_hours:72})});if(!response.ok){const error=await response.json();throw new Error(formatApiError(error.detail,'Invitation failed'));}return response.json();}
+export async function createClientInvitation(token:string,customerId:number):Promise<AccessInvitation>{const response=await fetch(`${API_BASE_URL}/admin/client-invitations`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({customer_id:customerId,expires_in_hours:72})});if(!response.ok){const error=await response.json();throw new Error(formatApiError(error.detail,'Invitation failed'));}return response.json();}
+export async function previewAccessInvitation(token:string){const response=await fetch(`${API_BASE_URL}/auth/invitations/preview?token=${encodeURIComponent(token)}`);if(!response.ok)throw new Error('Invitation is invalid or expired');return response.json() as Promise<{email:string;display_name:string;invitation_type:string;organization_id:number;expires_at:string}>;}
+export async function acceptAccessInvitation(token:string,password:string){const response=await fetch(`${API_BASE_URL}/auth/invitations/accept`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,password})});if(!response.ok){const error=await response.json();throw new Error(formatApiError(error.detail,'Unable to accept invitation'));}return response.json() as Promise<{message:string;email:string}>;}
+export interface EmployeeDashboardData {employee_id:number;organization_id:number;actor_type:string;assigned_client_count:number;permissions:string[];subscription_status:string;}
+export interface EmployeeAssignedClient {id:number;customer_code:string;display_name:string;email?:string|null;mobile_number?:string|null;status:string;}
+async function employeeFetch<T>(token:string,path:string):Promise<T>{const response=await fetch(`${API_BASE_URL}/employee${path}`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'}});if(!response.ok){const error=await response.json().catch(()=>null);throw new Error(formatApiError(error?.detail,'Employee request failed'));}return response.json();}
+export const getEmployeeDashboard=(token:string)=>employeeFetch<EmployeeDashboardData>(token,'/dashboard');
+export const getEmployeeClients=(token:string)=>employeeFetch<EmployeeAssignedClient[]>(token,'/clients');
+export interface ClientPortalDashboard {customer_id:number;display_name:string;customer_code:string;email?:string|null;mobile_number?:string|null;goal_count:number;account_count:number;}
+async function clientPortalFetch<T>(token:string,path:string):Promise<T>{const response=await fetch(`${API_BASE_URL}/client-portal${path}`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'}});if(!response.ok){const error=await response.json().catch(()=>null);throw new Error(formatApiError(error?.detail,'Unable to load client portal'));}return response.json();}
+export const getClientPortalDashboard=(token:string)=>clientPortalFetch<ClientPortalDashboard>(token,'/dashboard');
+export interface ClientPortalProfile {customer_id:number;customer_code:string;display_name:string;first_name?:string|null;middle_name?:string|null;last_name?:string|null;email?:string|null;mobile_number?:string|null;date_of_birth?:string|null;occupation?:string|null;resident_status?:string|null;}
+export interface ClientPortalGoal {id:number;title:string;goal_type:string;target_amount:number;current_amount:number;target_date:string;priority:number;status:string;}
+export interface ClientPortalHolding {id:number;security_type:string;security_name:string;symbol?:string|null;quantity:number;average_cost:number;current_price:number;valuation_as_of?:string|null;}
+export interface ClientPortalInvestment {id:number;account_type:string;account_nature:string;account_name:string;institution_name?:string|null;account_number_masked?:string|null;currency_code:string;current_balance:number;valuation_as_of?:string|null;status:string;holdings:ClientPortalHolding[];}
+export interface ClientPortalTransaction {id:number;transaction_date:string;transaction_type:string;amount:number;description?:string|null;status:string;reference_number?:string|null;}
+export interface ClientPortalHousehold {id:number;group_name:string;group_type:string;members:{customer_id:number;display_name:string;relationship_type?:string|null;is_group_head:boolean}[];}
+export const getClientPortalProfile=(token:string)=>clientPortalFetch<ClientPortalProfile>(token,'/profile');
+export const getClientPortalGoals=(token:string)=>clientPortalFetch<ClientPortalGoal[]>(token,'/goals');
+export const getClientPortalInvestments=(token:string)=>clientPortalFetch<ClientPortalInvestment[]>(token,'/investments');
+export const getClientPortalTransactions=(token:string)=>clientPortalFetch<ClientPortalTransaction[]>(token,'/transactions');
+export const getClientPortalHousehold=(token:string)=>clientPortalFetch<ClientPortalHousehold|null>(token,'/household');
+export interface PortalPublication {id:number;customer_id:number;resource_type:'DOCUMENT'|'REPORT';resource_id:number;published_at:string;revoked_at?:string|null;status:'PUBLISHED'|'REVOKED';}
+export interface ClientPortalDocument {id:number;publication_id:number;document_type:string;document_name:string;description?:string|null;file_name?:string|null;file_type?:string|null;file_size?:number|null;published_at:string;}
+export interface ClientPortalReport {id:number;publication_id:number;title:string;report_type:string;report_date:string;period_start:string;period_end:string;created_at:string;published_at:string;assumptions:Record<string,unknown>;client:Record<string,number|string>;}
+export const listPortalPublications=(token:string,customerId:number,includeRevoked=false)=>advisorFetch<PortalPublication[]>(`/clients/${customerId}/portal-publications?include_revoked=${includeRevoked}`,token);
+export const publishPortalResource=(token:string,customerId:number,resourceType:'DOCUMENT'|'REPORT',resourceId:number)=>advisorFetch<PortalPublication>(`/clients/${customerId}/portal-publications`,token,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource_type:resourceType,resource_id:resourceId})});
+export const revokePortalPublication=(token:string,customerId:number,publicationId:number)=>advisorFetch<PortalPublication>(`/clients/${customerId}/portal-publications/${publicationId}/revoke`,token,{method:'POST'});
+export const getClientPortalDocuments=(token:string)=>clientPortalFetch<ClientPortalDocument[]>(token,'/documents');
+export const getClientPortalReports=(token:string)=>clientPortalFetch<ClientPortalReport[]>(token,'/reports');
+async function clientPortalDownload(token:string,path:string):Promise<Blob>{const response=await fetch(`${API_BASE_URL}/client-portal${path}`,{headers:{Authorization:`Bearer ${token}`}});if(!response.ok){const error=await response.json().catch(()=>null);throw new Error(formatApiError(error?.detail,'Download failed'));}return response.blob();}
+export const downloadClientPortalDocument=(token:string,id:number)=>clientPortalDownload(token,`/documents/${id}/download`);
+export const downloadClientPortalReport=(token:string,id:number)=>clientPortalDownload(token,`/reports/${id}/download`);
+export interface ClientPortalAccessStatus {customer_id:number;user_id?:number|null;has_account:boolean;enabled:boolean;account_status:string;pending_invitation:boolean;revoked_sessions?:number;}
+async function clientPortalAccessRequest<T>(token:string,customerId:number,path='',options?:RequestInit):Promise<T>{const response=await fetch(`${API_BASE_URL}/admin/clients/${customerId}/portal-access${path}`,{...options,headers:{Authorization:`Bearer ${token}`,...options?.headers}});if(!response.ok){const error=await response.json().catch(()=>null);throw new Error(formatApiError(error?.detail,'Portal access request failed'));}return response.json();}
+export const getClientPortalAccessStatus=(token:string,customerId:number)=>clientPortalAccessRequest<ClientPortalAccessStatus>(token,customerId);
+export const enableClientPortalAccess=(token:string,customerId:number)=>clientPortalAccessRequest<ClientPortalAccessStatus>(token,customerId,'/enable',{method:'POST'});
+export const disableClientPortalAccess=(token:string,customerId:number)=>clientPortalAccessRequest<ClientPortalAccessStatus>(token,customerId,'/disable',{method:'POST'});
+export interface ClientPortalMessage {id:number;message_type:string;subject?:string|null;body:string;status:string;sent_at:string;sender_name:string;}
+export const getClientPortalMessages=(token:string)=>clientPortalFetch<ClientPortalMessage[]>(token,'/messages');
 
 export interface FinancialSummaryReport {
   report_date: string;
@@ -828,7 +892,7 @@ export async function advisorDelete(
 
 export function getClients(
   token: string,
-  params?: { page_size?: number; page?: number },
+  params?: { page_size?: number; page?: number; search?:string; customer_status?:string; risk_profile?:string },
 ): Promise<ClientListResponse> {
   const queryParams = new URLSearchParams();
 
@@ -839,6 +903,9 @@ export function getClients(
 
   if (safePage) queryParams.set('page', String(safePage));
   if (safePageSize) queryParams.set('page_size', String(safePageSize));
+  if (params?.search) queryParams.set('search', params.search);
+  if (params?.customer_status) queryParams.set('customer_status', params.customer_status);
+  if (params?.risk_profile) queryParams.set('risk_profile', params.risk_profile);
 
   const qs = queryParams.toString();
   return advisorFetch(`/clients${qs ? `?${qs}` : ''}`, token);
@@ -869,6 +936,12 @@ export function getClient(token: string, id: number): Promise<Client> {
 
 export function deleteClient(token: string, id: number): Promise<{ message: string }> {
   return advisorDelete(`/clients/${id}`, token);
+}
+
+export async function downloadAdvisorDocument(token:string,documentId:number):Promise<Blob>{
+  const response=await advisorRequest(`/documents/${documentId}/download`,token);
+  if(!response.ok){const error=await response.json().catch(()=>null);throw new Error(formatApiError(error?.detail,'Document download failed'));}
+  return response.blob();
 }
 
 export interface ClientKYC {

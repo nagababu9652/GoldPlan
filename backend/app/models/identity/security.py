@@ -91,7 +91,7 @@ class AuditLog(Base):
     module_name = Column(String(100), nullable=True)
     table_name = Column(String(100), nullable=True)
     record_id = Column(BigInteger, nullable=True)
-    action = Column(String(20), nullable=True)
+    action = Column(String(50), nullable=True)
     old_values = Column(JSONB, nullable=True)
     new_values = Column(JSONB, nullable=True)
     ip_address = Column(INET, nullable=True)

@@ -41,6 +41,9 @@ export default function SubscriptionStatusPage() {
                 <p className="mt-2 text-xl font-medium">{periodEnd}</p>
               </div>
             </div>
+            <div className="border border-line bg-bone p-4 text-sm text-ash">
+              Plan editing and billing actions will appear here after the billing provider and commercial plans are configured. Subscription records cannot currently be edited through the API.
+            </div>
             {access.subscription_active ? (
               <button onClick={() => router.push('/advisor-dashboard')}
                 className="bg-obsidian px-5 py-3 text-sm font-medium text-bone">

@@ -45,7 +45,7 @@ class Branch(AuditMixin, Base):
     parent_branch_id = Column(BigInteger, ForeignKey("organization.branches.id"), nullable=True)
     branch_code = Column(String(30), nullable=False)
     branch_name = Column(String(200), nullable=False)
-    branch_type = Column(String(50), nullable=True)
+    branch_type = Column(String(50), nullable=False, default="BRANCH", server_default="BRANCH")
     manager_employee_id = Column(BigInteger, nullable=True)
     email = Column(String(150), nullable=True)
     phone = Column(String(30), nullable=True)

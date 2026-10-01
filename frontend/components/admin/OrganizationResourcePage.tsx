@@ -1,51 +1,19 @@
 'use client';
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent,useCallback,useEffect,useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  createAdminBranch, createAdminDepartment, createAdminDesignation,
-  listAdminBranches, listAdminDepartments, listAdminDesignations,
-  setAdminBranchActive, setAdminDepartmentActive, setAdminDesignationActive,
-  type AdminBranch, type AdminDepartment, type AdminDesignation,
-} from '@/lib/api';
-
-type Kind='branches'|'departments'|'designations';
-type Item=AdminBranch|AdminDepartment|AdminDesignation;
-const labels={branches:'Branches',departments:'Departments',designations:'Designations'};
-
+import { createAdminBranch,createAdminDepartment,createAdminDesignation,listAdminBranches,listAdminDepartments,listAdminDesignations,setAdminBranchActive,setAdminDepartmentActive,setAdminDesignationActive,updateAdminBranch,updateAdminDepartment,updateAdminDesignation,type AdminBranch,type AdminDepartment,type AdminDesignation } from '@/lib/api';
+type Kind='branches'|'departments'|'designations'; type Item=AdminBranch|AdminDepartment|AdminDesignation;
+const labels={branches:'Branches',departments:'Departments',designations:'Designations'};const inputClass='border border-line bg-bone px-3 py-2';
 export default function OrganizationResourcePage({kind}:{kind:Kind}){
-  const router=useRouter(); const [items,setItems]=useState<Item[]>([]); const [branches,setBranches]=useState<AdminBranch[]>([]);
-  const [code,setCode]=useState(''); const [name,setName]=useState(''); const [branchId,setBranchId]=useState('');
-  const [error,setError]=useState(''); const [loading,setLoading]=useState(true);
-  const token=()=>localStorage.getItem('finplan_token')||'';
-  const load=useCallback(async()=>{const t=token(); if(!t){router.replace('/login');return;} setLoading(true); try{
-    if(kind==='branches') setItems(await listAdminBranches(t));
-    if(kind==='departments'){const b=await listAdminBranches(t);setBranches(b.filter(x=>x.is_active));setItems(await listAdminDepartments(t));}
-    if(kind==='designations') setItems(await listAdminDesignations(t));
-  }catch(e){setError(e instanceof Error?e.message:'Unable to load records');}finally{setLoading(false);}},[kind,router]);
-  useEffect(()=>{void load();},[load]);
-  async function submit(e:FormEvent){e.preventDefault();setError('');try{const t=token();
-    if(kind==='branches') await createAdminBranch(t,{branch_code:code,branch_name:name,branch_type:'BRANCH'});
-    if(kind==='departments') await createAdminDepartment(t,{department_code:code,department_name:name,branch_id:Number(branchId)});
-    if(kind==='designations') await createAdminDesignation(t,{designation_code:code,designation_name:name});
-    setCode('');setName('');await load();
-  }catch(reason){setError(reason instanceof Error?reason.message:'Unable to create record');}}
-  async function toggle(item:Item){try{const t=token();
-    if(kind==='branches') await setAdminBranchActive(t,item.id,!item.is_active);
-    if(kind==='departments') await setAdminDepartmentActive(t,item.id,!item.is_active);
-    if(kind==='designations') await setAdminDesignationActive(t,item.id,!item.is_active);
-    await load();
-  }catch(reason){setError(reason instanceof Error?reason.message:'Unable to update status');}}
-  const itemCode=(x:Item)=>'branch_code'in x?x.branch_code:'department_code'in x?x.department_code:x.designation_code;
-  const itemName=(x:Item)=>'branch_name'in x?x.branch_name:'department_name'in x?x.department_name:x.designation_name;
-  return <main className="min-h-screen bg-bone px-6 py-12 text-obsidian"><section className="mx-auto max-w-5xl space-y-6">
-    <div><p className="font-mono text-xs uppercase tracking-[.2em] text-ash">Organization administration</p><h1 className="mt-2 text-4xl font-semibold">{labels[kind]}</h1></div>
-    {error&&<div className="border border-red-300 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
-    <form onSubmit={submit} className="grid gap-3 border border-line bg-white p-5 md:grid-cols-4">
-      <input required value={code} onChange={e=>setCode(e.target.value)} placeholder="Code" className="border border-line bg-bone px-3 py-2"/>
-      <input required value={name} onChange={e=>setName(e.target.value)} placeholder="Name" className="border border-line bg-bone px-3 py-2"/>
-      {kind==='departments'&&<select required value={branchId} onChange={e=>setBranchId(e.target.value)} className="border border-line bg-bone px-3 py-2"><option value="">Select branch</option>{branches.map(b=><option key={b.id} value={b.id}>{b.branch_name}</option>)}</select>}
-      <button className="bg-obsidian px-4 py-2 text-sm text-bone">Add {labels[kind].slice(0,-1)}</button>
-    </form>
-    <div className="border border-line bg-white">{loading?<p className="p-5 text-ash">Loading…</p>:items.map(item=><div key={item.id} className="flex items-center justify-between border-b border-line p-4 last:border-0"><div><strong>{itemName(item)}</strong><p className="text-xs text-ash">{itemCode(item)} · {item.is_active?'Active':'Inactive'}</p></div><button onClick={()=>void toggle(item)} className="text-sm underline">{item.is_active?'Deactivate':'Reactivate'}</button></div>)}</div>
-  </section></main>;
+ const router=useRouter();const [items,setItems]=useState<Item[]>([]);const [branches,setBranches]=useState<AdminBranch[]>([]);const [code,setCode]=useState('');const [name,setName]=useState('');const [branchId,setBranchId]=useState('');const [editing,setEditing]=useState<Item|null>(null);const [editName,setEditName]=useState('');const [editBranchId,setEditBranchId]=useState('');const [editBranchType,setEditBranchType]=useState('BRANCH');const [editHierarchy,setEditHierarchy]=useState('');const [error,setError]=useState('');const [loading,setLoading]=useState(true);const token=()=>localStorage.getItem('finplan_token')||'';
+ const itemCode=(item:Item)=>'branch_code'in item?item.branch_code:'department_code'in item?item.department_code:item.designation_code;const itemName=(item:Item)=>'branch_name'in item?item.branch_name:'department_name'in item?item.department_name:item.designation_name;
+ const load=useCallback(async()=>{const t=token();if(!t){router.replace('/login');return;}setLoading(true);try{const b=await listAdminBranches(t);setBranches(b);if(kind==='branches')setItems(b);if(kind==='departments')setItems(await listAdminDepartments(t));if(kind==='designations')setItems(await listAdminDesignations(t));}catch(reason){setError(reason instanceof Error?reason.message:'Unable to load records');}finally{setLoading(false);}},[kind,router]);useEffect(()=>{void load();},[load]);
+ async function submit(event:FormEvent){event.preventDefault();setError('');try{const t=token();if(kind==='branches')await createAdminBranch(t,{branch_code:code,branch_name:name,branch_type:'BRANCH'});if(kind==='departments')await createAdminDepartment(t,{department_code:code,department_name:name,branch_id:Number(branchId)});if(kind==='designations')await createAdminDesignation(t,{designation_code:code,designation_name:name});setCode('');setName('');await load();}catch(reason){setError(reason instanceof Error?reason.message:'Unable to create record');}}
+ function beginEdit(item:Item){setEditing(item);setEditName(itemName(item));setEditBranchId('branch_id'in item?String(item.branch_id):'');setEditBranchType('branch_type'in item?item.branch_type||'BRANCH':'BRANCH');setEditHierarchy('hierarchy_level'in item&&item.hierarchy_level?String(item.hierarchy_level):'');}
+ async function saveEdit(event:FormEvent){event.preventDefault();if(!editing)return;setError('');try{const t=token();if(kind==='branches')await updateAdminBranch(t,editing.id,{branch_name:editName,branch_type:editBranchType});if(kind==='departments')await updateAdminDepartment(t,editing.id,{department_name:editName,branch_id:Number(editBranchId)});if(kind==='designations')await updateAdminDesignation(t,editing.id,{designation_name:editName,hierarchy_level:editHierarchy?Number(editHierarchy):null});setEditing(null);await load();}catch(reason){setError(reason instanceof Error?reason.message:'Unable to save record');}}
+ async function toggle(item:Item){try{const t=token();if(kind==='branches')await setAdminBranchActive(t,item.id,!item.is_active);if(kind==='departments')await setAdminDepartmentActive(t,item.id,!item.is_active);if(kind==='designations')await setAdminDesignationActive(t,item.id,!item.is_active);await load();}catch(reason){setError(reason instanceof Error?reason.message:'Unable to update status');}}
+ return <main className="min-h-screen bg-bone px-6 py-12 text-obsidian"><section className="mx-auto max-w-5xl space-y-6"><div><p className="font-mono text-xs uppercase tracking-[.2em] text-ash">Organization administration</p><h1 className="mt-2 text-4xl font-semibold">{labels[kind]}</h1></div>{error&&<div className="border border-red-300 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
+ <form onSubmit={submit} className="grid gap-3 border border-line bg-white p-5 md:grid-cols-4"><input required value={code} onChange={e=>setCode(e.target.value)} placeholder="Code" className={inputClass}/><input required value={name} onChange={e=>setName(e.target.value)} placeholder="Name" className={inputClass}/>{kind==='departments'&&<select required value={branchId} onChange={e=>setBranchId(e.target.value)} className={inputClass}><option value="">Select branch</option>{branches.filter(x=>x.is_active).map(b=><option key={b.id} value={b.id}>{b.branch_name}</option>)}</select>}<button className="bg-obsidian px-4 py-2 text-sm text-bone">Add {labels[kind].slice(0,-1)}</button></form>
+ {editing&&<form onSubmit={saveEdit} className="grid gap-3 border border-antique bg-white p-5 md:grid-cols-4"><strong className="md:col-span-4">Edit {itemCode(editing)}</strong><input required value={editName} onChange={e=>setEditName(e.target.value)} aria-label="Name" className={inputClass}/>{kind==='branches'&&<select value={editBranchType} onChange={e=>setEditBranchType(e.target.value)} className={inputClass}><option value="HEAD_OFFICE">Head office</option><option value="BRANCH">Branch</option><option value="OTHER">Other</option></select>}{kind==='departments'&&<select required value={editBranchId} onChange={e=>setEditBranchId(e.target.value)} className={inputClass}>{branches.filter(x=>x.is_active).map(b=><option key={b.id} value={b.id}>{b.branch_name}</option>)}</select>}{kind==='designations'&&<input type="number" min="1" value={editHierarchy} onChange={e=>setEditHierarchy(e.target.value)} placeholder="Hierarchy level" className={inputClass}/>}<button className="bg-obsidian px-4 py-2 text-sm text-bone">Save changes</button><button type="button" onClick={()=>setEditing(null)} className="border border-line px-4 py-2 text-sm">Cancel</button></form>}
+ <div className="border border-line bg-white">{loading?<p className="p-5 text-ash">Loading…</p>:items.map(item=><div key={item.id} className="flex items-center justify-between border-b border-line p-4 last:border-0"><div><strong>{itemName(item)}</strong><p className="text-xs text-ash">{itemCode(item)} · {item.is_active?'Active':'Inactive'}</p></div><div className="flex gap-4"><button onClick={()=>beginEdit(item)} className="text-sm underline">Edit</button><button onClick={()=>void toggle(item)} className="text-sm underline">{item.is_active?'Deactivate':'Reactivate'}</button></div></div>)}</div></section></main>;
 }

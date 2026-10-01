@@ -15,7 +15,7 @@ from ..models.organization.assignment import EmployeeAssignment
 from ..models.organization.core import Branch
 from ..models.organization.employee import Employee
 from ..schemas.permission_admin import (
-    AssignmentEndInput, EmployeeAssignmentInput, EmployeeAssignmentResponse,
+    AssignmentEndInput, EmployeeActivityResponse, EmployeeAssignmentInput, EmployeeAssignmentResponse,
     EmployeeOverrideSet, EmployeePermissionState, EmployeeProfileSet,
     PermissionItem, PermissionOverrideInput, PermissionProfileItem,
 )
@@ -210,3 +210,18 @@ def end_employee_assignment(employee_id: int, assignment_id: int, payload: Assig
     row.effective_to = payload.effective_to; row.is_active = False; row.updated_by = context.user_id
     audit(db, context, employee_id, "END_ASSIGNMENT", {"assignment_id": row.id, "effective_to": payload.effective_to.isoformat()})
     db.commit(); db.refresh(row); return assignment_response(db, row)
+
+
+@router.get("/employees/{employee_id}/activity", response_model=list[EmployeeActivityResponse], dependencies=[Depends(require_head), Depends(require_permission("ORG.AUDIT.READ"))])
+def employee_activity(employee_id: int, limit: int = 100, context: AccessContext = Depends(require_head), db: Session = Depends(get_db)):
+    employee_in_organization(db, employee_id, context.organization_id)
+    rows = db.query(AuditLog).filter(
+        AuditLog.organization_id == context.organization_id,
+        AuditLog.table_name == "employees", AuditLog.record_id == employee_id,
+    ).order_by(AuditLog.created_at.desc()).limit(min(max(limit, 1), 250)).all()
+    return [EmployeeActivityResponse(
+        id=row.id, actor_user_id=row.user_id,
+        actor_name=(row.user.display_name or row.user.email) if row.user else None,
+        module_name=row.module_name, action=row.action,
+        old_values=row.old_values, new_values=row.new_values, created_at=row.created_at,
+    ) for row in rows]

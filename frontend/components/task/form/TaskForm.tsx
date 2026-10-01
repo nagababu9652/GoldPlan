@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 
@@ -35,7 +35,7 @@ function toLocalDateTime(value?: string | null) {
   )}:${pad(date.getMinutes())}`;
 }
 
-export default function TaskForm({
+function TaskFormContent({
   task,
 }: TaskFormProps) {
   const router = useRouter();
@@ -466,5 +466,21 @@ export default function TaskForm({
         </button>
       </div>
     </form>
+  );
+}
+
+function TaskFormFallback() {
+  return (
+    <div className="rounded-xl border border-line bg-bone p-8 text-center text-sm text-ash">
+      Loading task form...
+    </div>
+  );
+}
+
+export default function TaskForm(props: TaskFormProps) {
+  return (
+    <Suspense fallback={<TaskFormFallback />}>
+      <TaskFormContent {...props} />
+    </Suspense>
   );
 }

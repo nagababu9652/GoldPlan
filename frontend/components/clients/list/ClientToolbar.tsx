@@ -12,12 +12,17 @@ interface ClientToolbarProps {
   search: string;
   onSearchChange: (value: string) => void;
   onRefresh?: () => void;
+  status:string;
+  risk:string;
+  onStatusChange:(value:string)=>void;
+  onRiskChange:(value:string)=>void;
 }
 
 export default function ClientToolbar({
   search,
   onSearchChange,
   onRefresh,
+  status,risk,onStatusChange,onRiskChange,
 }: ClientToolbarProps) {
   const router = useRouter();
 
@@ -33,7 +38,7 @@ export default function ClientToolbar({
           onChange={(e) => onSearchChange(e.target.value)}
         />
 
-        <ClientFilters />
+        <ClientFilters status={status} risk={risk} onStatusChange={onStatusChange} onRiskChange={onRiskChange} />
 
       </div>
 

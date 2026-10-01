@@ -6,7 +6,6 @@ import time
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
 
 from .core.config import settings
@@ -32,15 +31,17 @@ from .models.identity import (
     RolePermissionProfile, UserRole,
     EmployeePermissionProfile, EmployeePermissionOverride,
     Device, UserDevice, AccountLockout, SecurityEvent, AuditLog,
+    AccessInvitation,
 )
 # Organization
 from .models.organization import (
     Organization, Branch, Department, Designation, OrganizationSetting,
     Employee, EmployeeRole, EmployeeReporting,
-    EmployeeBranchHistory, EmployeeDepartmentHistory,
+    EmployeeBranchHistory, EmployeeDepartmentHistory, EmployeeDesignationHistory,
     EmployeeAssignment, EmployeeSkill, EmployeeCertification,
     OrganizationHoliday,
     SubscriptionPlan, OrganizationSubscription, SubscriptionEvent,
+    Agency, Associate, ArnHolder, ArnStatusHistory,
 )
 # CRM
 from .models.crm import (
@@ -50,7 +51,7 @@ from .models.crm import (
     CustomerKYC, CustomerFATCA, CustomerRiskProfile,
     CustomerCommunicationPreference, CustomerKYCHistory,
     Transaction, transaction_history, FinancialGoal, FinancialAccount, Holding,
-    ReportSnapshot,
+    ReportSnapshot, PortalPublication,
 )
 
 # Routers
@@ -68,6 +69,13 @@ from .routers.admin_access import router as admin_access_router
 from .routers.admin_organization import router as admin_organization_router
 from .routers.admin_employees import router as admin_employees_router
 from .routers.admin_permissions import router as admin_permissions_router
+from .routers.invitations import router as invitations_router
+from .routers.employee_dashboard import router as employee_dashboard_router
+from .routers.client_portal import router as client_portal_router
+from .routers.portal_publications import router as portal_publications_router
+from .routers.client_portal_access import router as client_portal_access_router
+from .routers.admin_external import router as admin_external_router
+from .routers.admin_client_access import router as admin_client_access_router
 from .services.access import require_active_subscription, require_subscription_entitlement
 
 
@@ -78,13 +86,6 @@ def create_app() -> FastAPI:
     upload_dir = UPLOAD_ROOT
     upload_dir.mkdir(parents=True, exist_ok=True)
 
-    # Serve uploaded files
-    app.mount(
-        "/uploads",
-        StaticFiles(directory=str(upload_dir)),
-        name="uploads",
-    )
-    
     # Add middleware for response timing
     @app.middleware("http")
     async def add_process_time_header(request: Request, call_next):
@@ -140,6 +141,25 @@ def create_app() -> FastAPI:
     app.include_router(
         admin_permissions_router,
         dependencies=[Depends(require_subscription_entitlement("FEATURE.EMPLOYEE_MANAGEMENT"))],
+    )
+    app.include_router(invitations_router)
+    app.include_router(employee_dashboard_router, dependencies=active_subscription)
+    app.include_router(
+        client_portal_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.CLIENT_PORTAL"))],
+    )
+    app.include_router(
+        portal_publications_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.CLIENT_PORTAL"))],
+    )
+    app.include_router(
+        client_portal_access_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.CLIENT_PORTAL"))],
+    )
+    app.include_router(admin_external_router, dependencies=active_subscription)
+    app.include_router(
+        admin_client_access_router,
+        dependencies=[Depends(require_subscription_entitlement("FEATURE.CLIENT_PORTAL"))],
     )
 
 

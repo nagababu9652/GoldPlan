@@ -224,9 +224,14 @@ def logout(
 ):
     """Logout by invalidating session from refresh token cookie."""
     refresh_token_str = request.cookies.get("refresh_token")
-    if refresh_token_str:
+    token_value = refresh_token_str
+    if not token_value:
+        authorization = request.headers.get("authorization", "")
+        if authorization.lower().startswith("bearer "):
+            token_value = authorization[7:].strip()
+    if token_value:
         # Decode to get session UUID
-        payload = auth.decode_token(refresh_token_str)
+        payload = auth.decode_token(token_value)
         if payload and payload.session_uuid:
             auth.logout_session(db, payload.session_uuid)
     

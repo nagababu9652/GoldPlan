@@ -55,6 +55,10 @@ ADVISOR_PERMISSIONS = frozenset({
 PROFILE_DEFINITIONS = {
     "HEAD_FULL": ("Head Full Access", frozenset(PERMISSION_CODES)),
     "FINANCIAL_ADVISOR_STANDARD": ("Financial Advisor Standard", ADVISOR_PERMISSIONS),
+    "CLIENT_PORTAL_STANDARD": (
+        "Client Portal Standard",
+        frozenset(code for code in PERMISSION_CODES if code.startswith("PORTAL.")),
+    ),
 }
 
 
@@ -115,6 +119,20 @@ def ensure_permission_catalog(db: Session, *, assigned_by: int | None = None) ->
             elif not link.allow_access:
                 # Explicit denials remain authoritative and are never overwritten.
                 continue
+    # System persona roles always carry their safe baseline profile. Individual
+    # employee overrides and explicit denials remain authoritative.
+    default_role_profiles = {
+        "EMPLOYEE": "FINANCIAL_ADVISOR_STANDARD",
+        "CLIENT": "CLIENT_PORTAL_STANDARD",
+    }
+    for role_code, profile_code in default_role_profiles.items():
+        roles = db.query(Role).filter(
+            Role.role_code == role_code, Role.is_active.is_(True),
+        ).all()
+        for role in roles:
+            attach_default_profile(
+                db, role, profiles[profile_code], assigned_by=assigned_by,
+            )
     return profiles
 
 

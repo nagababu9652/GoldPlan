@@ -6,6 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import ClientHeader from "@/components/clients/common/ClientHeader";
 import ClientSummaryCards from "@/components/clients/common/ClientSummaryCards";
 import ClientOverview from "@/components/clients/overview/ClientOverview";
+import ClientPortalAccess from "@/components/clients/overview/ClientPortalAccess";
+import PortalPublications from "@/components/clients/overview/PortalPublications";
 
 import { getClientById } from "@/lib/api";
 import type { Client } from "@/lib/api";
@@ -109,6 +111,10 @@ export default function ClientDetailsPage() {
       <ClientSummaryCards client={client} />
 
       <ClientOverview client={client} />
+
+      <ClientPortalAccess customerId={client.id} />
+
+      <PortalPublications customerId={client.id} />
     </div>
   );
 }

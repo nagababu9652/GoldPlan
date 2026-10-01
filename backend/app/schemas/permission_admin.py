@@ -64,3 +64,14 @@ class EmployeeAssignmentResponse(BaseModel):
 
 class AssignmentEndInput(BaseModel):
     effective_to: date
+
+
+class EmployeeActivityResponse(BaseModel):
+    id: int
+    actor_user_id: int | None
+    actor_name: str | None
+    module_name: str | None
+    action: str | None
+    old_values: dict | None
+    new_values: dict | None
+    created_at: datetime

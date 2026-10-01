@@ -2,11 +2,13 @@
 
 import { SelectFilter } from "@/components/data-table/filters";
 
-export default function ClientFilters() {
+export default function ClientFilters({status,risk,onStatusChange,onRiskChange}:{status:string;risk:string;onStatusChange:(value:string)=>void;onRiskChange:(value:string)=>void}) {
   return (
     <div className="flex flex-wrap gap-3">
 
       <SelectFilter
+        value={status}
+        onChange={onStatusChange}
         placeholder="Status"
         options={[
           {
@@ -15,20 +17,22 @@ export default function ClientFilters() {
           },
           {
             label: "Active",
-            value: "Active",
+            value: "ACTIVE",
           },
           {
             label: "Inactive",
-            value: "Inactive",
+            value: "INACTIVE",
           },
           {
             label: "Prospect",
-            value: "Prospect",
+            value: "PROSPECT",
           },
         ]}
       />
 
       <SelectFilter
+        value={risk}
+        onChange={onRiskChange}
         placeholder="Risk"
         options={[
           {
@@ -37,15 +41,15 @@ export default function ClientFilters() {
           },
           {
             label: "Conservative",
-            value: "Conservative",
+            value: "CONSERVATIVE",
           },
           {
             label: "Moderate",
-            value: "Moderate",
+            value: "MODERATE",
           },
           {
             label: "Aggressive",
-            value: "Aggressive",
+            value: "AGGRESSIVE",
           },
         ]}
       />

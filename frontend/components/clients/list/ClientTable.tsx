@@ -12,6 +12,8 @@ import ClientToolbar from "./ClientToolbar";
 export default function ClientTable() {
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState("");
+  const [status,setStatus]=useState("all");
+  const [risk,setRisk]=useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -27,7 +29,7 @@ export default function ClientTable() {
         return;
       }
 
-      const response = await getClients(token);
+      const response = await getClients(token,{page_size:100,search:search.trim()||undefined,customer_status:status==='all'?undefined:status,risk_profile:risk==='all'?undefined:risk});
 
       setClients(response.clients);
     } catch (err) {
@@ -41,32 +43,11 @@ export default function ClientTable() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [search,status,risk]);
 
   useEffect(() => {
-    loadClients();
+    const timer=setTimeout(()=>void loadClients(),300);return()=>clearTimeout(timer);
   }, [loadClients]);
-
-  const filteredClients = clients.filter((client) => {
-    const value = search.trim().toLowerCase();
-
-    if (!value) return true;
-
-    return [
-      client.first_name,
-      client.last_name,
-      client.email,
-      client.phone,
-      client.occupation,
-      client.pan_number,
-      client.risk_profile,
-      client.kyc_status,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(value);
-  });
 
   return (
     <>
@@ -74,6 +55,10 @@ export default function ClientTable() {
         search={search}
         onSearchChange={setSearch}
         onRefresh={loadClients}
+        status={status}
+        risk={risk}
+        onStatusChange={setStatus}
+        onRiskChange={setRisk}
       />
 
       {loading ? (
@@ -88,18 +73,18 @@ export default function ClientTable() {
             {error}
           </p>
         </div>
-      ) : filteredClients.length === 0 ? (
+      ) : clients.length === 0 ? (
         <div className="rounded-xl border border-line bg-bone p-8 text-center">
           <p className="text-sm text-ash">
-            {search
-              ? "No clients match your search."
+            {search||status!=="all"||risk!=="all"
+              ? "No clients match the selected filters."
               : "No clients found."}
           </p>
         </div>
       ) : (
         <EnterpriseTable
           columns={clientColumns}
-          data={filteredClients}
+          data={clients}
         />
       )}
     </>

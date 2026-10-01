@@ -28,6 +28,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime, timezone, date
 from ..models.crm.meeting import Meeting
 from ..database.session import get_db
@@ -476,6 +477,13 @@ def get_report_snapshot_for_advisor(
     ).first()
     if not snapshot:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Report snapshot not found")
+    included_ids = {
+        int(item["customer_id"])
+        for item in snapshot.payload.get("financial_summary", {}).get("clients", [])
+        if isinstance(item, dict) and item.get("customer_id") is not None
+    }
+    if included_ids and not included_ids.issubset(set(get_advisor_customer_ids(advisor, db))):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Report snapshot not found")
     return snapshot
 
 
@@ -495,6 +503,12 @@ def list_report_snapshots(
         ReportSnapshot.created_at.desc(),
         ReportSnapshot.id.desc(),
     ).all()
+    current_ids = set(get_advisor_customer_ids(advisor, db))
+    reports = [report for report in reports if {
+        int(item["customer_id"])
+        for item in report.payload.get("financial_summary", {}).get("clients", [])
+        if isinstance(item, dict) and item.get("customer_id") is not None
+    }.issubset(current_ids)]
     return ReportSnapshotListResponse(reports=reports, total=len(reports))
 
 
@@ -748,7 +762,13 @@ def apply_position_effect(db, transaction, reverse=False):
         return
     if transaction.quantity is None or transaction.unit_price is None:
         raise HTTPException(status_code=422, detail="Linked BUY/SELL transactions require quantity and unit price")
-    holding = db.query(Holding).filter(Holding.id == transaction.holding_id).with_for_update().one()
+    try:
+        holding = db.query(Holding).filter(
+            Holding.id == transaction.holding_id,
+            Holding.is_active.is_(True), Holding.deleted_at.is_(None),
+        ).with_for_update().one()
+    except NoResultFound:
+        raise HTTPException(status_code=409, detail="Linked holding is no longer active")
     quantity = transaction.quantity
     if transaction.transaction_type == "SELL":
         if reverse:

@@ -87,5 +87,5 @@ class EmploymentHistoryResponse(BaseModel):
     remarks: str | None = None
     branch_id: int | None = None
     department_id: int | None = None
+    designation_id: int | None = None
     manager_employee_id: int | None = None
-

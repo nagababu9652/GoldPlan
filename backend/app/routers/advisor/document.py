@@ -2,6 +2,7 @@ from datetime import datetime, date, time
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, Request
+from fastapi.responses import FileResponse
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from pathlib import Path
@@ -95,16 +96,6 @@ def validate_document_target(
         )
 
     if customer_id:
-        today = date.today()
-        assignment = db.query(EmployeeAssignment).filter(
-            EmployeeAssignment.employee_id == employee.id,
-            EmployeeAssignment.assignment_type == "ADVISOR",
-            EmployeeAssignment.entity_type == "CUSTOMER",
-            EmployeeAssignment.entity_id == customer_id,
-            EmployeeAssignment.effective_from <= today,
-            (EmployeeAssignment.effective_to.is_(None) | (EmployeeAssignment.effective_to >= today)),
-            EmployeeAssignment.is_active.is_(True),
-        ).first()
         customer = (
             db.query(Customer)
             .filter(
@@ -113,8 +104,25 @@ def validate_document_target(
             )
             .first()
         )
-
-        if not customer or not assignment:
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found.")
+        today = date.today()
+        group_ids = [row.customer_group_id for row in customer.group_members if row.left_on is None]
+        groups = db.query(CustomerGroup).filter(CustomerGroup.id.in_(group_ids)).all() if group_ids else []
+        branch_ids = [group.primary_branch_id for group in groups if group.primary_branch_id is not None]
+        assignment = db.query(EmployeeAssignment).filter(
+            EmployeeAssignment.employee_id == employee.id,
+            EmployeeAssignment.assignment_type == "ADVISOR",
+            or_(
+                (EmployeeAssignment.entity_type == "CUSTOMER") & (EmployeeAssignment.entity_id == customer_id),
+                (EmployeeAssignment.entity_type == "CUSTOMER_GROUP") & (EmployeeAssignment.entity_id.in_(group_ids or [-1])),
+                (EmployeeAssignment.entity_type == "BRANCH") & (EmployeeAssignment.entity_id.in_(branch_ids or [-1])),
+            ),
+            EmployeeAssignment.effective_from <= today,
+            (EmployeeAssignment.effective_to.is_(None) | (EmployeeAssignment.effective_to >= today)),
+            EmployeeAssignment.is_active.is_(True),
+        ).first()
+        if not assignment:
             raise HTTPException(
                 status_code=404,
                 detail="Customer not found.",
@@ -135,8 +143,20 @@ def validate_document_target(
                 status_code=404,
                 detail="Customer group not found.",
             )
-        if group.primary_advisor_employee_id not in {None, employee.id}:
-            raise HTTPException(403, "You are not assigned to this customer group")
+        today = date.today()
+        assignment = db.query(EmployeeAssignment).filter(
+            EmployeeAssignment.employee_id == employee.id,
+            EmployeeAssignment.assignment_type == "ADVISOR",
+            or_(
+                (EmployeeAssignment.entity_type == "CUSTOMER_GROUP") & (EmployeeAssignment.entity_id == group.id),
+                (EmployeeAssignment.entity_type == "BRANCH") & (EmployeeAssignment.entity_id == group.primary_branch_id),
+            ),
+            EmployeeAssignment.effective_from <= today,
+            (EmployeeAssignment.effective_to.is_(None) | (EmployeeAssignment.effective_to >= today)),
+            EmployeeAssignment.is_active.is_(True),
+        ).first()
+        if not assignment:
+            raise HTTPException(404, "Customer group not found.")
 
 
 def build_document_response(
@@ -171,7 +191,7 @@ def build_document_response(
         document_name=document.document_name,
         description=document.description,
         file_name=document.file_name,
-        file_url=document.file_url,
+        file_url=f"/advisors/documents/{document.id}/download" if document.file_url else None,
         file_type=document.file_type,
         file_size=document.file_size,
         status=document.status,
@@ -206,7 +226,6 @@ def list_documents(
         db.query(CrmDocument)
         .filter(
             CrmDocument.organization_id == employee.organization_id,
-            CrmDocument.uploaded_by_employee_id == employee.id,
         )
     )
 
@@ -269,12 +288,19 @@ def list_documents(
         .all()
     )
 
+    accessible = []
+    for document in documents:
+        try:
+            validate_document_target(db, employee, document.customer_id, document.customer_group_id)
+            accessible.append(document)
+        except HTTPException:
+            continue
     return DocumentListResponse(
         documents=[
             build_document_response(document)
-            for document in documents
+            for document in accessible
         ],
-        total=len(documents),
+        total=len(accessible),
     )
 
 
@@ -431,7 +457,6 @@ def get_document(
         .filter(
             CrmDocument.id == document_id,
             CrmDocument.organization_id == employee.organization_id,
-            CrmDocument.uploaded_by_employee_id == employee.id,
         )
         .first()
     )
@@ -441,8 +466,25 @@ def get_document(
             status_code=404,
             detail="Document not found.",
         )
+    validate_document_target(db, employee, document.customer_id, document.customer_group_id)
 
     return build_document_response(document)
+
+
+@router.get("/{document_id}/download")
+def download_document(document_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    employee = get_advisor_employee(db, current_user)
+    document = db.query(CrmDocument).filter(
+        CrmDocument.id == document_id,
+        CrmDocument.organization_id == employee.organization_id,
+    ).first()
+    if not document or not document.file_url:
+        raise HTTPException(404, "Document not found.")
+    validate_document_target(db, employee, document.customer_id, document.customer_group_id)
+    path = (UPLOAD_ROOT / Path(document.file_url).name).resolve()
+    if UPLOAD_ROOT.resolve() not in path.parents or not path.is_file():
+        raise HTTPException(404, "Document file not found.")
+    return FileResponse(path, media_type=document.file_type, filename=document.file_name or document.document_name)
 
 
 @router.post(
@@ -503,7 +545,6 @@ def update_document(
         .filter(
             CrmDocument.id == document_id,
             CrmDocument.organization_id == employee.organization_id,
-            CrmDocument.uploaded_by_employee_id == employee.id,
         )
         .first()
     )
@@ -513,6 +554,7 @@ def update_document(
             status_code=404,
             detail="Document not found.",
         )
+    validate_document_target(db, employee, document.customer_id, document.customer_group_id)
 
     update_data = payload.model_dump(
         exclude_unset=True
@@ -591,7 +633,6 @@ def archive_document(
         .filter(
             CrmDocument.id == document_id,
             CrmDocument.organization_id == employee.organization_id,
-            CrmDocument.uploaded_by_employee_id == employee.id,
         )
         .first()
     )
@@ -601,6 +642,7 @@ def archive_document(
             status_code=404,
             detail="Document not found.",
         )
+    validate_document_target(db, employee, document.customer_id, document.customer_group_id)
 
     document.status = "ARCHIVED"
 

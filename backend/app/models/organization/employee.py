@@ -98,3 +98,18 @@ class EmployeeDepartmentHistory(Base):
 
     employee = relationship("Employee", lazy="selectin")
     department = relationship("Department", lazy="selectin")
+
+
+class EmployeeDesignationHistory(Base):
+    __tablename__ = "employee_designation_history"
+    __table_args__ = {"schema": "organization"}
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    employee_id = Column(BigInteger, ForeignKey("organization.employees.id"), nullable=False)
+    designation_id = Column(BigInteger, ForeignKey("organization.designations.id"), nullable=False)
+    effective_from = Column(Date, nullable=True)
+    effective_to = Column(Date, nullable=True)
+    remarks = Column(Text, nullable=True)
+
+    employee = relationship("Employee", lazy="selectin")
+    designation = relationship("Designation", lazy="selectin")
