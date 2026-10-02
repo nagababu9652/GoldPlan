@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { forgotPassword, resetPassword } from '@/lib/api';
+import { useSingleSubmission } from '@/lib/use-single-submission';
 
 type Step = 'email' | 'otp' | 'reset';
 
@@ -18,6 +19,8 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [isResending, setIsResending] = useState(false);
+  const [resetDone, setResetDone] = useState(false);
+  const { run, finish } = useSingleSubmission();
 
   // Countdown timer for OTP resend
   const startCountdown = () => {
@@ -40,16 +43,10 @@ export default function ForgotPasswordPage() {
     setIsResending(true);
     setLoading(true);
 
+    await run(async () => {
     try {
-      const response = await forgotPassword(email);
-      
-      // Show OTP in development mode
-      if (response.otp_code) {
-        const otpMsg = `✅ Password reset OTP sent to ${email}\n\nYour OTP is: ${response.otp_code}\n\n(Valid for 10 minutes)`;
-        setSuccessMessage(otpMsg);
-      } else {
-        setSuccessMessage('If an account exists with this email, a password reset OTP has been sent');
-      }
+      await forgotPassword(email);
+      setSuccessMessage('If an account exists with this email, a password reset OTP has been sent');
       
       setStep('otp');
       startCountdown();
@@ -59,6 +56,7 @@ export default function ForgotPasswordPage() {
       setLoading(false);
       setIsResending(false);
     }
+    });
   };
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
@@ -82,6 +80,7 @@ export default function ForgotPasswordPage() {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (resetDone) return;
     setError('');
 
     if (newPassword !== confirmPassword) {
@@ -96,8 +95,11 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
 
+    await run(async () => {
     try {
       const response = await resetPassword(email, otp, newPassword);
+      finish();
+      setResetDone(true);
       setSuccessMessage(response.message);
       
       // Redirect to login after 3 seconds
@@ -109,6 +111,7 @@ export default function ForgotPasswordPage() {
     } finally {
       setLoading(false);
     }
+    });
   };
 
   return (
@@ -341,7 +344,7 @@ export default function ForgotPasswordPage() {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || resetDone}
                   style={{
                     width: '100%',
                     padding: '12px 20px',
@@ -354,7 +357,7 @@ export default function ForgotPasswordPage() {
                     opacity: loading ? '0.5' : '1',
                   }}
                 >
-                  {loading ? 'Resetting Password...' : 'Reset Password'}
+                  {loading ? 'Resetting Password...' : resetDone ? 'Password Reset' : 'Reset Password'}
                 </button>
               </form>
             )}

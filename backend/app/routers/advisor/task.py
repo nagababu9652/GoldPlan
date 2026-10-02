@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -9,7 +9,8 @@ from ...models.crm.customer import Customer, CustomerGroup
 from ...models.crm.task import Task
 from ...models.organization.employee import Employee
 from ...models.organization.assignment import EmployeeAssignment
-from ...routers.advisors import get_current_advisor as get_current_user
+from ...services.access import AccessContext, require_employee as get_current_user, require_permission
+from ...services.idempotency import finish_create, reserve_create
 from ...schemas.task import (
     TaskCreate,
     TaskListResponse,
@@ -26,13 +27,16 @@ router = APIRouter(
 
 def get_advisor_employee(
     db: Session,
-    current_user,
+    current_user: AccessContext,
 ) -> Employee:
     employee = (
         db.query(Employee)
         .filter(
-            Employee.party_id == current_user.party_id,
+            Employee.id == current_user.employee_id,
+            Employee.organization_id == current_user.organization_id,
             Employee.is_active.is_(True),
+            Employee.employment_status == "ACTIVE",
+            Employee.deleted_at.is_(None),
         )
         .first()
     )
@@ -101,12 +105,14 @@ def validate_customer_and_group(
                 | (EmployeeAssignment.effective_to >= today)
             ),
             EmployeeAssignment.is_active.is_(True),
+            EmployeeAssignment.deleted_at.is_(None),
         ).first()
         customer = (
             db.query(Customer)
             .filter(
                 Customer.id == customer_id,
                 Customer.organization_id == employee.organization_id,
+                Customer.is_active.is_(True), Customer.deleted_at.is_(None),
             )
             .first()
         )
@@ -123,6 +129,7 @@ def validate_customer_and_group(
             .filter(
                 CustomerGroup.id == customer_group_id,
                 CustomerGroup.organization_id == employee.organization_id,
+                CustomerGroup.is_active.is_(True), CustomerGroup.deleted_at.is_(None),
             )
             .first()
         )
@@ -132,13 +139,29 @@ def validate_customer_and_group(
                 status_code=404,
                 detail="Customer group not found",
             )
-        if group.primary_advisor_employee_id not in {None, employee.id}:
-            raise HTTPException(status_code=403, detail="You are not assigned to this customer group")
+        assigned = db.query(EmployeeAssignment).filter(
+            EmployeeAssignment.employee_id == employee.id,
+            EmployeeAssignment.assignment_type == "ADVISOR",
+            or_(
+                (EmployeeAssignment.entity_type == "CUSTOMER_GROUP") &
+                (EmployeeAssignment.entity_id == group.id),
+                (EmployeeAssignment.entity_type == "BRANCH") &
+                (EmployeeAssignment.entity_id == group.primary_branch_id),
+            ),
+            EmployeeAssignment.effective_from <= date.today(),
+            or_(EmployeeAssignment.effective_to.is_(None),
+                EmployeeAssignment.effective_to >= date.today()),
+            EmployeeAssignment.is_active.is_(True),
+            EmployeeAssignment.deleted_at.is_(None),
+        ).first()
+        if not assigned:
+            raise HTTPException(404, "Assigned customer group not found")
 
 
 @router.get(
     "/",
     response_model=TaskListResponse,
+    dependencies=[Depends(require_permission("TASK.READ"))],
 )
 def list_tasks(
     search: str | None = Query(default=None),
@@ -231,18 +254,27 @@ def list_tasks(
         .all()
     )
 
+    accessible = []
+    for task in tasks:
+        try:
+            validate_customer_and_group(db, employee, task.customer_id, task.customer_group_id)
+            accessible.append(task)
+        except HTTPException:
+            continue
+
     return TaskListResponse(
         tasks=[
             build_task_response(task)
-            for task in tasks
+            for task in accessible
         ],
-        total=len(tasks),
+        total=len(accessible),
     )
 
 
 @router.get(
     "/{task_id}",
     response_model=TaskResponse,
+    dependencies=[Depends(require_permission("TASK.READ"))],
 )
 def get_task(
     task_id: int,
@@ -270,6 +302,8 @@ def get_task(
             detail="Task not found",
         )
 
+    validate_customer_and_group(db, employee, task.customer_id, task.customer_group_id)
+
     return build_task_response(task)
 
 
@@ -277,11 +311,13 @@ def get_task(
     "/",
     response_model=TaskResponse,
     status_code=201,
+    dependencies=[Depends(require_permission("TASK.CREATE"))],
 )
 def create_task(
     payload: TaskCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    idempotency_key: str | None = Header(default=None),
 ):
     employee = get_advisor_employee(
         db,
@@ -294,6 +330,12 @@ def create_task(
         payload.customer_id,
         payload.customer_group_id,
     )
+    reservation = reserve_create(db, key=idempotency_key, operation="task.create", actor_scope=f"user:{current_user.user_id}", payload=payload.model_dump())
+    if reservation and reservation.replay:
+        task = db.query(Task).filter(Task.id == reservation.resource_id, Task.organization_id == employee.organization_id, Task.assigned_employee_id == employee.id).first()
+        if task is None:
+            raise HTTPException(status_code=404, detail="Task not found")
+        return build_task_response(task)
 
     completed_at = None
 
@@ -316,6 +358,8 @@ def create_task(
     )
 
     db.add(task)
+    db.flush()
+    finish_create(db, reservation, task.id)
     db.commit()
     db.refresh(task)
 
@@ -325,6 +369,7 @@ def create_task(
 @router.put(
     "/{task_id}",
     response_model=TaskResponse,
+    dependencies=[Depends(require_permission("TASK.UPDATE"))],
 )
 def update_task(
     task_id: int,
@@ -352,6 +397,8 @@ def update_task(
             status_code=404,
             detail="Task not found",
         )
+
+    validate_customer_and_group(db, employee, task.customer_id, task.customer_group_id)
 
     updates = payload.model_dump(
         exclude_unset=True
@@ -399,6 +446,7 @@ def update_task(
 @router.post(
     "/{task_id}/complete",
     response_model=TaskResponse,
+    dependencies=[Depends(require_permission("TASK.UPDATE"))],
 )
 def complete_task(
     task_id: int,
@@ -426,6 +474,8 @@ def complete_task(
             detail="Task not found",
         )
 
+    validate_customer_and_group(db, employee, task.customer_id, task.customer_group_id)
+
     if task.status not in {"PENDING", "IN_PROGRESS"}:
         raise HTTPException(409, "Only pending or in-progress tasks can be completed")
     task.status = "COMPLETED"
@@ -440,6 +490,7 @@ def complete_task(
 @router.post(
     "/{task_id}/reopen",
     response_model=TaskResponse,
+    dependencies=[Depends(require_permission("TASK.UPDATE"))],
 )
 def reopen_task(
     task_id: int,
@@ -466,6 +517,8 @@ def reopen_task(
             status_code=404,
             detail="Task not found",
         )
+
+    validate_customer_and_group(db, employee, task.customer_id, task.customer_group_id)
 
     if task.status != "COMPLETED":
         raise HTTPException(409, "Only completed tasks can be reopened")

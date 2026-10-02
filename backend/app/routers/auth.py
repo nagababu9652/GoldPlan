@@ -3,7 +3,9 @@ Authentication Router - handles registration, login, logout, OTP, password manag
 Uses the new identity schema with session management.
 """
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request, BackgroundTasks
+import hashlib
+from fastapi import APIRouter, Depends, Header, HTTPException, status, Response, Request
+from sqlalchemy.exc import IntegrityError
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -16,8 +18,9 @@ from ..schemas.auth import (
     MessageResponse
 )
 from ..services import auth_service as auth
-from ..services.access import AccessContext, get_access_context
+from ..services.access import AccessContext, AuthenticatedIdentity, get_access_context, get_authenticated_identity
 from ..services.otp_service import create_otp, verify_otp
+from ..services.idempotency import reserve_create, finish_create
 from ..models.identity.auth import OTPRequest as OTPRequestModel
 from ..core.config import settings
 
@@ -35,20 +38,17 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/swagger-login")
 @router.post("/send-otp", response_model=OTPResponse)
 def send_otp(
     request: OTPRequestSchema,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
     """Send OTP to email for verification."""
-    otp = create_otp(
+    create_otp(
         db=db,
         destination=request.destination,
         purpose=request.purpose,
-        background_tasks=background_tasks
     )
     return OTPResponse(
         message=f"OTP sent to {request.destination}",
         expires_in_minutes=10,
-        otp_code=getattr(otp, '_plain_otp', None)  # Return OTP for development/testing
     )
 
 
@@ -70,9 +70,32 @@ def verify_otp_endpoint(
     )
 
 
+def user_response(user) -> UserResponse:
+    return UserResponse(
+        id=user.id, party_id=user.party_id, username=user.username,
+        email=user.email, display_name=user.display_name,
+        is_active=user.is_active, account_status=user.account_status,
+        created_at=user.created_at.isoformat() if user.created_at else "",
+    )
+
+
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(user_data: UserRegister, db: Session = Depends(get_db)):
+def register(
+    user_data: UserRegister,
+    db: Session = Depends(get_db),
+    idempotency_key: str | None = Header(default=None),
+):
     """Register a new user with party creation."""
+    reservation = reserve_create(
+        db, key=idempotency_key, operation="auth.register",
+        actor_scope=hashlib.sha256(str(user_data.email).lower().encode()).hexdigest(),
+        payload=user_data.model_dump(mode="json"),
+    )
+    if reservation and reservation.replay:
+        user = auth.get_user_by_id(db, reservation.resource_id)
+        if user is None or str(user.email).lower() != str(user_data.email).lower():
+            raise HTTPException(409, "Registered user is unavailable")
+        return user_response(user)
     # Check if user already exists
     existing_user = auth.get_user_by_email(db, user_data.email)
     if existing_user:
@@ -98,21 +121,19 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
     try:
         payload = user_data.model_dump()
         payload["email_verified"] = True
-        user = auth.create_user(db, payload)
-        return UserResponse(
-            id=user.id,
-            party_id=user.party_id,
-            username=user.username,
-            email=user.email,
-            display_name=user.display_name,
-            is_active=user.is_active,
-            account_status=user.account_status,
-            created_at=user.created_at.isoformat() if user.created_at else ""
-        )
+        user = auth.create_user(db, payload, commit=False)
+        finish_create(db, reservation, user.id)
+        db.commit()
+        return user_response(user)
     except HTTPException:
+        db.rollback()
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(409, "Account already exists") from exc
+    except Exception:
+        db.rollback()
+        raise
 
 
 @router.post("/swagger-login", response_model=Token)
@@ -155,7 +176,7 @@ def swagger_login(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            secure=False,
+            secure=settings.refresh_cookie_secure,
             samesite="lax",
             max_age=7 * 24 * 60 * 60,
         )
@@ -163,7 +184,6 @@ def swagger_login(
     return Token(
         access_token=access_token,
         token_type="bearer",
-        refresh_token=refresh_token,
         expires_in=settings.access_token_expire_minutes * 60,
     )
 
@@ -172,7 +192,8 @@ def login(
     credentials: UserLogin,
     response: Response,
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    idempotency_key: str | None = Header(default=None),
 ):
     """Authenticate user and create session with tokens."""
     # Authenticate user
@@ -189,7 +210,16 @@ def login(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is deactivated"
         )
-    
+
+    reservation = reserve_create(
+        db, key=idempotency_key, operation="auth.login",
+        actor_scope=f"user:{user.id}",
+        payload=credentials.model_dump(mode="json"),
+    )
+    if reservation and reservation.replay:
+        raise HTTPException(409, "Login request already completed")
+    finish_create(db, reservation, user.id)
+
     # Create session with tokens
     session, access_token, refresh_token = auth.create_session(
         db=db,
@@ -203,7 +233,7 @@ def login(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False,  # Set to True in production with HTTPS
+        secure=settings.refresh_cookie_secure,
         samesite="lax",
         max_age=7 * 24 * 60 * 60,  # 7 days
     )
@@ -211,7 +241,6 @@ def login(
     return Token(
         access_token=access_token,
         token_type="bearer",
-        refresh_token=refresh_token,
         expires_in=settings.access_token_expire_minutes * 60,
     )
 
@@ -233,7 +262,7 @@ def logout(
         # Decode to get session UUID
         payload = auth.decode_token(token_value)
         if payload and payload.session_uuid:
-            auth.logout_session(db, payload.session_uuid)
+            auth.logout_session(db, payload.session_uuid, user_id=int(payload.sub))
     
     response.delete_cookie(key="refresh_token")
     return MessageResponse(message="Successfully logged out")
@@ -267,7 +296,7 @@ def refresh_token(
         key="refresh_token",
         value=new_refresh_token,
         httponly=True,
-        secure=False,
+        secure=settings.refresh_cookie_secure,
         samesite="lax",
         max_age=7 * 24 * 60 * 60,
     )
@@ -275,31 +304,16 @@ def refresh_token(
     return Token(
         access_token=new_access_token,
         token_type="bearer",
-        refresh_token=new_refresh_token,
         expires_in=settings.access_token_expire_minutes * 60,
     )
 
 
 @router.get("/me", response_model=UserResponse)
 def get_current_user_info(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
+    identity: AuthenticatedIdentity = Depends(get_authenticated_identity),
 ):
     """Get current authenticated user info."""
-    payload = auth.decode_token(token)
-    if payload is None or payload.sub is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    user = auth.get_user_by_id(db, int(payload.sub))
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+    user = identity.user
     
     return UserResponse(
         id=user.id,
@@ -316,7 +330,6 @@ def get_current_user_info(
 @router.post("/forgot-password", response_model=OTPResponse)
 def forgot_password(
     request: PasswordResetRequest,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
     """Send OTP to email for password reset."""
@@ -330,18 +343,16 @@ def forgot_password(
         )
     
     # Send OTP for password reset
-    otp = create_otp(
+    create_otp(
         db=db,
         destination=request.email,
         purpose="password_reset",
         user_id=user.id,
-        background_tasks=background_tasks
     )
     
     return OTPResponse(
-        message=f"Password reset OTP sent to {request.email}",
+        message="If an account exists with this email, a password reset OTP has been sent",
         expires_in_minutes=10,
-        otp_code=getattr(otp, '_plain_otp', None)  # Return OTP for development/testing
     )
 
 
@@ -368,7 +379,8 @@ def reset_password(
         )
     
     # Reset password
-    auth.reset_password(db, user, request.new_password)
+    if not auth.reset_password(db, user, request.new_password):
+        raise HTTPException(status_code=400, detail="Password login is not configured for this account")
     
     return MessageResponse(message="Password reset successfully. You can now login with your new password.")
 
@@ -376,23 +388,11 @@ def reset_password(
 @router.post("/change-password", response_model=MessageResponse)
 def change_password(
     request: dict,
-    token: str = Depends(oauth2_scheme),
+    identity: AuthenticatedIdentity = Depends(get_authenticated_identity),
     db: Session = Depends(get_db)
 ):
     """Change password for authenticated user."""
-    payload = auth.decode_token(token)
-    if payload is None or payload.sub is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials"
-        )
-    
-    user = auth.get_user_by_id(db, int(payload.sub))
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+    user = identity.user
     
     old_password = request.get("old_password")
     new_password = request.get("new_password")
@@ -421,18 +421,11 @@ def change_password(
 
 @router.get("/sessions")
 def get_sessions(
-    token: str = Depends(oauth2_scheme),
+    identity: AuthenticatedIdentity = Depends(get_authenticated_identity),
     db: Session = Depends(get_db)
 ):
     """Get all active sessions for current user."""
-    payload = auth.decode_token(token)
-    if payload is None or payload.sub is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials"
-        )
-    
-    sessions = auth.get_active_sessions(db, int(payload.sub))
+    sessions = auth.get_active_sessions(db, identity.user.id)
     return [
         {
             "session_uuid": str(s.session_uuid),
@@ -450,11 +443,11 @@ def get_sessions(
 @router.delete("/sessions/{session_uuid}", response_model=MessageResponse)
 def logout_session(
     session_uuid: str,
-    token: str = Depends(oauth2_scheme),
+    identity: AuthenticatedIdentity = Depends(get_authenticated_identity),
     db: Session = Depends(get_db)
 ):
     """Logout a specific session."""
-    success = auth.logout_session(db, session_uuid)
+    success = auth.logout_session(db, session_uuid, user_id=identity.user.id)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

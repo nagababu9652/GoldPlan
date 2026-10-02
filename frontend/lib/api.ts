@@ -52,7 +52,6 @@ export interface User {
 export interface TokenResponse {
   access_token: string;
   token_type: string;
-  refresh_token: string;
   expires_in: number;
 }
 
@@ -85,7 +84,7 @@ export type RegisterResponse = User;
 
 // ==================== AUTH API ====================
 
-export async function registerUser(data: RegisterData): Promise<RegisterResponse> {
+export async function registerUser(data: RegisterData, idempotencyKey = crypto.randomUUID()): Promise<RegisterResponse> {
   const { phone, ...fields } = data;
   const payload = {
     ...fields,
@@ -97,6 +96,7 @@ export async function registerUser(data: RegisterData): Promise<RegisterResponse
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
+      'Idempotency-Key': idempotencyKey,
     },
     body: JSON.stringify(payload),
   });
@@ -117,7 +117,6 @@ export const register = registerUser;
 export interface OTPSendResponse {
   message: string;
   expires_in_minutes: number;
-  otp_code?: string; // Only in development mode
 }
 
 export interface OTPVerifyResponse {
@@ -161,12 +160,13 @@ export async function verifyOTP(email: string, otpCode: string, purpose: string 
   return response.json();
 }
 
-export async function loginUser(credentials: LoginCredentials & { role?: string }): Promise<TokenResponse> {
+export async function loginUser(credentials: LoginCredentials & { role?: string }, idempotencyKey = crypto.randomUUID()): Promise<TokenResponse> {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
+      'Idempotency-Key': idempotencyKey,
     },
     body: JSON.stringify({
       email: credentials.email,
@@ -245,10 +245,6 @@ export async function refreshToken(): Promise<TokenResponse> {
 
   localStorage.setItem('finplan_token', data.access_token);
 
-  if (data.refresh_token) {
-    localStorage.setItem('finplan_refresh_token', data.refresh_token);
-  }
-
   return data;
 }
 
@@ -306,7 +302,6 @@ async function advisorRequest(
 export interface ForgotPasswordResponse {
   message: string;
   expires_in_minutes: number;
-  otp_code?: string; // Only in development mode
 }
 
 export interface ResetPasswordResponse {
@@ -525,17 +520,20 @@ async function adminOrganizationRequest<T>(token:string, path:string, options:Re
 export const getAdminOrganization=(token:string)=>adminOrganizationRequest<OrganizationAdminProfile>(token,'');
 export const updateAdminOrganization=(token:string,data:Partial<OrganizationAdminProfile>)=>adminOrganizationRequest<OrganizationAdminProfile>(token,'',{method:'PUT',body:JSON.stringify(data)});
 export const listAdminBranches=(token:string,all=true)=>adminOrganizationRequest<AdminBranch[]>(token,`/branches?include_inactive=${all}`);
-export const createAdminBranch=(token:string,data:Partial<AdminBranch>)=>adminOrganizationRequest<AdminBranch>(token,'/branches',{method:'POST',body:JSON.stringify(data)});
+export const createAdminBranch=(token:string,data:Partial<AdminBranch>,key=crypto.randomUUID())=>adminOrganizationRequest<AdminBranch>(token,'/branches',{method:'POST',headers:{'Idempotency-Key':key},body:JSON.stringify(data)});
 export const updateAdminBranch=(token:string,id:number,data:Partial<AdminBranch>)=>adminOrganizationRequest<AdminBranch>(token,`/branches/${id}`,{method:'PUT',body:JSON.stringify(data)});
 export const setAdminBranchActive=(token:string,id:number,active:boolean)=>adminOrganizationRequest<AdminBranch>(token,`/branches/${id}/${active?'reactivate':'deactivate'}`,{method:'POST'});
+export const bulkSetAdminBranchActive=(token:string,ids:number[],active:boolean)=>adminOrganizationRequest<{updated_ids:number[]}>(token,`/branches/bulk-${active?'reactivate':'deactivate'}`,{method:'POST',body:JSON.stringify({ids})});
 export const listAdminDepartments=(token:string,all=true)=>adminOrganizationRequest<AdminDepartment[]>(token,`/departments?include_inactive=${all}`);
-export const createAdminDepartment=(token:string,data:Partial<AdminDepartment>)=>adminOrganizationRequest<AdminDepartment>(token,'/departments',{method:'POST',body:JSON.stringify(data)});
+export const createAdminDepartment=(token:string,data:Partial<AdminDepartment>,key=crypto.randomUUID())=>adminOrganizationRequest<AdminDepartment>(token,'/departments',{method:'POST',headers:{'Idempotency-Key':key},body:JSON.stringify(data)});
 export const updateAdminDepartment=(token:string,id:number,data:Partial<AdminDepartment>)=>adminOrganizationRequest<AdminDepartment>(token,`/departments/${id}`,{method:'PUT',body:JSON.stringify(data)});
 export const setAdminDepartmentActive=(token:string,id:number,active:boolean)=>adminOrganizationRequest<AdminDepartment>(token,`/departments/${id}/${active?'reactivate':'deactivate'}`,{method:'POST'});
+export const bulkSetAdminDepartmentActive=(token:string,ids:number[],active:boolean)=>adminOrganizationRequest<{updated_ids:number[]}>(token,`/departments/bulk-${active?'reactivate':'deactivate'}`,{method:'POST',body:JSON.stringify({ids})});
 export const listAdminDesignations=(token:string,all=true)=>adminOrganizationRequest<AdminDesignation[]>(token,`/designations?include_inactive=${all}`);
-export const createAdminDesignation=(token:string,data:Partial<AdminDesignation>)=>adminOrganizationRequest<AdminDesignation>(token,'/designations',{method:'POST',body:JSON.stringify(data)});
+export const createAdminDesignation=(token:string,data:Partial<AdminDesignation>,key=crypto.randomUUID())=>adminOrganizationRequest<AdminDesignation>(token,'/designations',{method:'POST',headers:{'Idempotency-Key':key},body:JSON.stringify(data)});
 export const updateAdminDesignation=(token:string,id:number,data:Partial<AdminDesignation>)=>adminOrganizationRequest<AdminDesignation>(token,`/designations/${id}`,{method:'PUT',body:JSON.stringify(data)});
 export const setAdminDesignationActive=(token:string,id:number,active:boolean)=>adminOrganizationRequest<AdminDesignation>(token,`/designations/${id}/${active?'reactivate':'deactivate'}`,{method:'POST'});
+export const bulkSetAdminDesignationActive=(token:string,ids:number[],active:boolean)=>adminOrganizationRequest<{updated_ids:number[]}>(token,`/designations/bulk-${active?'reactivate':'deactivate'}`,{method:'POST',body:JSON.stringify({ids})});
 
 export interface AdminEmployee {
   id:number; organization_id:number; party_id:number; employee_code:string;
@@ -562,9 +560,10 @@ export interface AdminEmployeeHistory {
 }
 export const listAdminEmployees=(token:string,all=true,filters?:{search?:string;employment_status?:string;branch_id?:number})=>{const query=new URLSearchParams({include_inactive:String(all)});if(filters?.search)query.set('search',filters.search);if(filters?.employment_status)query.set('employment_status',filters.employment_status);if(filters?.branch_id)query.set('branch_id',String(filters.branch_id));return adminOrganizationRequest<AdminEmployee[]>(token,`/employees?${query}`);};
 export const getAdminEmployee=(token:string,id:number)=>adminOrganizationRequest<AdminEmployee>(token,`/employees/${id}`);
-export const createAdminEmployee=(token:string,data:AdminEmployeeInput)=>adminOrganizationRequest<AdminEmployee>(token,'/employees',{method:'POST',body:JSON.stringify(data)});
+export const createAdminEmployee=(token:string,data:AdminEmployeeInput,idempotencyKey=crypto.randomUUID())=>adminOrganizationRequest<AdminEmployee>(token,'/employees',{method:'POST',headers:{'Idempotency-Key':idempotencyKey},body:JSON.stringify(data)});
 export const updateAdminEmployee=(token:string,id:number,data:Partial<AdminEmployee>)=>adminOrganizationRequest<AdminEmployee>(token,`/employees/${id}`,{method:'PUT',body:JSON.stringify(data)});
 export const setAdminEmployeeActive=(token:string,id:number,active:boolean)=>adminOrganizationRequest<AdminEmployee>(token,`/employees/${id}/${active?'reactivate':'deactivate'}`,{method:'POST'});
+export const bulkSetAdminEmployeeActive=(token:string,ids:number[],active:boolean)=>adminOrganizationRequest<{updated_ids:number[]}>(token,`/employees/bulk/${active?'reactivate':'deactivate'}`,{method:'POST',body:JSON.stringify({ids})});
 export const getAdminEmployeeHistory=(token:string,id:number)=>adminOrganizationRequest<AdminEmployeeHistory>(token,`/employees/${id}/history`);
 
 export interface AdminPermission { id:number; permission_code:string; permission_name:string; module_name:string; }
@@ -593,20 +592,38 @@ export interface AdminAssociate {id:number;organization_id:number;party_id:numbe
 export interface AdminArnHolder {id:number;organization_id:number;arn_number:string;holder_party_id:number;holder_name:string;holder_type:'ORGANIZATION'|'EMPLOYEE'|'ASSOCIATE'|'AGENCY'|'OTHER';branch_id?:number|null;employee_id?:number|null;associate_id?:number|null;agency_id?:number|null;registration_date?:string|null;valid_from?:string|null;valid_to?:string|null;status:'ACTIVE'|'EXPIRED'|'SUSPENDED'|'INACTIVE';remarks?:string|null;is_active:boolean;created_at:string;}
 type ExternalInput=Record<string,unknown>;
 export const listAdminAgencies=(token:string,all=true)=>adminOrganizationRequest<AdminAgency[]>(token,`/agencies?include_inactive=${all}`);
-export const createAdminAgency=(token:string,data:ExternalInput)=>adminOrganizationRequest<AdminAgency>(token,'/agencies',{method:'POST',body:JSON.stringify(data)});
+export const createAdminAgency=(token:string,data:ExternalInput,key=crypto.randomUUID())=>adminOrganizationRequest<AdminAgency>(token,'/agencies',{method:'POST',headers:{'Idempotency-Key':key},body:JSON.stringify(data)});
 export const updateAdminAgency=(token:string,id:number,data:ExternalInput)=>adminOrganizationRequest<AdminAgency>(token,`/agencies/${id}`,{method:'PUT',body:JSON.stringify(data)});
 export const setAdminAgencyActive=(token:string,id:number,active:boolean)=>adminOrganizationRequest<AdminAgency>(token,`/agencies/${id}/${active?'reactivate':'deactivate'}`,{method:'POST'});
+export const bulkSetAdminAgencyActive=(token:string,ids:number[],active:boolean)=>adminOrganizationRequest<{updated_ids:number[]}>(token,`/agencies/bulk-${active?'reactivate':'deactivate'}`,{method:'POST',body:JSON.stringify({ids})});
 export const listAdminAssociates=(token:string,all=true)=>adminOrganizationRequest<AdminAssociate[]>(token,`/associates?include_inactive=${all}`);
-export const createAdminAssociate=(token:string,data:ExternalInput)=>adminOrganizationRequest<AdminAssociate>(token,'/associates',{method:'POST',body:JSON.stringify(data)});
+export const createAdminAssociate=(token:string,data:ExternalInput,key=crypto.randomUUID())=>adminOrganizationRequest<AdminAssociate>(token,'/associates',{method:'POST',headers:{'Idempotency-Key':key},body:JSON.stringify(data)});
 export const updateAdminAssociate=(token:string,id:number,data:ExternalInput)=>adminOrganizationRequest<AdminAssociate>(token,`/associates/${id}`,{method:'PUT',body:JSON.stringify(data)});
 export const setAdminAssociateActive=(token:string,id:number,active:boolean)=>adminOrganizationRequest<AdminAssociate>(token,`/associates/${id}/${active?'reactivate':'deactivate'}`,{method:'POST'});
+export const bulkSetAdminAssociateActive=(token:string,ids:number[],active:boolean)=>adminOrganizationRequest<{updated_ids:number[]}>(token,`/associates/bulk-${active?'reactivate':'deactivate'}`,{method:'POST',body:JSON.stringify({ids})});
 export const listAdminArnHolders=(token:string,all=true)=>adminOrganizationRequest<AdminArnHolder[]>(token,`/arn-holders?include_inactive=${all}`);
-export const createAdminArnHolder=(token:string,data:ExternalInput)=>adminOrganizationRequest<AdminArnHolder>(token,'/arn-holders',{method:'POST',body:JSON.stringify(data)});
+export const createAdminArnHolder=(token:string,data:ExternalInput,key=crypto.randomUUID())=>adminOrganizationRequest<AdminArnHolder>(token,'/arn-holders',{method:'POST',headers:{'Idempotency-Key':key},body:JSON.stringify(data)});
 export const updateAdminArnHolder=(token:string,id:number,data:ExternalInput)=>adminOrganizationRequest<AdminArnHolder>(token,`/arn-holders/${id}`,{method:'PUT',body:JSON.stringify(data)});
 export const setAdminArnStatus=(token:string,id:number,status:AdminArnHolder['status'],reason?:string)=>adminOrganizationRequest<AdminArnHolder>(token,`/arn-holders/${id}/status`,{method:'POST',body:JSON.stringify({status,reason:reason||null})});
+export const bulkSetAdminArnActive=(token:string,ids:number[],active:boolean)=>adminOrganizationRequest<{updated_ids:number[]}>(token,`/arn-holders/bulk-${active?'reactivate':'deactivate'}`,{method:'POST',body:JSON.stringify({ids})});
+export interface AdminArnStatusHistory {id:number;arn_holder_id:number;old_status:string|null;new_status:string;changed_at:string;changed_by:number;reason:string|null;}
+export const listAdminArnStatusHistory=(token:string,id:number)=>adminOrganizationRequest<AdminArnStatusHistory[]>(token,`/arn-holders/${id}/history`);
+export interface AdminArnDocument {id:number;document_type:number;file_name:string|null;file_size:number|null;uploaded_at:string;}
+export const listAdminArnDocuments=(token:string,id:number)=>adminOrganizationRequest<AdminArnDocument[]>(token,`/arn-holders/${id}/documents`);
+export async function uploadAdminArnDocument(token:string,id:number,type:string,file:File):Promise<AdminArnDocument>{
+  const data=new FormData();data.append('document_type',type);data.append('file',file);
+  const response=await fetch(`${API_BASE_URL}/admin/organization/arn-holders/${id}/documents`,{method:'POST',headers:{Authorization:`Bearer ${token}`},body:data});
+  if(!response.ok){const error=await response.json();throw new Error(formatApiError(error.detail,'ARN document upload failed'));}
+  return response.json();
+}
+export async function downloadAdminArnDocument(token:string,arnId:number,documentId:number):Promise<Blob>{
+  const response=await fetch(`${API_BASE_URL}/admin/organization/arn-holders/${arnId}/documents/${documentId}/download`,{headers:{Authorization:`Bearer ${token}`}});
+  if(!response.ok){const error=await response.json();throw new Error(formatApiError(error.detail,'ARN document download failed'));}
+  return response.blob();
+}
 export interface AccessInvitation { id:number;employee_id?:number|null;customer_id?:number|null;invitation_type:string;email:string;status:string;expires_at:string;created_at:string;invitation_url?:string|null; }
-export async function createEmployeeInvitation(token:string,employeeId:number):Promise<AccessInvitation>{const response=await fetch(`${API_BASE_URL}/admin/invitations`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({employee_id:employeeId,expires_in_hours:72})});if(!response.ok){const error=await response.json();throw new Error(formatApiError(error.detail,'Invitation failed'));}return response.json();}
-export async function createClientInvitation(token:string,customerId:number):Promise<AccessInvitation>{const response=await fetch(`${API_BASE_URL}/admin/client-invitations`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({customer_id:customerId,expires_in_hours:72})});if(!response.ok){const error=await response.json();throw new Error(formatApiError(error.detail,'Invitation failed'));}return response.json();}
+export async function createEmployeeInvitation(token:string,employeeId:number,key=crypto.randomUUID()):Promise<AccessInvitation>{const response=await fetch(`${API_BASE_URL}/admin/invitations`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json','Idempotency-Key':key},body:JSON.stringify({employee_id:employeeId,expires_in_hours:72})});if(!response.ok){const error=await response.json();throw new Error(formatApiError(error.detail,'Invitation failed'));}return response.json();}
+export async function createClientInvitation(token:string,customerId:number,key=crypto.randomUUID()):Promise<AccessInvitation>{const response=await fetch(`${API_BASE_URL}/admin/client-invitations`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json','Idempotency-Key':key},body:JSON.stringify({customer_id:customerId,expires_in_hours:72})});if(!response.ok){const error=await response.json();throw new Error(formatApiError(error.detail,'Invitation failed'));}return response.json();}
 export async function previewAccessInvitation(token:string){const response=await fetch(`${API_BASE_URL}/auth/invitations/preview?token=${encodeURIComponent(token)}`);if(!response.ok)throw new Error('Invitation is invalid or expired');return response.json() as Promise<{email:string;display_name:string;invitation_type:string;organization_id:number;expires_at:string}>;}
 export async function acceptAccessInvitation(token:string,password:string){const response=await fetch(`${API_BASE_URL}/auth/invitations/accept`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,password})});if(!response.ok){const error=await response.json();throw new Error(formatApiError(error.detail,'Unable to accept invitation'));}return response.json() as Promise<{message:string;email:string}>;}
 export interface EmployeeDashboardData {employee_id:number;organization_id:number;actor_type:string;assigned_client_count:number;permissions:string[];subscription_status:string;}
@@ -644,6 +661,8 @@ async function clientPortalAccessRequest<T>(token:string,customerId:number,path=
 export const getClientPortalAccessStatus=(token:string,customerId:number)=>clientPortalAccessRequest<ClientPortalAccessStatus>(token,customerId);
 export const enableClientPortalAccess=(token:string,customerId:number)=>clientPortalAccessRequest<ClientPortalAccessStatus>(token,customerId,'/enable',{method:'POST'});
 export const disableClientPortalAccess=(token:string,customerId:number)=>clientPortalAccessRequest<ClientPortalAccessStatus>(token,customerId,'/disable',{method:'POST'});
+export interface AdminClientAccess {customer_id:number;customer_code:string;display_name:string;email?:string|null;mobile_number?:string|null;customer_status:string;has_account:boolean;enabled:boolean;account_status:string;pending_invitation:boolean;}
+export async function listAdminClientAccess(token:string,search?:string,status?:string):Promise<AdminClientAccess[]>{const query=new URLSearchParams();if(search?.trim())query.set('search',search.trim());if(status)query.set('status',status);const response=await fetch(`${API_BASE_URL}/admin/client-access${query.size?`?${query}`:''}`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'}});if(!response.ok){const error=await response.json().catch(()=>null);throw new Error(formatApiError(error?.detail,'Unable to load client access'));}return response.json();}
 export interface ClientPortalMessage {id:number;message_type:string;subject?:string|null;body:string;status:string;sent_at:string;sender_name:string;}
 export const getClientPortalMessages=(token:string)=>clientPortalFetch<ClientPortalMessage[]>(token,'/messages');
 
@@ -712,10 +731,10 @@ export async function getReportSnapshot(token: string, snapshotId: number): Prom
   return advisorFetch(`/reports/snapshots/${snapshotId}`, token);
 }
 
-export async function createReportSnapshot(token: string, title?: string): Promise<ReportSnapshot> {
+export async function createReportSnapshot(token: string, title?: string, idempotencyKey = crypto.randomUUID()): Promise<ReportSnapshot> {
   return advisorFetch('/reports/snapshots', token, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify({ title: title || null }),
   });
 }
@@ -829,9 +848,11 @@ export async function advisorPost(
   endpoint: string,
   token: string,
   body: unknown,
+  idempotencyKey?: string,
 ) {
   const response = await advisorRequest(endpoint, token, {
     method: 'POST',
+    ...(idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : {}),
     body: JSON.stringify(body),
   });
 
@@ -926,8 +947,12 @@ export function updateClient(
   return advisorPut(`/clients/${clientId}`, token, data);
 }
 
-export function createClient(token: string, data: ClientCreate): Promise<Client> {
-  return advisorPost('/clients', token, data);
+export function createClient(token: string, data: ClientCreate, idempotencyKey = crypto.randomUUID()): Promise<Client> {
+  return advisorFetch<Client>('/clients', token, {
+    method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey },
+    body: JSON.stringify(data),
+  });
 }
 
 export function getClient(token: string, id: number): Promise<Client> {
@@ -1072,8 +1097,8 @@ export function getGroupGoals(token: string, groupId: number): Promise<{ goals: 
   return advisorFetch(`/goals?customer_group_id=${groupId}`, token);
 }
 
-export function createFinancialGoal(token: string, data: FinancialGoalInput): Promise<FinancialGoal> {
-  return advisorPost('/goals', token, data);
+export function createFinancialGoal(token: string, data: FinancialGoalInput, idempotencyKey = crypto.randomUUID()): Promise<FinancialGoal> {
+  return advisorPost('/goals', token, data, idempotencyKey);
 }
 
 export function updateFinancialGoal(
@@ -1141,8 +1166,8 @@ export function getGroupFinancialAccounts(token: string, groupId: number): Promi
   return advisorFetch(`/financial-accounts?customer_group_id=${groupId}`, token);
 }
 
-export function createFinancialAccount(token: string, data: FinancialAccountInput): Promise<FinancialAccount> {
-  return advisorPost('/financial-accounts', token, data);
+export function createFinancialAccount(token: string, data: FinancialAccountInput, idempotencyKey = crypto.randomUUID()): Promise<FinancialAccount> {
+  return advisorPost('/financial-accounts', token, data, idempotencyKey);
 }
 
 export function updateFinancialAccount(
@@ -1167,8 +1192,8 @@ export interface InvestmentHolding {
 export function getAccountHoldings(token: string, accountId: number): Promise<{ holdings: InvestmentHolding[]; total: number }> {
   return advisorFetch(`/holdings?financial_account_id=${accountId}`, token);
 }
-export function createHolding(token: string, data: Omit<InvestmentHolding, 'id' | 'invested_value' | 'current_value' | 'gain' | 'gain_percentage'>): Promise<InvestmentHolding> {
-  return advisorPost('/holdings', token, data);
+export function createHolding(token: string, data: Omit<InvestmentHolding, 'id' | 'invested_value' | 'current_value' | 'gain' | 'gain_percentage'>, idempotencyKey = crypto.randomUUID()): Promise<InvestmentHolding> {
+  return advisorPost('/holdings', token, data, idempotencyKey);
 }
 export function updateHolding(token: string, id: number, data: Partial<InvestmentHolding>): Promise<InvestmentHolding> {
   return advisorPut(`/holdings/${id}`, token, data);
@@ -1441,10 +1466,12 @@ export async function getGroupMembershipHistory(
 
 export async function createGroup(
   token: string,
-  payload: GroupCreatePayload
+  payload: GroupCreatePayload,
+  idempotencyKey = crypto.randomUUID(),
 ): Promise<Group> {
   return advisorFetch<Group>('/groups/', token, {
     method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(payload),
   });
 }
@@ -1659,9 +1686,11 @@ export async function getMeeting(
 export async function createMeeting(
   token: string,
   payload: MeetingCreatePayload,
+  idempotencyKey = crypto.randomUUID(),
 ): Promise<Meeting> {
   return advisorFetch<Meeting>("/meetings/", token, {
     method: "POST",
+    headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(payload),
   });
 }
@@ -1824,10 +1853,12 @@ export async function getTask(
 
 export async function createTask(
   token: string,
-  payload: TaskCreatePayload
+  payload: TaskCreatePayload,
+  idempotencyKey = crypto.randomUUID(),
 ): Promise<Task> {
   return advisorFetch<Task>("/tasks/", token, {
     method: "POST",
+    headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(payload),
   });
 }
@@ -1975,9 +2006,11 @@ export function getMessage(
 export function createMessage(
   token: string,
   payload: MessageCreatePayload,
+  idempotencyKey = crypto.randomUUID(),
 ): Promise<Message> {
   return advisorFetch("/messages/", token, {
     method: "POST",
+    headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(payload),
   });
 }
@@ -2055,7 +2088,6 @@ export type DocumentCreatePayload = {
   description?: string | null;
 
   file_name?: string | null;
-  file_url?: string | null;
   file_type?: string | null;
   file_size?: number | null;
 
@@ -2072,7 +2104,6 @@ export type DocumentUpdatePayload = {
   description?: string | null;
 
   file_name?: string | null;
-  file_url?: string | null;
   file_type?: string | null;
   file_size?: number | null;
 
@@ -2157,6 +2188,7 @@ export async function uploadDocument(
     notes?: string | null;
     file: File;
   },
+  idempotencyKey = crypto.randomUUID(),
 ): Promise<Document> {
   const formData = new FormData();
 
@@ -2197,6 +2229,7 @@ export async function uploadDocument(
 
   return advisorFetch("/documents/upload", token, {
     method: "POST",
+    headers: { 'Idempotency-Key': idempotencyKey },
     body: formData,
   });
 }
@@ -2204,9 +2237,11 @@ export async function uploadDocument(
 export function createDocument(
   token: string,
   payload: DocumentCreatePayload,
+  idempotencyKey = crypto.randomUUID(),
 ): Promise<Document> {
   return advisorFetch("/documents/", token, {
     method: "POST",
+    headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(payload),
   });
 }

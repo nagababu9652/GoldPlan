@@ -43,7 +43,7 @@ def test_client_creation_enforces_subscription_capacity(monkeypatch):
     with pytest.raises(HTTPException) as error:
         create_client(
             ClientCreate(first_name="Limit", last_name="Reached"),
-            type("Advisor", (), {"party_id": 2})(), db, context,
+            context, db,
         )
     assert error.value.status_code == 409
     assert "LIMIT.CLIENTS" in error.value.detail
@@ -67,16 +67,25 @@ def test_client_fields_round_trip_through_domain_tables():
             organization_id = db.query(Employee.organization_id).filter(
                 Employee.party_id == advisor.party_id,
             ).scalar()
+            employee_id = db.query(Employee.id).filter(
+                Employee.party_id == advisor.party_id,
+                Employee.organization_id == organization_id,
+            ).scalar()
             class TestAccess:
-                def __init__(self, org_id): self.organization_id = org_id
+                def __init__(self, org_id):
+                    self.organization_id = org_id
+                    self.employee_id = employee_id
+                    self.party_id = advisor.party_id
+                    self.user_id = advisor.id
                 def check_limit(self, code, current_usage, requested=1): return None
+            access_context = TestAccess(organization_id)
             created = create_client(ClientCreate(
                 first_name="Persistence", last_name=suffix,
                 address_line1="1 Test Road", city="Hyderabad",
                 state="Telangana", country="India", pincode="500001",
                 bank_name="Test Bank", account_number=f"TEST{suffix}",
                 ifsc_code="TEST0000001", kyc_status="PENDING",
-            ), advisor, db, TestAccess(organization_id))
+            ), access_context, db)
             assert (created.city, created.state, created.country) == ("Hyderabad", "Telangana", "India")
             assert (created.bank_name, created.account_number) == ("Test Bank", f"TEST{suffix}")
             assert created.kyc_status == "PENDING"
@@ -85,7 +94,7 @@ def test_client_fields_round_trip_through_domain_tables():
                 address_line2="Second floor", pincode="500002",
                 bank_name="Updated Bank", ifsc_code="UPDT0000001",
                 kyc_status="VERIFIED",
-            ), db, advisor)
+            ), db, access_context)
             assert updated.address_line2 == "Second floor"
             assert updated.pincode == "500002"
             assert updated.bank_name == "Updated Bank"

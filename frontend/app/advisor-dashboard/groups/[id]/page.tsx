@@ -23,10 +23,12 @@ import {
 } from '@/lib/api';
 
 import { getGroupRelationships } from '@/lib/group-options';
+import { useSingleSubmission } from '@/lib/use-single-submission';
 
 export default function GroupDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { run: runMemberAction, submitting: memberSubmitting } = useSingleSubmission();
 
   const groupId = Number(params.id);
 
@@ -176,6 +178,7 @@ export default function GroupDetailPage() {
       return;
     }
 
+    await runMemberAction(async () => {
     try {
       await addGroupMember(token, group.id, {
         customer_id: Number(selectedClientId),
@@ -190,6 +193,7 @@ export default function GroupDetailPage() {
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Failed to add member');
     }
+    });
   };
 
   const handleMoveMemberHere = async () => {
@@ -212,6 +216,7 @@ export default function GroupDetailPage() {
       return;
     }
 
+    await runMemberAction(async () => {
     try {
       let newHeadCustomerId: number | null = null;
 
@@ -301,6 +306,7 @@ export default function GroupDetailPage() {
           : 'Failed to move client'
       );
     }
+    });
   };
 
   const handleRemoveMember = async (customerId: number) => {
@@ -718,10 +724,10 @@ export default function GroupDetailPage() {
 
             <button
               onClick={handleAddMember}
-              disabled={selectedClientId === ''}
+              disabled={selectedClientId === '' || memberSubmitting}
               className="px-6 py-3 bg-obsidian text-bone text-[13px] font-mono uppercase tracking-wider2 hover:bg-obsidian-soft transition-colors disabled:opacity-50"
             >
-              Add Member
+              {memberSubmitting ? 'Working…' : 'Add Member'}
             </button>
 
             {(group.group_type === 'HOUSEHOLD' ||
@@ -729,7 +735,7 @@ export default function GroupDetailPage() {
               <button
                 type="button"
                 onClick={handleMoveMemberHere}
-                disabled={selectedClientId === ''}
+                disabled={selectedClientId === '' || memberSubmitting}
                 className="rounded-full border border-obsidian px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-bone-deep disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Move Client Here

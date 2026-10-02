@@ -4,7 +4,7 @@ from typing import Optional
 
 class OTPRequest(BaseModel):
     destination: str = Field(..., description="Email or mobile for OTP")
-    purpose: str = Field(default="registration", pattern="^(registration|password_reset|login)$")
+    purpose: str = Field(default="registration", pattern="^(registration|password_reset|login|email_verification)$")
 
 
 class OTPVerifyRequest(BaseModel):
@@ -16,7 +16,6 @@ class OTPVerifyRequest(BaseModel):
 class OTPResponse(BaseModel):
     message: str
     expires_in_minutes: int = 10
-    otp_code: Optional[str] = Field(default=None, description="Development only")
 
 
 class OTPVerifyResponse(BaseModel):
@@ -27,7 +26,6 @@ class OTPVerifyResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
-    refresh_token: str
     expires_in: int
 
 

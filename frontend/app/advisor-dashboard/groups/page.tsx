@@ -11,9 +11,11 @@ import {
 } from '@/lib/api';
 
 import { GROUP_TYPES } from '@/lib/group-options';
+import { useSingleSubmission } from '@/lib/use-single-submission';
 
 export default function GroupsPage() {
   const router = useRouter();
+  const { run, keyFor, clearKey } = useSingleSubmission();
 
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,13 +71,16 @@ export default function GroupsPage() {
       return;
     }
 
+    await run(async () => {
     try {
       setSaving(true);
 
-      await createGroup(token, {
+      const payload = {
         ...formData,
         group_name: formData.group_name.trim(),
-      });
+      };
+      await createGroup(token, payload, keyFor(payload));
+      clearKey();
 
       setShowAddModal(false);
 
@@ -94,6 +99,7 @@ export default function GroupsPage() {
     } finally {
       setSaving(false);
     }
+    });
   };
 
   const handleDeactivate = async (group: Group) => {

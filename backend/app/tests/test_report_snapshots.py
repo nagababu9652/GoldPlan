@@ -44,7 +44,7 @@ def test_saved_report_payload_is_a_value_snapshot(monkeypatch):
         "net_cash_flow": 20,
     }
     monkeypatch.setattr(
-        advisors, "get_advisor_employee",
+        advisors, "get_report_employee",
         lambda advisor, db: SimpleNamespace(id=7, organization_id=3),
     )
     monkeypatch.setattr(advisors, "get_financial_summary_report", lambda **kwargs: financial)
@@ -53,7 +53,7 @@ def test_saved_report_payload_is_a_value_snapshot(monkeypatch):
 
     saved = advisors.create_report_snapshot(
         ReportSnapshotCreate(title="September close"),
-        SimpleNamespace(id=11),
+        SimpleNamespace(user_id=11),
         db,
     )
 
@@ -75,11 +75,11 @@ def test_historical_report_read_returns_stored_payload(monkeypatch):
         payload={"financial_summary": {"net_worth": 125}},
     )
     monkeypatch.setattr(
-        advisors, "get_advisor_employee",
+        advisors, "get_report_employee",
         lambda advisor, db: SimpleNamespace(id=7, organization_id=3),
     )
 
-    result = advisors.get_report_snapshot(4, SimpleNamespace(id=11), SnapshotDB(snapshot))
+    result = advisors.get_report_snapshot(4, SimpleNamespace(user_id=11), SnapshotDB(snapshot))
 
     assert result is snapshot
     assert result.payload["financial_summary"]["net_worth"] == 125

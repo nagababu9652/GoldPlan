@@ -27,9 +27,11 @@ def test_registration_keeps_fields_collected_by_frontend():
 
 def test_profile_returns_frontend_fields_from_party():
     db = Mock()
-    db.query.return_value.filter.return_value.first.return_value = SimpleNamespace(first_name="Test", last_name="Advisor")
-    user = SimpleNamespace(party_id=1, display_name="Test Advisor", email="test@example.com", mobile_number="123", created_at="2026-01-01")
-    result = advisors.get_advisor_profile(user, db)
+    db.query.return_value.filter.return_value.first.side_effect = [
+        SimpleNamespace(display_name="Test Advisor", email="test@example.com", mobile_number="123", created_at="2026-01-01"),
+        SimpleNamespace(first_name="Test", last_name="Advisor"),
+    ]
+    result = advisors.get_advisor_profile(SimpleNamespace(user_id=7, party_id=1), db)
     assert result["first_name"] == "Test"
     assert result["last_name"] == "Advisor"
     assert result["phone"] == "123"
@@ -40,9 +42,11 @@ def test_profile_returns_frontend_fields_from_party():
 def test_password_reset_is_bound_to_assigned_client(monkeypatch, client_id, user_party, expected_status):
     customer = make_customer(7)
     customer.party_id = 70
+    customer.is_active = True
+    customer.deleted_at = None
     db = FakeDB(customers=[customer])
     user = SimpleNamespace(party_id=user_party)
-    monkeypatch.setattr(advisors, "get_advisor_customer_ids", lambda advisor, db: [7])
+    monkeypatch.setattr(advisors, "get_report_customer_ids", lambda advisor, db: [7])
     monkeypatch.setattr(advisors.auth, "get_user_by_email", Mock(return_value=user))
     verify = Mock(return_value=True)
     reset = Mock()
@@ -51,12 +55,12 @@ def test_password_reset_is_bound_to_assigned_client(monkeypatch, client_id, user
     request = PasswordResetConfirm(email="test@example.com", otp_code="123456", new_password="test-password")
     if expected_status != 200:
         with pytest.raises(HTTPException) as error:
-            advisors.reset_client_password(client_id, request, SimpleNamespace(id=1), db)
+                advisors.reset_client_password(client_id, request, SimpleNamespace(user_id=1, organization_id=10), db)
         assert error.value.status_code == expected_status
         verify.assert_not_called()
         reset.assert_not_called()
     else:
-        advisors.reset_client_password(client_id, request, SimpleNamespace(id=1), db)
+        advisors.reset_client_password(client_id, request, SimpleNamespace(user_id=1, organization_id=10), db)
         verify.assert_called_once()
         reset.assert_called_once_with(db, user, request.new_password)
 

@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 
 import ClientHeader from "@/components/clients/common/ClientHeader";
 import ClientSummaryCards from "@/components/clients/common/ClientSummaryCards";
 import ClientOverview from "@/components/clients/overview/ClientOverview";
-import ClientPortalAccess from "@/components/clients/overview/ClientPortalAccess";
 import PortalPublications from "@/components/clients/overview/PortalPublications";
 
 import { getClientById } from "@/lib/api";
@@ -112,7 +112,7 @@ export default function ClientDetailsPage() {
 
       <ClientOverview client={client} />
 
-      <ClientPortalAccess customerId={client.id} />
+      <Link href="/admin/client-access" className="inline-flex rounded-full border border-obsidian px-4 py-2 text-xs uppercase tracking-wider text-obsidian">Manage Client Access</Link>
 
       <PortalPublications customerId={client.id} />
     </div>

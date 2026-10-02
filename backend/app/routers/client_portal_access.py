@@ -33,6 +33,8 @@ def status(customer_id: int, context: AccessContext = Depends(require_employee),
         now = now_utc_naive()
         enabled = db.query(UserRole).join(Role, Role.id == UserRole.role_id).filter(
             UserRole.user_id == user.id, Role.role_code == "CLIENT",
+            Role.is_active.is_(True),
+            or_(Role.organization_id.is_(None), Role.organization_id == context.organization_id),
             UserRole.effective_from <= now,
             or_(UserRole.effective_to.is_(None), UserRole.effective_to > now)).first() is not None
     pending = db.query(AccessInvitation).filter(AccessInvitation.customer_id == customer.id,
@@ -40,7 +42,8 @@ def status(customer_id: int, context: AccessContext = Depends(require_employee),
         AccessInvitation.accepted_at.is_(None), AccessInvitation.revoked_at.is_(None),
         AccessInvitation.expires_at > now_utc_naive()).first()
     return {"customer_id": customer.id, "user_id": user.id if user else None,
-        "has_account": user is not None, "enabled": enabled and bool(user and user.is_active),
+        "has_account": user is not None,
+        "enabled": enabled and bool(user and user.is_active and user.account_status == "ACTIVE"),
         "account_status": user.account_status if user else "NOT_INVITED",
         "pending_invitation": pending is not None}
 

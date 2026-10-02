@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -9,7 +9,8 @@ from ...models.crm.customer import Customer, CustomerGroup
 from ...models.crm.message import Message
 from ...models.organization.employee import Employee
 from ...models.organization.assignment import EmployeeAssignment
-from ...routers.advisors import get_current_advisor as get_current_user
+from ...services.access import AccessContext, require_employee as get_current_user, require_permission
+from ...services.idempotency import finish_create, reserve_create
 from ...schemas.message import (
     MessageCreate,
     MessageListResponse,
@@ -26,13 +27,16 @@ router = APIRouter(
 
 def get_advisor_employee(
     db: Session,
-    current_user,
+    current_user: AccessContext,
 ) -> Employee:
     employee = (
         db.query(Employee)
         .filter(
-            Employee.party_id == current_user.party_id,
+            Employee.id == current_user.employee_id,
+            Employee.organization_id == current_user.organization_id,
             Employee.is_active.is_(True),
+            Employee.employment_status == "ACTIVE",
+            Employee.deleted_at.is_(None),
         )
         .first()
     )
@@ -105,13 +109,14 @@ def validate_customer_and_group(
             EmployeeAssignment.effective_from <= today,
             (EmployeeAssignment.effective_to.is_(None) | (EmployeeAssignment.effective_to >= today)),
             EmployeeAssignment.is_active.is_(True),
+            EmployeeAssignment.deleted_at.is_(None),
         ).first()
         customer = (
             db.query(Customer)
             .filter(
                 Customer.id == customer_id,
-                Customer.organization_id
-                == employee.organization_id,
+                Customer.organization_id == employee.organization_id,
+                Customer.is_active.is_(True), Customer.deleted_at.is_(None),
             )
             .first()
         )
@@ -127,8 +132,8 @@ def validate_customer_and_group(
             db.query(CustomerGroup)
             .filter(
                 CustomerGroup.id == customer_group_id,
-                CustomerGroup.organization_id
-                == employee.organization_id,
+                CustomerGroup.organization_id == employee.organization_id,
+                CustomerGroup.is_active.is_(True), CustomerGroup.deleted_at.is_(None),
             )
             .first()
         )
@@ -138,13 +143,29 @@ def validate_customer_and_group(
                 status_code=404,
                 detail="Customer group not found",
             )
-        if group.primary_advisor_employee_id not in {None, employee.id}:
-            raise HTTPException(403, "You are not assigned to this customer group")
+        assigned = db.query(EmployeeAssignment).filter(
+            EmployeeAssignment.employee_id == employee.id,
+            EmployeeAssignment.assignment_type == "ADVISOR",
+            or_(
+                (EmployeeAssignment.entity_type == "CUSTOMER_GROUP") &
+                (EmployeeAssignment.entity_id == group.id),
+                (EmployeeAssignment.entity_type == "BRANCH") &
+                (EmployeeAssignment.entity_id == group.primary_branch_id),
+            ),
+            EmployeeAssignment.effective_from <= date.today(),
+            or_(EmployeeAssignment.effective_to.is_(None),
+                EmployeeAssignment.effective_to >= date.today()),
+            EmployeeAssignment.is_active.is_(True),
+            EmployeeAssignment.deleted_at.is_(None),
+        ).first()
+        if not assigned:
+            raise HTTPException(404, "Assigned customer group not found")
 
 
 @router.get(
     "/",
     response_model=MessageListResponse,
+    dependencies=[Depends(require_permission("MESSAGE.READ"))],
 )
 def list_messages(
     search: str | None = Query(default=None),
@@ -241,18 +262,27 @@ def list_messages(
         .all()
     )
 
+    accessible = []
+    for message in messages:
+        try:
+            validate_customer_and_group(db, employee, message.customer_id, message.customer_group_id)
+            accessible.append(message)
+        except HTTPException:
+            continue
+
     return MessageListResponse(
         messages=[
             build_message_response(message)
-            for message in messages
+            for message in accessible
         ],
-        total=len(messages),
+        total=len(accessible),
     )
 
 
 @router.get(
     "/{message_id}",
     response_model=MessageResponse,
+    dependencies=[Depends(require_permission("MESSAGE.READ"))],
 )
 def get_message(
     message_id: int,
@@ -283,6 +313,8 @@ def get_message(
             detail="Message not found",
         )
 
+    validate_customer_and_group(db, employee, message.customer_id, message.customer_group_id)
+
     return build_message_response(message)
 
 
@@ -290,12 +322,14 @@ def get_message(
     "/",
     response_model=MessageResponse,
     status_code=201,
+    dependencies=[Depends(require_permission("MESSAGE.CREATE"))],
 )
 def create_message(
     payload: MessageCreate,
 
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    idempotency_key: str | None = Header(default=None),
 ):
     employee = get_advisor_employee(
         db,
@@ -308,6 +342,12 @@ def create_message(
         payload.customer_id,
         payload.customer_group_id,
     )
+    reservation = reserve_create(db, key=idempotency_key, operation="message.create", actor_scope=f"user:{current_user.user_id}", payload=payload.model_dump())
+    if reservation and reservation.replay:
+        message = db.query(Message).filter(Message.id == reservation.resource_id, Message.organization_id == employee.organization_id, Message.sender_employee_id == employee.id).first()
+        if message is None:
+            raise HTTPException(status_code=404, detail="Message not found")
+        return build_message_response(message)
 
     message = Message(
         organization_id=employee.organization_id,
@@ -325,6 +365,8 @@ def create_message(
     )
 
     db.add(message)
+    db.flush()
+    finish_create(db, reservation, message.id)
     db.commit()
     db.refresh(message)
 
@@ -334,6 +376,7 @@ def create_message(
 @router.put(
     "/{message_id}",
     response_model=MessageResponse,
+    dependencies=[Depends(require_permission("MESSAGE.UPDATE"))],
 )
 def update_message(
     message_id: int,
@@ -365,6 +408,8 @@ def update_message(
             detail="Message not found",
         )
 
+    validate_customer_and_group(db, employee, message.customer_id, message.customer_group_id)
+
     values = payload.model_dump(
         exclude_unset=True
     )
@@ -381,6 +426,7 @@ def update_message(
 @router.post(
     "/{message_id}/read",
     response_model=MessageResponse,
+    dependencies=[Depends(require_permission("MESSAGE.UPDATE"))],
 )
 def mark_message_read(
     message_id: int,
@@ -411,6 +457,8 @@ def mark_message_read(
             detail="Message not found",
         )
 
+    validate_customer_and_group(db, employee, message.customer_id, message.customer_group_id)
+
     message.status = "READ"
     message.read_at = datetime.utcnow()
 
@@ -423,6 +471,7 @@ def mark_message_read(
 @router.post(
     "/{message_id}/archive",
     response_model=MessageResponse,
+    dependencies=[Depends(require_permission("MESSAGE.UPDATE"))],
 )
 def archive_message(
     message_id: int,
@@ -452,6 +501,8 @@ def archive_message(
             status_code=404,
             detail="Message not found",
         )
+
+    validate_customer_and_group(db, employee, message.customer_id, message.customer_group_id)
 
     message.status = "ARCHIVED"
 

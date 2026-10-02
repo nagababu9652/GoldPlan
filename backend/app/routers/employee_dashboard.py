@@ -8,9 +8,8 @@ from ..services.access import AccessContext,require_employee,require_permission
 
 router=APIRouter(prefix="/employee",tags=["employee-dashboard"])
 
-@router.get("/dashboard")
+@router.get("/dashboard", dependencies=[Depends(require_permission("PROFILE.READ"))])
 def dashboard(context:AccessContext=Depends(require_employee),db:Session=Depends(get_db)):
-    context.check_permission("PROFILE.READ")
     employee=db.query(Employee).filter(Employee.id==context.employee_id,Employee.organization_id==context.organization_id,Employee.is_active.is_(True),Employee.deleted_at.is_(None)).first()
     if not employee:raise HTTPException(404,"Active employee record not found")
     return {"employee_id":employee.id,"organization_id":context.organization_id,"actor_type":context.actor_type,"assigned_client_count":len(context.customer_ids),"permissions":sorted(context.permissions),"subscription_status":context.subscription_status}

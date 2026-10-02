@@ -44,3 +44,29 @@ def test_head_cannot_deactivate_own_employee_record():
     with pytest.raises(HTTPException) as error:
         admin_employees.deactivate_employee(4, context, Mock())
     assert error.value.status_code == 409
+
+
+def test_bulk_employees_reject_self_deactivation_before_writes():
+    db = Mock(); q = db.query.return_value
+    q.filter.return_value = q; q.with_for_update.return_value = q
+    row = Record(id=4, is_active=True)
+    q.all.return_value = [row]
+    context = Record(employee_id=4, organization_id=7, user_id=1, session_id=2)
+    with pytest.raises(HTTPException) as error:
+        admin_employees.bulk_employee_status(db, context, [4], False)
+    assert error.value.status_code == 409
+    assert row.is_active is True
+    db.commit.assert_not_called()
+
+
+def test_bulk_employees_reject_foreign_id_before_writes():
+    db = Mock(); q = db.query.return_value
+    q.filter.return_value = q; q.with_for_update.return_value = q
+    row = Record(id=4, is_active=True)
+    q.all.return_value = [row]
+    context = Record(employee_id=1, organization_id=7, user_id=1, session_id=2)
+    with pytest.raises(HTTPException) as error:
+        admin_employees.bulk_employee_status(db, context, [4, 99], False)
+    assert error.value.status_code == 404
+    assert row.is_active is True
+    db.commit.assert_not_called()

@@ -169,10 +169,24 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 APP_NAME=FinPlan API
 FRONTEND_ORIGINS=http://localhost:3000
-DATABASE_URL=sqlite:///./dev.db
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/finplan_db
 SECRET_KEY=<your-secure-key>
 ACCESS_TOKEN_EXPIRE_MINUTES=30
+SMTP_USER=<smtp-account>
+SMTP_PASSWORD=<smtp-password>
+REFRESH_COOKIE_SECURE=false
 ```
+
+Set `REFRESH_COOKIE_SECURE=true` when serving the API over HTTPS. Registration
+and password recovery require working SMTP credentials; refresh tokens are
+delivered only through the HTTP-only cookie.
+
+For create requests, send an `Idempotency-Key` UUID and reuse it when retrying
+the same payload. The supported registration, login, client, group, employee,
+organization-record, invitation, goal, account, holding, transaction, report,
+task, meeting, message, and document endpoints retain keys for one day. Reusing
+a key with changed data returns 409; login and invitation retries also return
+409 rather than replaying one-time secrets.
 
 ---
 

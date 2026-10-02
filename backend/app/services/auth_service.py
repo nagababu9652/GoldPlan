@@ -174,7 +174,7 @@ def create_party_profile(db: Session, party: Party, user_data: dict) -> None:
             ))
 
 
-def create_user(db: Session, user_data: dict) -> User:
+def create_user(db: Session, user_data: dict, *, commit: bool = True) -> User:
     """
     Create a new user with authentication method.
     Expects user_data to contain at minimum: email, password
@@ -272,7 +272,10 @@ def create_user(db: Session, user_data: dict) -> User:
         )
         db.add(password_history)
         
-        db.commit()
+        if commit:
+            db.commit()
+        else:
+            db.flush()
         db.refresh(user)
         return user
     except Exception as e:
@@ -452,11 +455,17 @@ def refresh_session(db: Session, refresh_token_str: str) -> Optional[tuple[str, 
     return new_access_token, new_refresh_token_str
 
 
-def logout_session(db: Session, session_uuid: str) -> bool:
-    """Logout a session by UUID. Returns True if successful."""
+def logout_session(db: Session, session_uuid: str, *, user_id: int) -> bool:
+    """Logout an active session owned by the authenticated user."""
+    try:
+        session_id = uuid.UUID(session_uuid)
+    except (TypeError, ValueError):
+        return False
     session = db.query(UserSession).filter(
-        UserSession.session_uuid == session_uuid,
-        UserSession.is_active == True
+        UserSession.session_uuid == session_id,
+        UserSession.user_id == user_id,
+        UserSession.is_active == True,
+        UserSession.logout_time.is_(None),
     ).first()
     
     if not session:
@@ -529,7 +538,9 @@ def change_password(
     db.add(password_history)
     
     user.last_password_change_at = datetime.now(timezone.utc).replace(tzinfo=None)
-    
+    from .access_lifecycle import revoke_user_sessions
+    revoke_user_sessions(db, user.id)
+
     db.commit()
     return True
 
@@ -545,8 +556,9 @@ def reset_password(db: Session, user: User, new_password: str) -> bool:
         AuthenticationMethod.authentication_type == "PASSWORD"
     ).first()
     
-    if auth_method:
-        auth_method.credential_hash = new_hash
+    if not auth_method:
+        return False
+    auth_method.credential_hash = new_hash
     
     # Add to password history
     password_history = PasswordHistory(
@@ -557,7 +569,9 @@ def reset_password(db: Session, user: User, new_password: str) -> bool:
     db.add(password_history)
     
     user.last_password_change_at = datetime.now(timezone.utc).replace(tzinfo=None)
-    
+    from .access_lifecycle import revoke_user_sessions
+    revoke_user_sessions(db, user.id)
+
     db.commit()
     return True
 

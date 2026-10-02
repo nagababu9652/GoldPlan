@@ -10,6 +10,7 @@ from ..models.crm.customer import Customer
 from ..models.crm.document import CrmDocument
 from ..models.crm.portal_publication import PortalPublication
 from ..models.crm.report_snapshot import ReportSnapshot
+from ..models.identity.security import AuditLog
 from ..services.access import AccessContext, require_employee
 
 router = APIRouter(prefix="/advisors/clients/{customer_id}/portal-publications", tags=["portal-publications"])
@@ -48,9 +49,17 @@ def result(row: PortalPublication):
 def list_publications(customer_id: int, include_revoked: bool = False,
         context: AccessContext = Depends(require_employee), db: Session = Depends(get_db)):
     customer_for_staff(customer_id, context, db)
+    allowed_types = []
+    if "DOCUMENT.READ" in context.permissions and "DOCUMENT.READ" not in context.denied_permissions:
+        allowed_types.append("DOCUMENT")
+    if "REPORT.READ" in context.permissions and "REPORT.READ" not in context.denied_permissions:
+        allowed_types.append("REPORT")
+    if not allowed_types:
+        raise HTTPException(403, "Publication read permission required")
     query = db.query(PortalPublication).filter(
         PortalPublication.organization_id == context.organization_id,
-        PortalPublication.customer_id == customer_id)
+        PortalPublication.customer_id == customer_id,
+        PortalPublication.resource_type.in_(allowed_types))
     if not include_revoked:
         query = query.filter(PortalPublication.revoked_at.is_(None))
     return [result(row) for row in query.order_by(PortalPublication.published_at.desc()).all()]
@@ -83,7 +92,13 @@ def publish(customer_id: int, payload: PublicationCreate,
     row = PortalPublication(organization_id=context.organization_id, customer_id=customer_id,
         resource_type=payload.resource_type, resource_id=payload.resource_id,
         published_by_user_id=context.user_id)
-    db.add(row); db.commit(); db.refresh(row)
+    db.add(row); db.flush()
+    db.add(AuditLog(organization_id=context.organization_id, user_id=context.user_id,
+        module_name="CLIENT_PORTAL_ACCESS", table_name="portal_publications", record_id=row.id,
+        action="PUBLISH", new_values={"customer_id": customer_id,
+            "resource_type": row.resource_type, "resource_id": row.resource_id},
+        session_id=context.session_id))
+    db.commit(); db.refresh(row)
     return result(row)
 
 
@@ -99,5 +114,10 @@ def revoke(customer_id: int, publication_id: int,
     context.check_permission("DOCUMENT.UPLOAD" if row.resource_type == "DOCUMENT" else "REPORT.GENERATE")
     if row.revoked_at is None:
         row.revoked_at = datetime.utcnow(); row.revoked_by_user_id = context.user_id
+        db.add(AuditLog(organization_id=context.organization_id, user_id=context.user_id,
+            module_name="CLIENT_PORTAL_ACCESS", table_name="portal_publications", record_id=row.id,
+            action="REVOKE_PUBLICATION", new_values={"customer_id": customer_id,
+                "resource_type": row.resource_type, "resource_id": row.resource_id},
+            session_id=context.session_id))
         db.commit(); db.refresh(row)
     return result(row)

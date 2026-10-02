@@ -2,3 +2,4 @@ from .auth import User, AuthenticationMethod, PasswordHistory, OTPRequest, UserS
 from .authorization import Permission, Role, PermissionProfile, ProfilePermission, RolePermissionProfile, UserRole, EmployeePermissionProfile, EmployeePermissionOverride
 from .security import Device, UserDevice, AccountLockout, SecurityEvent, AuditLog
 from .invitation import AccessInvitation
+from .idempotency import IdempotencyKey

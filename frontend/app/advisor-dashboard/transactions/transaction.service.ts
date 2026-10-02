@@ -119,9 +119,10 @@ export async function getTransactionHistory(
 
 export async function createTransaction(
   token: string,
-  data: TransactionCreate
+  data: TransactionCreate,
+  idempotencyKey = crypto.randomUUID(),
 ): Promise<AdvisorTransaction> {
-  return advisorPost("/transactions", token, data);
+  return advisorPost("/transactions", token, data, idempotencyKey);
 }
 
 export async function updateTransaction(

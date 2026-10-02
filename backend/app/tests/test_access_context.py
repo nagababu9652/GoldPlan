@@ -195,15 +195,14 @@ def test_client_scope_is_own_customer_only():
 
 
 def test_pilot_route_enforces_new_dependency(monkeypatch):
-    from app.routers.advisors import router, get_current_advisor
+    from app.routers.advisors import router
     from app.database.session import get_db
     app = FastAPI()
     app.include_router(router)
     user = Record(party_id=2, display_name="Advisor", email="a@example.com",
                   mobile_number="", created_at=datetime.utcnow())
     db = Mock()
-    db.query.return_value.filter.return_value.first.return_value = Record(first_name="A", last_name="B")
-    app.dependency_overrides[get_current_advisor] = lambda: user
+    db.query.return_value.filter.return_value.first.side_effect = [user, Record(first_name="A", last_name="B")]
     app.dependency_overrides[get_db] = lambda: db
     client = TestClient(app)
     app.dependency_overrides[access.get_access_context] = lambda: context(permissions=frozenset({"PROFILE.READ"}))
@@ -215,15 +214,8 @@ def test_pilot_route_enforces_new_dependency(monkeypatch):
 def test_application_router_blocks_inactive_subscription():
     from app.main import app
     from app.database.session import get_db
-    from app.routers.advisors import get_current_advisor
-
-    user = Record(
-        party_id=2, display_name="Advisor", email="a@example.com",
-        mobile_number="", created_at=datetime.utcnow(),
-    )
     db = Mock()
     db.query.return_value.filter.return_value.first.return_value = Record(first_name="A", last_name="B")
-    app.dependency_overrides[get_current_advisor] = lambda: user
     app.dependency_overrides[get_db] = lambda: db
     app.dependency_overrides[access.get_access_context] = lambda: context(
         permissions=frozenset({"PROFILE.READ"}),

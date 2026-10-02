@@ -8,7 +8,9 @@ from fastapi.testclient import TestClient
 
 from app.models.crm.customer import Customer, CustomerGroup, GroupMember
 from app.models.organization.employee import Employee
+from app.models.organization.assignment import EmployeeAssignment
 from app.routers import groups as groups_router
+from app.services import access
 from app.schemas.group import (
     GroupCreate,
     GroupHeadUpdate,
@@ -48,6 +50,10 @@ class FakeQuery:
         return True
 
     def _criterion_matches(self, row, criterion):
+        if hasattr(criterion, "clauses"):
+            results = [self._criterion_matches(row, clause) for clause in criterion.clauses]
+            operator_name = getattr(getattr(criterion, "operator", None), "__name__", None)
+            return any(results) if operator_name == "or_" else all(results)
         left = getattr(criterion, "left", None)
         right = getattr(criterion, "right", None)
         if left is None and right is None:
@@ -80,6 +86,10 @@ class FakeQuery:
             return value is right_value
         if getattr(criterion.operator, "__name__", None) == "ne":
             return value != right_value
+        if getattr(criterion.operator, "__name__", None) == "le":
+            return value is not None and value <= right_value
+        if getattr(criterion.operator, "__name__", None) == "ge":
+            return value is not None and value >= right_value
         if getattr(criterion.operator, "__name__", None) == "in_op":
             return value in right_value
         return value == right_value
@@ -115,11 +125,25 @@ class FakeQuery:
 
 
 class FakeDB:
-    def __init__(self, employees=None, groups=None, customers=None, members=None):
+    def __init__(self, employees=None, groups=None, customers=None, members=None, assignments=None):
         self.employees = list(employees or [])
         self.groups = list(groups or [])
         self.customers = list(customers or [])
         self.members = list(members or [])
+        self.assignments = list(assignments) if assignments is not None else [
+            SimpleNamespace(
+                id=index, employee_id=employee.id, assignment_type="ADVISOR",
+                entity_type="CUSTOMER_GROUP", entity_id=group.id,
+                effective_from=date(2020, 1, 1), effective_to=None,
+                is_active=True, deleted_at=None,
+            )
+            for index, (employee, group) in enumerate(
+                ((employee, group) for employee in self.employees for group in self.groups
+                 if group.organization_id == employee.organization_id
+                 and group.primary_advisor_employee_id in {None, employee.id}),
+                start=1,
+            )
+        ]
         self.added = []
         self.committed = False
         self.commit_count = 0
@@ -138,6 +162,8 @@ class FakeDB:
             for member in self.members:
                 member.__dict__["group"] = next((g for g in self.groups if g.id == member.customer_group_id), None)
             return FakeQuery(self.members)
+        if model is EmployeeAssignment:
+            return FakeQuery(self.assignments)
         raise AssertionError(f"Unexpected model: {model}")
 
     def add(self, obj):
@@ -166,6 +192,8 @@ class FakeDB:
                 obj.__dict__["customer"] = customer
             if obj not in self.members:
                 self.members.append(obj)
+        elif isinstance(obj, EmployeeAssignment):
+            self.assignments.append(obj)
 
     def flush(self):
         return None
@@ -188,6 +216,8 @@ def make_advisor(**kwargs):
         "organization_id": 10,
         "branch_id": 3,
         "is_active": True,
+        "employment_status": "ACTIVE",
+        "deleted_at": None,
     }
     payload.update(kwargs)
     return SimpleNamespace(**payload)
@@ -198,6 +228,8 @@ def make_customer(customer_id=7, first_name="Alice", last_name="Smith", status="
         id=customer_id,
         customer_code=f"C-{customer_id:05d}",
         organization_id=10,
+        is_active=True,
+        deleted_at=None,
         customer_status=status,
         party=SimpleNamespace(
             display_name=None,
@@ -223,11 +255,28 @@ def make_group(group_id=1, **kwargs):
         "investment_objective": None,
         "remarks": None,
         "is_active": True,
+        "deleted_at": None,
         "created_at": datetime(2024, 1, 1, 12, 0, 0),
         "updated_at": datetime(2024, 1, 2, 12, 0, 0),
     }
     payload.update(kwargs)
     return SimpleNamespace(**payload)
+
+
+def make_context(db):
+    employee = db.employees[0] if db.employees else make_advisor()
+    customer_ids = {customer.id for customer in db.customers}
+    customer_ids.update(member.customer_id for member in db.members)
+    return access.AccessContext(
+        user_id=77, party_id=employee.party_id,
+        organization_id=employee.organization_id, actor_type="EMPLOYEE",
+        employee_id=employee.id, roles=frozenset({"EMPLOYEE"}),
+        permissions=frozenset({
+            "GROUP.READ", "GROUP.CREATE", "GROUP.UPDATE", "GROUP.DEACTIVATE",
+            "ACCOUNT.READ", "HOLDING.READ", "GOAL.READ",
+        }),
+        denied_permissions=frozenset(), customer_ids=frozenset(customer_ids),
+    )
 
 
 def make_group_member(member_id=1, customer_group_id=1, customer=None, **kwargs):
@@ -270,7 +319,7 @@ def membership_client():
     app = FastAPI()
     app.include_router(groups_router.router)
     app.dependency_overrides[groups_router.get_db] = lambda: db
-    app.dependency_overrides[groups_router.get_current_advisor] = lambda: SimpleNamespace(id=77, party_id=42)
+    app.dependency_overrides[access.get_access_context] = lambda: make_context(db)
     with TestClient(app) as client:
         yield client
 
@@ -300,7 +349,7 @@ def test_membership_history_preserves_repeated_periods(membership_client):
 
 
 @pytest.mark.parametrize("suffix", ["members", "members/history"])
-@pytest.mark.parametrize("group_id, status_code", [(2, 404), (3, 403), (999, 404)])
+@pytest.mark.parametrize("group_id, status_code", [(2, 404), (3, 404), (999, 404)])
 def test_membership_endpoints_enforce_group_access(membership_client, suffix, group_id, status_code):
     response = membership_client.get(f"/advisors/groups/{group_id}/{suffix}")
     assert response.status_code == status_code
@@ -317,7 +366,7 @@ def test_membership_history_available_for_inactive_group(membership_client):
 def test_get_advisor_employee_uses_party_id_and_active_flag():
     employee = make_advisor(id=21, party_id=42, organization_id=10, branch_id=7)
     db = FakeDB(employees=[employee])
-    advisor = SimpleNamespace(id=77, party_id=42)
+    advisor = make_context(db)
 
     resolved = groups_router.get_advisor_employee(db, advisor)
 
@@ -406,7 +455,7 @@ def test_set_group_head_rejects_historical_member():
     with pytest.raises(HTTPException) as error:
         groups_router.set_group_head(
             group_id=1, body=GroupHeadUpdate(customer_id=7), db=db,
-            advisor=SimpleNamespace(id=77, party_id=42),
+            advisor=make_context(db),
         )
 
     assert error.value.status_code == 400
@@ -424,7 +473,7 @@ def test_list_groups_returns_group_list():
 
     response = groups_router.list_groups(
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
         group_type=None,
         search=None,
         include_inactive=False,
@@ -443,7 +492,7 @@ def test_create_group_creates_group_and_head_member():
     result = groups_router.create_group(
         group_data=GroupCreate(group_name="Ng Family", group_type="HOUSEHOLD", head_customer_id=head_customer.id),
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
 
     assert result.group_name == "Ng Family"
@@ -463,7 +512,7 @@ def test_get_group_returns_group_detail():
     result = groups_router.get_group(
         group_id=4,
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
 
     assert result.group_name == "Lee Household"
@@ -479,7 +528,7 @@ def test_update_group_updates_fields():
         group_id=5,
         group_data=GroupUpdate(group_name="Updated Name"),
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
 
     assert result.group_name == "Updated Name"
@@ -497,7 +546,7 @@ def test_add_group_member_creates_member_and_marks_head():
         group_id=6,
         member_data=GroupMemberAdd(customer_id=21, relationship_type="BROTHER", is_group_head=True),
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
 
     assert result.customer_id == 21
@@ -516,7 +565,7 @@ def test_set_group_head_updates_group_head():
         group_id=7,
         body=GroupHeadUpdate(customer_id=22),
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
 
     assert result.group.head_customer_id == 22
@@ -534,7 +583,7 @@ def test_remove_group_member_marks_left_on():
         group_id=9,
         customer_id=24,
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
 
     assert result["customer_id"] == 24
@@ -550,7 +599,7 @@ def test_remove_sole_household_head_preserves_history_and_closes_group(group_typ
     historical = make_group_member(1, 1, customer, left_on=date(2025, 1, 1))
     db = FakeDB(employees=[make_advisor()], groups=[group], members=[historical, member])
 
-    groups_router.remove_group_member(1, 7, db, SimpleNamespace(party_id=42))
+    groups_router.remove_group_member(1, 7, db, make_context(db))
 
     assert group.is_active is False
     assert group.head_customer_id is None
@@ -568,7 +617,7 @@ def test_remove_head_with_remaining_members_is_blocked():
         member, make_group_member(2, 1, make_customer(8)),
     ])
     with pytest.raises(HTTPException) as error:
-        groups_router.remove_group_member(1, 7, db, SimpleNamespace(party_id=42))
+        groups_router.remove_group_member(1, 7, db, make_context(db))
     assert error.value.status_code == 400
     assert member.left_on is None
     assert group.head_customer_id == 7
@@ -588,7 +637,7 @@ def test_move_last_member_closes_source_and_preserves_other_memberships(is_head)
                 customers=[customer], members=[old, association, historical])
 
     groups_router.move_client_to_household(
-        2, MoveHouseholdRequest(customer_id=7), db, SimpleNamespace(party_id=42)
+        2, MoveHouseholdRequest(customer_id=7), db, make_context(db)
     )
 
     assert source.is_active is False
@@ -614,11 +663,11 @@ def test_household_exclusivity_and_entity_membership(group_type):
                 customers=[customer], members=[original])
     if group_type in {"HOUSEHOLD", "FAMILY"}:
         with pytest.raises(HTTPException) as error:
-            groups_router.add_group_member(2, GroupMemberAdd(customer_id=7), db, SimpleNamespace(party_id=42))
+            groups_router.add_group_member(2, GroupMemberAdd(customer_id=7), db, make_context(db))
         assert error.value.status_code == 409
         assert not db.committed
     else:
-        added = groups_router.add_group_member(2, GroupMemberAdd(customer_id=7), db, SimpleNamespace(party_id=42))
+        added = groups_router.add_group_member(2, GroupMemberAdd(customer_id=7), db, make_context(db))
         assert added.is_primary is False
     assert original.is_primary is True
     assert original.left_on is None
@@ -637,13 +686,13 @@ def test_move_head_requires_active_replacement(replacement):
     payload = MoveHouseholdRequest(customer_id=7, new_head_customer_id=replacement)
     if replacement != 8:
         with pytest.raises(HTTPException) as error:
-            groups_router.move_client_to_household(2, payload, db, SimpleNamespace(party_id=42))
+            groups_router.move_client_to_household(2, payload, db, make_context(db))
         assert error.value.status_code == 400
         assert head.left_on is None
         assert source.head_customer_id == 7
         assert not db.committed
     else:
-        groups_router.move_client_to_household(2, payload, db, SimpleNamespace(party_id=42))
+        groups_router.move_client_to_household(2, payload, db, make_context(db))
         assert head.left_on == date.today()
         assert remaining.is_group_head is True
         assert source.head_customer_id == 8
@@ -658,12 +707,12 @@ def test_occupied_group_deactivation_rules(group_type):
     db = FakeDB(employees=[make_advisor()], groups=[group], members=[member])
     if group_type in {"HOUSEHOLD", "FAMILY"}:
         with pytest.raises(HTTPException) as error:
-            groups_router.deactivate_group(1, db, SimpleNamespace(party_id=42))
+            groups_router.deactivate_group(1, db, make_context(db))
         assert error.value.status_code == 409
         assert group.is_active is True
         assert member.left_on is None
     else:
-        groups_router.deactivate_group(1, db, SimpleNamespace(party_id=42))
+        groups_router.deactivate_group(1, db, make_context(db))
         assert group.is_active is False
         assert group.head_customer_id is None
         assert member.left_on == date.today()
@@ -678,7 +727,7 @@ def test_remove_member_rolls_back_on_commit_failure(monkeypatch):
         raise RuntimeError("Commit failed")
     monkeypatch.setattr(db, "commit", fail_commit)
     with pytest.raises(RuntimeError, match="Commit failed"):
-        groups_router.remove_group_member(1, 7, db, SimpleNamespace(party_id=42))
+        groups_router.remove_group_member(1, 7, db, make_context(db))
     assert db.rolled_back is True
 
 
@@ -697,7 +746,7 @@ def test_initial_head_role_and_normalized_group_type(group_type, role):
     db = FakeDB(employees=[make_advisor()], customers=[customer])
     result = groups_router.create_group(
         GroupCreate(group_name="Test", group_type=f" {group_type.lower()} ", head_customer_id=7),
-        db, SimpleNamespace(party_id=42),
+        db, make_context(db),
     )
     assert result.group_type == group_type
     assert db.members[0].relationship_type == role
@@ -713,7 +762,7 @@ def test_add_member_accepts_roles_for_group_type(group_type, role):
                 customers=[make_customer(7)])
     result = groups_router.add_group_member(
         1, GroupMemberAdd(customer_id=7, relationship_type=f" {role.lower()} "),
-        db, SimpleNamespace(party_id=42),
+        db, make_context(db),
     )
     assert result.relationship_type == role
 
@@ -728,7 +777,7 @@ def test_add_member_rejects_roles_from_other_group_types(group_type, role):
     with pytest.raises(HTTPException) as error:
         groups_router.add_group_member(
             1, GroupMemberAdd(customer_id=7, relationship_type=role),
-            db, SimpleNamespace(party_id=42),
+            db, make_context(db),
         )
     assert error.value.status_code == 400
     assert not db.added
@@ -740,7 +789,7 @@ def test_move_rejects_entity_role_before_modifying_memberships():
     with pytest.raises(HTTPException) as error:
         groups_router.move_client_to_household(
             1, MoveHouseholdRequest(customer_id=7, relationship_type="DIRECTOR"),
-            db, SimpleNamespace(party_id=42),
+            db, make_context(db),
         )
     assert error.value.status_code == 400
     assert not db.committed
@@ -751,7 +800,7 @@ def test_group_type_change_is_rejected():
     group = make_group(1)
     db = FakeDB(employees=[make_advisor()], groups=[group])
     with pytest.raises(HTTPException) as error:
-        groups_router.update_group(1, GroupUpdate(group_type="BUSINESS"), db, SimpleNamespace(party_id=42))
+        groups_router.update_group(1, GroupUpdate(group_type="BUSINESS"), db, make_context(db))
     assert error.value.status_code == 400
     assert group.group_type == "HOUSEHOLD"
     assert not db.committed
@@ -765,7 +814,7 @@ def test_deactivate_group_sets_inactive():
     result = groups_router.deactivate_group(
         group_id=10,
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
 
     assert result.group.is_active is False
@@ -808,7 +857,7 @@ def test_group_lifecycle_scenario_matches_user_flow():
 
     listed = groups_router.list_groups(
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
         group_type=None,
         search=None,
         include_inactive=False,
@@ -819,7 +868,7 @@ def test_group_lifecycle_scenario_matches_user_flow():
     open_group = groups_router.get_group(
         group_id=20,
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
     assert open_group.group_name == "Nani S Household"
     assert open_group.head_customer_name == "Nani S"
@@ -827,7 +876,7 @@ def test_group_lifecycle_scenario_matches_user_flow():
     members = groups_router.list_group_members(
         group_id=20,
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
     assert any(m.display_name == "Nani S" for m in members.members)
     assert any(m.is_group_head for m in members.members)
@@ -841,7 +890,7 @@ def test_group_lifecycle_scenario_matches_user_flow():
             is_group_head=False,
         ),
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
     assert added.customer_id == new_customer.id
     assert added.is_primary is True
@@ -850,14 +899,14 @@ def test_group_lifecycle_scenario_matches_user_flow():
         group_id=20,
         body=GroupHeadUpdate(customer_id=new_customer.id),
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
 
     remove_result = groups_router.remove_group_member(
         group_id=20,
         customer_id=member_customer.id,
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
     assert remove_result["customer_id"] == member_customer.id
 
@@ -865,14 +914,14 @@ def test_group_lifecycle_scenario_matches_user_flow():
         group_id=20,
         group_data=GroupUpdate(group_name="Nani S Household Updated"),
         db=db,
-        advisor=SimpleNamespace(id=77, party_id=42),
+        advisor=make_context(db),
     )
     assert updated.group_name == "Nani S Household Updated"
 
     with pytest.raises(HTTPException) as error:
         groups_router.deactivate_group(
             group_id=20, db=db,
-            advisor=SimpleNamespace(id=77, party_id=42),
+            advisor=make_context(db),
         )
     assert error.value.status_code == 409
     assert group.is_active is True

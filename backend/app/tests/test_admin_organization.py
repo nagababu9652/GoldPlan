@@ -25,3 +25,28 @@ def test_referenced_branch_cannot_be_deactivated(monkeypatch):
     db=Mock(); db.query.return_value=query(Record(id=10)); context=Record(organization_id=7,user_id=1,session_id=2)
     with pytest.raises(HTTPException) as error: admin_organization.set_branch_active(4,False,context,db)
     assert error.value.status_code==409; db.commit.assert_not_called()
+
+
+def test_bulk_branch_change_rejects_foreign_id_without_writes():
+    row = Record(id=4, is_active=True, updated_by=None)
+    db = Mock(); q = db.query.return_value
+    q.filter.return_value = q; q.with_for_update.return_value = q; q.all.return_value = [row]
+    context = Record(organization_id=7, user_id=1, session_id=2)
+    with pytest.raises(HTTPException) as error:
+        admin_organization.bulk_resource_status(db, context, Branch, [4, 99], False)
+    assert error.value.status_code == 404
+    assert row.is_active is True
+    db.commit.assert_not_called()
+
+
+def test_bulk_branch_change_preserves_reference_guard():
+    row = Record(id=4, is_active=True, updated_by=None)
+    db = Mock(); q = db.query.return_value
+    q.filter.return_value = q; q.with_for_update.return_value = q
+    q.all.return_value = [row]; q.first.return_value = Record(id=8)
+    context = Record(organization_id=7, user_id=1, session_id=2)
+    with pytest.raises(HTTPException) as error:
+        admin_organization.bulk_resource_status(db, context, Branch, [4], False)
+    assert error.value.status_code == 409
+    assert row.is_active is True
+    db.commit.assert_not_called()

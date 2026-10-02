@@ -1,7 +1,7 @@
 from datetime import datetime, date, time
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, UploadFile, File, Form, Request
 from fastapi.responses import FileResponse
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -12,7 +12,9 @@ from app.models.crm.customer import Customer, CustomerGroup
 from app.models.crm.document import CrmDocument
 from app.models.organization.employee import Employee
 from app.models.organization.assignment import EmployeeAssignment
-from ...routers.advisors import get_current_advisor as get_current_user
+from ...services.access import AccessContext, require_employee as get_current_user, require_permission
+from ...services.idempotency import finish_create, reserve_create
+import hashlib
 from app.schemas.document import (
     DocumentCreate,
     DocumentListResponse,
@@ -63,13 +65,16 @@ def validate_upload_file(filename: str) -> None:
 
 def get_advisor_employee(
     db: Session,
-    current_user,
+    current_user: AccessContext,
 ) -> Employee:
     employee = (
         db.query(Employee)
         .filter(
-            Employee.party_id == current_user.party_id,
+            Employee.id == current_user.employee_id,
+            Employee.organization_id == current_user.organization_id,
             Employee.is_active.is_(True),
+            Employee.employment_status == "ACTIVE",
+            Employee.deleted_at.is_(None),
         )
         .first()
     )
@@ -101,6 +106,8 @@ def validate_document_target(
             .filter(
                 Customer.id == customer_id,
                 Customer.organization_id == employee.organization_id,
+                Customer.is_active.is_(True),
+                Customer.deleted_at.is_(None),
             )
             .first()
         )
@@ -108,7 +115,11 @@ def validate_document_target(
             raise HTTPException(status_code=404, detail="Customer not found.")
         today = date.today()
         group_ids = [row.customer_group_id for row in customer.group_members if row.left_on is None]
-        groups = db.query(CustomerGroup).filter(CustomerGroup.id.in_(group_ids)).all() if group_ids else []
+        groups = db.query(CustomerGroup).filter(
+            CustomerGroup.id.in_(group_ids),
+            CustomerGroup.organization_id == employee.organization_id,
+            CustomerGroup.is_active.is_(True), CustomerGroup.deleted_at.is_(None),
+        ).all() if group_ids else []
         branch_ids = [group.primary_branch_id for group in groups if group.primary_branch_id is not None]
         assignment = db.query(EmployeeAssignment).filter(
             EmployeeAssignment.employee_id == employee.id,
@@ -121,6 +132,7 @@ def validate_document_target(
             EmployeeAssignment.effective_from <= today,
             (EmployeeAssignment.effective_to.is_(None) | (EmployeeAssignment.effective_to >= today)),
             EmployeeAssignment.is_active.is_(True),
+            EmployeeAssignment.deleted_at.is_(None),
         ).first()
         if not assignment:
             raise HTTPException(
@@ -134,6 +146,7 @@ def validate_document_target(
             .filter(
                 CustomerGroup.id == customer_group_id,
                 CustomerGroup.organization_id == employee.organization_id,
+                CustomerGroup.is_active.is_(True), CustomerGroup.deleted_at.is_(None),
             )
             .first()
         )
@@ -154,6 +167,7 @@ def validate_document_target(
             EmployeeAssignment.effective_from <= today,
             (EmployeeAssignment.effective_to.is_(None) | (EmployeeAssignment.effective_to >= today)),
             EmployeeAssignment.is_active.is_(True),
+            EmployeeAssignment.deleted_at.is_(None),
         ).first()
         if not assignment:
             raise HTTPException(404, "Customer group not found.")
@@ -208,6 +222,7 @@ def build_document_response(
 @router.get(
     "/",
     response_model=DocumentListResponse,
+    dependencies=[Depends(require_permission("DOCUMENT.READ"))],
 )
 def list_documents(
     search: Optional[str] = Query(default=None),
@@ -304,7 +319,8 @@ def list_documents(
     )
 
 
-@router.post("/upload", response_model=DocumentResponse)
+@router.post("/upload", response_model=DocumentResponse,
+             dependencies=[Depends(require_permission("DOCUMENT.UPLOAD"))])
 async def upload_document(
     request: Request,
     customer_id: Optional[int] = Form(None),
@@ -315,6 +331,7 @@ async def upload_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    idempotency_key: str | None = Header(default=None),
 ):
     employee = get_advisor_employee(db, current_user)
 
@@ -383,6 +400,16 @@ async def upload_document(
             detail="File size cannot exceed 25 MB.",
         )
 
+    reservation = reserve_create(
+        db, key=idempotency_key, operation="document.upload",
+        actor_scope=f"user:{current_user.user_id}",
+        payload={"customer_id": customer_id, "customer_group_id": customer_group_id,
+                 "document_type": document_type, "description": description, "notes": notes,
+                 "file_name": file.filename, "file_hash": hashlib.sha256(file_content).hexdigest()},
+    )
+    if reservation and reservation.replay:
+        return get_document(reservation.resource_id, db=db, current_user=current_user)
+
     # ---------------------------------------------------------
     # Create storage directory
     # ---------------------------------------------------------
@@ -408,7 +435,7 @@ async def upload_document(
     # ---------------------------------------------------------
     stored_path.write_bytes(file_content)
 
-    # URL exposed by FastAPI StaticFiles
+    # Internal storage reference; download routes enforce access at request time.
     relative_file_path = stored_path.relative_to(UPLOAD_ROOT.parent)
     file_url = "/uploads/" + relative_file_path.as_posix()
 
@@ -433,7 +460,14 @@ async def upload_document(
     )
 
     db.add(document)
-    db.commit()
+    try:
+        db.flush()
+        finish_create(db, reservation, document.id)
+        db.commit()
+    except Exception:
+        db.rollback()
+        stored_path.unlink(missing_ok=True)
+        raise
     db.refresh(document)
 
     # ---------------------------------------------------------
@@ -444,6 +478,7 @@ async def upload_document(
 @router.get(
     "/{document_id}",
     response_model=DocumentResponse,
+    dependencies=[Depends(require_permission("DOCUMENT.READ"))],
 )
 def get_document(
     document_id: int,
@@ -471,7 +506,7 @@ def get_document(
     return build_document_response(document)
 
 
-@router.get("/{document_id}/download")
+@router.get("/{document_id}/download", dependencies=[Depends(require_permission("DOCUMENT.READ"))])
 def download_document(document_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     employee = get_advisor_employee(db, current_user)
     document = db.query(CrmDocument).filter(
@@ -484,17 +519,21 @@ def download_document(document_id: int, db: Session = Depends(get_db), current_u
     path = (UPLOAD_ROOT / Path(document.file_url).name).resolve()
     if UPLOAD_ROOT.resolve() not in path.parents or not path.is_file():
         raise HTTPException(404, "Document file not found.")
-    return FileResponse(path, media_type=document.file_type, filename=document.file_name or document.document_name)
+    return FileResponse(path, media_type=document.file_type,
+        filename=document.file_name or document.document_name,
+        headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
 
 
 @router.post(
     "/",
     response_model=DocumentResponse,
+    dependencies=[Depends(require_permission("DOCUMENT.UPLOAD"))],
 )
 def create_document(
     payload: DocumentCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    idempotency_key: str | None = Header(default=None),
 ):
     employee = get_advisor_employee(db, current_user)
 
@@ -504,6 +543,10 @@ def create_document(
         customer_id=payload.customer_id,
         customer_group_id=payload.customer_group_id,
     )
+
+    reservation = reserve_create(db, key=idempotency_key, operation="document.create", actor_scope=f"user:{current_user.user_id}", payload=payload.model_dump())
+    if reservation and reservation.replay:
+        return get_document(reservation.resource_id, db=db, current_user=current_user)
 
     document = CrmDocument(
         organization_id=employee.organization_id,
@@ -522,6 +565,9 @@ def create_document(
     )
 
     db.add(document)
+    if reservation:
+        db.flush()
+        finish_create(db, reservation, document.id)
     db.commit()
     db.refresh(document)
 
@@ -531,6 +577,7 @@ def create_document(
 @router.put(
     "/{document_id}",
     response_model=DocumentResponse,
+    dependencies=[Depends(require_permission("DOCUMENT.UPLOAD"))],
 )
 def update_document(
     document_id: int,
@@ -620,6 +667,7 @@ def update_document(
 @router.post(
     "/{document_id}/archive",
     response_model=DocumentResponse,
+    dependencies=[Depends(require_permission("DOCUMENT.UPLOAD"))],
 )
 def archive_document(
     document_id: int,

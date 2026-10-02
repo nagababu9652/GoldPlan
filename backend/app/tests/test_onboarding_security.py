@@ -24,6 +24,9 @@ class EmptyQuery:
     def first(self):
         return None
 
+    def all(self):
+        return []
+
 
 class RecordingDB:
     def __init__(self):

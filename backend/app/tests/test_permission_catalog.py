@@ -8,8 +8,8 @@ from app.services.permission_catalog import (
 )
 
 
-def load_seed_migration():
-    path = Path(__file__).parents[2] / "alembic" / "versions" / "91ad7e60c2b4_seed_authorization_catalog.py"
+def load_seed_migration(filename="91ad7e60c2b4_seed_authorization_catalog.py"):
+    path = Path(__file__).parents[2] / "alembic" / "versions" / filename
     spec = importlib.util.spec_from_file_location("permission_seed_migration", path)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
@@ -19,8 +19,9 @@ def load_seed_migration():
 
 def test_runtime_and_migration_catalogs_cannot_drift():
     migration = load_seed_migration()
-    assert set(migration.PERMISSIONS) == set(PERMISSION_CODES)
-    assert set(migration.ADVISOR_PERMISSIONS) == set(ADVISOR_PERMISSIONS)
+    message_migration = load_seed_migration("17b1514df345_add_advisor_message_permissions.py")
+    assert set(migration.PERMISSIONS) | set(message_migration.MESSAGE_PERMISSIONS) == set(PERMISSION_CODES)
+    assert set(migration.ADVISOR_PERMISSIONS) | set(message_migration.MESSAGE_PERMISSIONS) == set(ADVISOR_PERMISSIONS)
 
 
 def test_default_profiles_follow_least_privilege_boundary():
@@ -33,4 +34,3 @@ def test_default_profiles_follow_least_privilege_boundary():
     assert "ORG.EMPLOYEE.ACCESS_MANAGE" not in advisor
     assert "CLIENT.DEACTIVATE" not in advisor
     assert advisor < head
-

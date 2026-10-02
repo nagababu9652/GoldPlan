@@ -1,17 +1,21 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..database.session import get_db
 from ..models.foundation.party import Party
+from ..models.identity.auth import User
 from ..models.identity.security import AuditLog
 from ..models.organization.core import Branch, Department, Designation
 from ..models.organization.employee import Employee, EmployeeBranchHistory, EmployeeDepartmentHistory, EmployeeDesignationHistory, EmployeeReporting
 from ..schemas.admin_employee import EmployeeCreate, EmployeeResponse, EmployeeUpdate, EmploymentHistoryResponse
+from ..schemas.bulk_status import BulkStatusChange
 from ..services.access import AccessContext, require_head, require_permission
+from ..services.access_lifecycle import protect_last_active_head, revoke_user_sessions
 from ..services.party_profile import lookup_id
+from ..services.idempotency import reserve_create, finish_create
 
 router = APIRouter(prefix="/admin/organization/employees", tags=["admin-employees"])
 
@@ -31,7 +35,11 @@ def scoped(db, model, record_id, organization_id, *, active=False):
 
 
 def employee_response(db, employee):
-    party = db.query(Party).filter(Party.id == employee.party_id).first()
+    party = db.query(Party).filter(
+        Party.id == employee.party_id,
+        or_(Party.organization_id.is_(None), Party.organization_id == employee.organization_id),
+        Party.deleted_at.is_(None),
+    ).first()
     if party is None:
         raise HTTPException(409, "Employee Party record is missing")
     manager = db.query(EmployeeReporting).filter(EmployeeReporting.employee_id == employee.id, EmployeeReporting.effective_to.is_(None)).first()
@@ -92,7 +100,15 @@ def get_employee(employee_id: int, context: AccessContext = Depends(require_head
 
 
 @router.post("", response_model=EmployeeResponse, status_code=201, dependencies=permissions("ORG.EMPLOYEE.CREATE"))
-def create_employee(payload: EmployeeCreate, context: AccessContext = Depends(require_head), db: Session = Depends(get_db)):
+def create_employee(payload: EmployeeCreate, context: AccessContext = Depends(require_head), db: Session = Depends(get_db),
+                    idempotency_key: str | None = Header(default=None)):
+    reservation = reserve_create(
+        db, key=idempotency_key, operation="employee.create",
+        actor_scope=f"org:{context.organization_id}:user:{context.user_id}",
+        payload=payload.model_dump(mode="json"),
+    )
+    if reservation and reservation.replay:
+        return employee_response(db, scoped(db, Employee, reservation.resource_id, context.organization_id))
     code = payload.employee_code.strip().upper()
     if db.query(Employee.id).filter(Employee.organization_id == context.organization_id, Employee.employee_code == code).first():
         raise HTTPException(409, "Employee code already exists")
@@ -118,7 +134,9 @@ def create_employee(payload: EmployeeCreate, context: AccessContext = Depends(re
                 EmployeeDesignationHistory(employee_id=employee.id, designation_id=employee.designation_id, effective_from=employee.joining_date)])
     if payload.reporting_manager_employee_id:
         db.add(EmployeeReporting(employee_id=employee.id, manager_employee_id=payload.reporting_manager_employee_id, effective_from=payload.joining_date))
-    audit(db, context, employee.id, "CREATE", new={"employee_code": code}); db.commit(); db.refresh(employee)
+    audit(db, context, employee.id, "CREATE", new={"employee_code": code})
+    finish_create(db, reservation, employee.id)
+    db.commit(); db.refresh(employee)
     return employee_response(db, employee)
 
 
@@ -174,6 +192,12 @@ def update_employee(employee_id: int, payload: EmployeeUpdate, context: AccessCo
 
 def change_active(employee_id, active, context, db):
     employee = scoped(db, Employee, employee_id, context.organization_id)
+    if not active and employee.is_active:
+        user = db.query(User).filter(User.party_id == employee.party_id, User.deleted_at.is_(None)).first()
+        if user:
+            protect_last_active_head(db, user.id, context.organization_id)
+            revoked = revoke_user_sessions(db, user.id)
+            audit(db, context, employee.id, "SESSIONS_REVOKED", new={"count": revoked})
     employee.is_active = active; employee.employment_status = "ACTIVE" if active else "INACTIVE"
     employee.relieving_date = None if active else date.today(); employee.updated_by = context.user_id
     audit(db, context, employee.id, "REACTIVATE" if active else "DEACTIVATE", new={"is_active": active})
@@ -189,6 +213,54 @@ def deactivate_employee(employee_id: int, context: AccessContext = Depends(requi
 @router.post("/{employee_id}/reactivate", response_model=EmployeeResponse, dependencies=permissions("ORG.EMPLOYEE.UPDATE"))
 def reactivate_employee(employee_id: int, context: AccessContext = Depends(require_head), db: Session = Depends(get_db)):
     return change_active(employee_id, True, context, db)
+
+
+def bulk_employee_status(db: Session, context: AccessContext, ids: list[int], active: bool):
+    rows = (db.query(Employee).filter(
+        Employee.id.in_(ids), Employee.organization_id == context.organization_id,
+        Employee.deleted_at.is_(None),
+    ).with_for_update().all())
+    if len(rows) != len(ids):
+        raise HTTPException(404, "One or more employees were not found in this organization")
+    changed = [row for row in rows if row.is_active != active]
+    if not active and context.employee_id in {row.id for row in changed}:
+        raise HTTPException(409, "You cannot deactivate your own employee record")
+    if active:
+        current = db.query(Employee).filter(Employee.organization_id == context.organization_id,
+            Employee.is_active.is_(True), Employee.deleted_at.is_(None)).count()
+        context.check_limit("LIMIT.EMPLOYEES", current, len(changed))
+        for row in changed:
+            validate_structure(db, context.organization_id, row.branch_id, row.department_id, row.designation_id)
+    user_by_employee = {}
+    if not active:
+        for row in changed:
+            user = db.query(User).filter(User.party_id == row.party_id, User.deleted_at.is_(None)).first()
+            if user:
+                user_by_employee[row.id] = user
+    for row in changed:
+        if not active and row.id in user_by_employee:
+            protect_last_active_head(db, user_by_employee[row.id].id, context.organization_id)
+            revoked = revoke_user_sessions(db, user_by_employee[row.id].id)
+            audit(db, context, row.id, "SESSIONS_REVOKED", new={"count": revoked, "bulk": True})
+        row.is_active = active
+        row.employment_status = "ACTIVE" if active else "INACTIVE"
+        row.relieving_date = None if active else date.today()
+        row.updated_by = context.user_id
+        audit(db, context, row.id, "REACTIVATE" if active else "DEACTIVATE",
+              new={"is_active": active, "bulk": True})
+        db.flush()
+    db.commit()
+    return {"updated_ids": [row.id for row in changed]}
+
+
+@router.post("/bulk/deactivate", dependencies=permissions("ORG.EMPLOYEE.DEACTIVATE"))
+def bulk_deactivate_employees(payload: BulkStatusChange, context: AccessContext = Depends(require_head), db: Session = Depends(get_db)):
+    return bulk_employee_status(db, context, payload.ids, False)
+
+
+@router.post("/bulk/reactivate", dependencies=permissions("ORG.EMPLOYEE.UPDATE"))
+def bulk_reactivate_employees(payload: BulkStatusChange, context: AccessContext = Depends(require_head), db: Session = Depends(get_db)):
+    return bulk_employee_status(db, context, payload.ids, True)
 
 
 @router.get("/{employee_id}/history", response_model=dict[str, list[EmploymentHistoryResponse]], dependencies=permissions("ORG.EMPLOYEE.READ"))

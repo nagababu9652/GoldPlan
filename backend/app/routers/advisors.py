@@ -3,7 +3,7 @@ Advisors Router - handles advisor-specific endpoints.
 Uses the new identity schema and auth service.
 """
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 from typing import Optional
 
 from sqlalchemy import select
@@ -24,16 +24,15 @@ from ..schemas.transaction import (
     TransactionHistoryResponse,
 )
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
+from ..services.idempotency import finish_create, reserve_create
 from fastapi.encoders import jsonable_encoder
-from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
-from datetime import datetime, timezone, date
 from ..models.crm.meeting import Meeting
 from ..database.session import get_db
 from ..services import auth_service as auth
-from ..services.access import require_permission
+from ..services.access import AccessContext, require_employee, require_permission
 from ..models.identity.auth import User
 from ..schemas.auth import (
     UserRegister, MessageResponse, PasswordResetConfirm
@@ -50,51 +49,6 @@ from ..models.organization.assignment import EmployeeAssignment
 from ..models.organization.employee import Employee
 
 router = APIRouter(prefix="/advisors", tags=["advisors"])
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/auth/swagger-login"
-)
-
-
-def get_current_advisor(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
-) -> User:
-    """Verify the token belongs to an active advisor user."""
-    payload = auth.decode_token(token)
-
-    if payload is None or payload.sub is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
-
-    user = auth.get_user_by_id(db, int(payload.sub))
-
-    if not user or not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found or inactive",
-        )
-
-    has_advisor_role = any(
-        user_role.role
-        and user_role.role.is_active
-        and user_role.role.role_code == "ADVISOR"
-        and user_role.effective_from <= datetime.now(timezone.utc).replace(tzinfo=None)
-        and (
-            user_role.effective_to is None
-            or user_role.effective_to > datetime.now(timezone.utc).replace(tzinfo=None)
-        )
-        for user_role in user.roles
-    )
-
-    if not has_advisor_role:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Advisor role required",
-        )
-
-    return user
 
 
 from .advisor.meetings import router as meetings_router
@@ -104,98 +58,54 @@ router.include_router(meetings_router)
 router.include_router(messages_router)
 router.include_router(documents_router)
 
-@router.get("/dashboard")
+@router.get("/dashboard", dependencies=[Depends(require_permission("CLIENT.READ"))])
 def get_advisor_dashboard(
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
 ):
     """Get real advisor dashboard overview data."""
 
     today = date.today()
 
-    # Find the employee record belonging to the logged-in advisor.
-    employee = (
-        db.query(Employee)
-        .filter(Employee.party_id == advisor.party_id)
-        .first()
-    )
-
-    total_clients = 0
+    employee = get_report_employee(advisor, db)
+    user = db.query(User).filter(User.id == advisor.user_id, User.party_id == advisor.party_id).first()
+    client_ids = get_report_customer_ids(advisor, db)
+    total_clients = len(set(client_ids))
     active_clients = 0
     new_clients_this_month = 0
-
-    if employee:
-        # Find customers assigned to this advisor.
-        client_ids_query = (
-            db.query(EmployeeAssignment.entity_id)
-            .filter(
-                EmployeeAssignment.employee_id == employee.id,
-                EmployeeAssignment.entity_type == "CUSTOMER",
-                EmployeeAssignment.assignment_type == "ADVISOR",
-                EmployeeAssignment.effective_from <= today,
-                (
-                    (EmployeeAssignment.effective_to.is_(None))
-                    | (EmployeeAssignment.effective_to >= today)
-                ),
-            )
-        )
-
-        client_ids = [row[0] for row in client_ids_query.all()]
-
-        if client_ids:
-            total_clients = (
-                db.query(Customer)
-                .filter(Customer.id.in_(client_ids))
-                .count()
-            )
-
-            active_clients = (
-                db.query(Customer)
-                .filter(
-                    Customer.id.in_(client_ids),
-                    Customer.customer_status == "ACTIVE",
-                )
-                .count()
-            )
-
-            first_day_of_month = today.replace(day=1)
-
-            new_clients_this_month = (
-                db.query(Customer)
-                .filter(
-                    Customer.id.in_(client_ids),
-                    Customer.onboarding_date >= first_day_of_month,
-                    Customer.onboarding_date <= today,
-                )
-                .count()
-            )
+    if client_ids:
+        active_clients = db.query(Customer).filter(
+            Customer.id.in_(client_ids),
+            Customer.organization_id == employee.organization_id,
+            Customer.customer_status == "ACTIVE",
+        ).count()
+        new_clients_this_month = db.query(Customer).filter(
+            Customer.id.in_(client_ids),
+            Customer.organization_id == employee.organization_id,
+            Customer.onboarding_date >= today.replace(day=1),
+            Customer.onboarding_date <= today,
+        ).count()
 
     today_meetings = []
     upcoming_meetings = 0
-    if employee:
-        today_start = datetime.combine(today, datetime.min.time())
-        tomorrow_start = today_start + timedelta(days=1)
-        meeting_query = db.query(Meeting).filter(
-            Meeting.organization_id == employee.organization_id,
-            Meeting.advisor_employee_id == employee.id,
-            Meeting.status == "SCHEDULED",
-        )
-        today_meetings = (
-            meeting_query
-            .filter(
-                Meeting.scheduled_start >= today_start,
-                Meeting.scheduled_start < tomorrow_start,
-            )
-            .order_by(Meeting.scheduled_start.asc())
-            .all()
-        )
-        upcoming_meetings = meeting_query.filter(
-            Meeting.scheduled_start >= today_start,
-        ).count()
+    today_start = datetime.combine(today, datetime.min.time())
+    tomorrow_start = today_start + timedelta(days=1)
+    meeting_query = db.query(Meeting).filter(
+        Meeting.organization_id == employee.organization_id,
+        Meeting.advisor_employee_id == employee.id,
+        Meeting.status == "SCHEDULED",
+    )
+    today_meetings = (
+        meeting_query
+        .filter(Meeting.scheduled_start >= today_start, Meeting.scheduled_start < tomorrow_start)
+        .order_by(Meeting.scheduled_start.asc())
+        .all()
+    )
+    upcoming_meetings = meeting_query.filter(Meeting.scheduled_start >= today_start).count()
 
     return {
-        "advisor_name": advisor.display_name or "",
-        "email": advisor.email,
+        "advisor_name": user.display_name or "" if user else "",
+        "email": user.email if user else "",
 
         # Client data — now real
         "total_clients": total_clients,
@@ -218,108 +128,121 @@ def get_advisor_dashboard(
         "reviews_completed": None,
 
         "last_login": (
-            advisor.last_login_at.isoformat()
-            if advisor.last_login_at
+            user.last_login_at.isoformat()
+            if user and user.last_login_at
             else None
         ),
     }
 
-@router.get("/portfolio")
-def get_advisor_portfolio(advisor: User = Depends(get_current_advisor)):
-    """Get advisor portfolio holdings."""
+@router.get("/portfolio", dependencies=[Depends(require_permission("HOLDING.READ"))])
+def get_advisor_portfolio(
+    advisor: AccessContext = Depends(require_employee),
+    db: Session = Depends(get_db),
+):
+    """Aggregate current holdings for assigned clients."""
+    employee = get_report_employee(advisor, db)
+    client_ids = get_report_customer_ids(advisor, db)
+    accounts = db.query(FinancialAccount).filter(
+        FinancialAccount.organization_id == employee.organization_id,
+        FinancialAccount.customer_id.in_(client_ids),
+        FinancialAccount.is_active.is_(True),
+        FinancialAccount.deleted_at.is_(None),
+        FinancialAccount.status == "ACTIVE",
+    ).all() if client_ids else []
+    account_ids = [account.id for account in accounts]
+    holdings = db.query(Holding).filter(
+        Holding.financial_account_id.in_(account_ids),
+        Holding.is_active.is_(True),
+        Holding.deleted_at.is_(None),
+    ).all() if account_ids else []
+    categories: dict[str, dict[str, float]] = {}
+    for holding in holdings:
+        category = categories.setdefault(holding.security_type, {"value": 0.0, "cost": 0.0})
+        category["value"] += float(holding.quantity or 0) * float(holding.current_price or 0)
+        category["cost"] += float(holding.quantity or 0) * float(holding.average_cost or 0)
+    total_value = sum(category["value"] for category in categories.values())
+    total_cost = sum(category["cost"] for category in categories.values())
+    total_returns = total_value - total_cost
     return {
         "holdings": [
-            {"name": "Large Cap Equity", "value": 4500000, "allocation": 36, "returns": 12.5},
-            {"name": "Mid Cap Equity", "value": 2500000, "allocation": 20, "returns": 15.2},
-            {"name": "Debt Funds", "value": 3000000, "allocation": 24, "returns": 8.1},
-            {"name": "Gold ETF", "value": 1500000, "allocation": 12, "returns": 6.8},
-            {"name": "Cash & Equivalents", "value": 1000000, "allocation": 8, "returns": 3.5},
+            {"name": name, "value": values["value"],
+             "allocation": values["value"] / total_value * 100 if total_value else 0,
+             "returns": (values["value"] - values["cost"]) / values["cost"] * 100
+             if values["cost"] else 0}
+            for name, values in sorted(categories.items())
         ],
-        "total_value": 12500000,
-        "total_cost": 11000000,
-        "total_returns": 1500000,
-        "returns_percentage": 13.6,
+        "total_value": total_value,
+        "total_cost": total_cost,
+        "total_returns": total_returns,
+        "returns_percentage": total_returns / total_cost * 100 if total_cost else 0,
     }
 
 
 @router.get("/profile", dependencies=[Depends(require_permission("PROFILE.READ"))])
 def get_advisor_profile(
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
 ):
     """Get advisor profile information."""
-    party = db.query(Party).filter(Party.id == advisor.party_id).first()
+    user = db.query(User).filter(User.id == advisor.user_id, User.party_id == advisor.party_id).first()
+    party = db.query(Party).filter(Party.id == advisor.party_id, Party.deleted_at.is_(None)).first()
     return {
         "first_name": party.first_name or "" if party else "",
         "last_name": party.last_name or "" if party else "",
-        "phone": advisor.mobile_number or "",
+        "phone": user.mobile_number or "" if user else "",
         "role": "advisor",
-        "display_name": advisor.display_name,
-        "email": advisor.email,
-        "mobile_number": advisor.mobile_number or "",
-        "member_since": str(advisor.created_at),
+        "display_name": user.display_name if user else "",
+        "email": user.email if user else "",
+        "mobile_number": user.mobile_number or "" if user else "",
+        "member_since": str(user.created_at) if user else "",
         "plan_type": "Premium",
     }
 
 
 
-def get_advisor_employee(
-    advisor: User,
-    db: Session,
-) -> Employee:
-    employee = (
-        db.query(Employee)
-        .filter(
-            Employee.party_id == advisor.party_id,
-            Employee.is_active.is_(True),
-        )
-        .first()
-    )
-
-    if not employee:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Advisor employee record not found",
-        )
-
+def get_report_employee(context: AccessContext, db: Session) -> Employee:
+    employee = db.query(Employee).filter(
+        Employee.id == context.employee_id,
+        Employee.organization_id == context.organization_id,
+        Employee.is_active.is_(True),
+        Employee.employment_status == "ACTIVE",
+        Employee.deleted_at.is_(None),
+    ).first()
+    if employee is None:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Employee record not found")
     return employee
 
 
-def get_advisor_customer_ids(
-    advisor: User,
-    db: Session,
-) -> list[int]:
-    employee = get_advisor_employee(advisor, db)
-
+def get_report_customer_ids(context: AccessContext, db: Session) -> list[int]:
+    employee = get_report_employee(context, db)
     today = date.today()
-
-    assignments = (
-        db.query(EmployeeAssignment.entity_id)
-        .filter(
-            EmployeeAssignment.employee_id == employee.id,
-            EmployeeAssignment.assignment_type == "ADVISOR",
-            EmployeeAssignment.entity_type == "CUSTOMER",
-            EmployeeAssignment.effective_from <= today,
-            (
-                (EmployeeAssignment.effective_to.is_(None))
-                | (EmployeeAssignment.effective_to >= today)
-            ),
-            EmployeeAssignment.is_active.is_(True),
-        )
-        .all()
-    )
-
+    assignments = db.query(EmployeeAssignment.entity_id).join(
+        Customer,
+        Customer.id == EmployeeAssignment.entity_id,
+    ).filter(
+        EmployeeAssignment.employee_id == employee.id,
+        EmployeeAssignment.assignment_type == "ADVISOR",
+        EmployeeAssignment.entity_type == "CUSTOMER",
+        Customer.organization_id == employee.organization_id,
+        Customer.is_active.is_(True),
+        Customer.customer_status == "ACTIVE",
+        Customer.deleted_at.is_(None),
+        EmployeeAssignment.effective_from <= today,
+        (EmployeeAssignment.effective_to.is_(None) | (EmployeeAssignment.effective_to >= today)),
+        EmployeeAssignment.is_active.is_(True),
+        EmployeeAssignment.deleted_at.is_(None),
+    ).all()
     return [row.entity_id for row in assignments]
 
 
-@router.get("/reports/financial-summary")
+@router.get("/reports/financial-summary", dependencies=[Depends(require_permission("REPORT.READ"))])
 def get_financial_summary_report(
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
 ):
     """Return a dated financial snapshot for the advisor's active clients."""
     as_of = date.today()
-    customer_ids = get_advisor_customer_ids(advisor, db)
+    customer_ids = get_report_customer_ids(advisor, db)
 
     if not customer_ids:
         return {
@@ -421,15 +344,15 @@ def build_monthly_cash_flow(transactions, as_of: date) -> list[dict]:
     ]
 
 
-@router.get("/reports/cash-flow")
+@router.get("/reports/cash-flow", dependencies=[Depends(require_permission("REPORT.READ"))])
 def get_cash_flow_report(
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
 ):
     """Return twelve months of completed transaction cash flow."""
     as_of = date.today()
     period_start = _shift_month(as_of.replace(day=1), -11)
-    customer_ids = get_advisor_customer_ids(advisor, db)
+    customer_ids = get_report_customer_ids(advisor, db)
     transactions = []
     if customer_ids:
         transactions = db.query(Transaction).filter(
@@ -465,9 +388,9 @@ REPORT_ASSUMPTIONS = {
 
 
 def get_report_snapshot_for_advisor(
-    db: Session, advisor: User, snapshot_id: int,
+    db: Session, advisor: AccessContext, snapshot_id: int,
 ) -> ReportSnapshot:
-    employee = get_advisor_employee(advisor, db)
+    employee = get_report_employee(advisor, db)
     snapshot = db.query(ReportSnapshot).filter(
         ReportSnapshot.id == snapshot_id,
         ReportSnapshot.organization_id == employee.organization_id,
@@ -482,17 +405,18 @@ def get_report_snapshot_for_advisor(
         for item in snapshot.payload.get("financial_summary", {}).get("clients", [])
         if isinstance(item, dict) and item.get("customer_id") is not None
     }
-    if included_ids and not included_ids.issubset(set(get_advisor_customer_ids(advisor, db))):
+    if included_ids and not included_ids.issubset(set(get_report_customer_ids(advisor, db))):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Report snapshot not found")
     return snapshot
 
 
-@router.get("/reports/snapshots", response_model=ReportSnapshotListResponse)
+@router.get("/reports/snapshots", response_model=ReportSnapshotListResponse,
+            dependencies=[Depends(require_permission("REPORT.READ"))])
 def list_report_snapshots(
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
 ):
-    employee = get_advisor_employee(advisor, db)
+    employee = get_report_employee(advisor, db)
     reports = db.query(ReportSnapshot).filter(
         ReportSnapshot.organization_id == employee.organization_id,
         ReportSnapshot.advisor_employee_id == employee.id,
@@ -503,7 +427,7 @@ def list_report_snapshots(
         ReportSnapshot.created_at.desc(),
         ReportSnapshot.id.desc(),
     ).all()
-    current_ids = set(get_advisor_customer_ids(advisor, db))
+    current_ids = set(get_report_customer_ids(advisor, db))
     reports = [report for report in reports if {
         int(item["customer_id"])
         for item in report.payload.get("financial_summary", {}).get("clients", [])
@@ -512,10 +436,11 @@ def list_report_snapshots(
     return ReportSnapshotListResponse(reports=reports, total=len(reports))
 
 
-@router.get("/reports/snapshots/{snapshot_id}", response_model=ReportSnapshotResponse)
+@router.get("/reports/snapshots/{snapshot_id}", response_model=ReportSnapshotResponse,
+            dependencies=[Depends(require_permission("REPORT.READ"))])
 def get_report_snapshot(
     snapshot_id: int,
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
 ):
     return get_report_snapshot_for_advisor(db, advisor, snapshot_id)
@@ -525,13 +450,18 @@ def get_report_snapshot(
     "/reports/snapshots",
     response_model=ReportSnapshotResponse,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("REPORT.GENERATE"))],
 )
 def create_report_snapshot(
     request: ReportSnapshotCreate,
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
+    idempotency_key: str | None = Header(default=None),
 ):
-    employee = get_advisor_employee(advisor, db)
+    employee = get_report_employee(advisor, db)
+    reservation = reserve_create(db, key=idempotency_key, operation="report_snapshot.create", actor_scope=f"user:{advisor.user_id}", payload=request.model_dump())
+    if reservation and reservation.replay:
+        return get_report_snapshot_for_advisor(db, advisor, reservation.resource_id)
     financial_summary = get_financial_summary_report(advisor=advisor, db=db)
     cash_flow = get_cash_flow_report(advisor=advisor, db=db)
     report_date = date.fromisoformat(str(financial_summary["report_date"]))
@@ -550,26 +480,32 @@ def create_report_snapshot(
             "financial_summary": financial_summary,
             "cash_flow": cash_flow,
         }),
-        created_by=advisor.id,
+        created_by=advisor.user_id,
     )
     db.add(snapshot)
+    if reservation:
+        db.flush()
+        finish_create(db, reservation, snapshot.id)
     db.commit()
     db.refresh(snapshot)
     return snapshot
 
 
-@router.post("/clients/{client_id}/reset-password", response_model=MessageResponse)
+@router.post("/clients/{client_id}/reset-password", response_model=MessageResponse,
+             dependencies=[Depends(require_permission("CLIENT.UPDATE"))])
 def reset_client_password(
     client_id: int,
     request: PasswordResetConfirm,
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db)
 ):
     """Allow advisor to reset a client password using the new auth service."""
-    customer_ids = get_advisor_customer_ids(advisor, db)
+    customer_ids = get_report_customer_ids(advisor, db)
     customer = (
         db.query(Customer)
-        .filter(Customer.id == client_id, Customer.id.in_(customer_ids))
+        .filter(Customer.id == client_id, Customer.id.in_(customer_ids),
+                Customer.organization_id == advisor.organization_id,
+                Customer.is_active.is_(True), Customer.deleted_at.is_(None))
         .first()
     )
     if not customer:
@@ -588,13 +524,14 @@ def reset_client_password(
 @router.get(
     "/transactions",
     response_model=list[TransactionResponse],
+    dependencies=[Depends(require_permission("TRANSACTION.READ"))],
 )
 def get_advisor_transactions(
     limit: int = 50,
     customer_id: Optional[int] = None,
     transaction_type: Optional[str] = None,
     transaction_status: Optional[str] = None,
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
 ):
     """List transactions belonging only to customers assigned to the advisor."""
@@ -605,7 +542,7 @@ def get_advisor_transactions(
             detail="Limit must be between 1 and 100",
         )
 
-    customer_ids = get_advisor_customer_ids(advisor, db)
+    customer_ids = get_report_customer_ids(advisor, db)
 
     if not customer_ids:
         return []
@@ -615,6 +552,7 @@ def get_advisor_transactions(
         .filter(
             Transaction.customer_id.in_(customer_ids),
             Transaction.is_active.is_(True),
+            Transaction.deleted_at.is_(None),
         )
     )
 
@@ -651,13 +589,14 @@ def get_advisor_transactions(
 @router.get(
     "/transactions/{transaction_id}/history",
     response_model=list[TransactionHistoryResponse],
+    dependencies=[Depends(require_permission("TRANSACTION.READ"))],
 )
 def get_advisor_transaction_history(
     transaction_id: int,
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
 ):
-    customer_ids = get_advisor_customer_ids(advisor, db)
+    customer_ids = get_report_customer_ids(advisor, db)
 
     transaction = (
         db.query(Transaction)
@@ -689,15 +628,16 @@ def get_advisor_transaction_history(
 @router.get(
     "/transactions/{transaction_id}",
     response_model=TransactionResponse,
+    dependencies=[Depends(require_permission("TRANSACTION.READ"))],
 )
 def get_advisor_transaction(
     transaction_id: int,
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
 ):
     """Get one transaction if it belongs to one of the advisor's customers."""
 
-    customer_ids = get_advisor_customer_ids(advisor, db)
+    customer_ids = get_report_customer_ids(advisor, db)
 
     transaction = (
         db.query(Transaction)
@@ -705,6 +645,7 @@ def get_advisor_transaction(
             Transaction.id == transaction_id,
             Transaction.customer_id.in_(customer_ids),
             Transaction.is_active.is_(True),
+            Transaction.deleted_at.is_(None),
         )
         .first()
     )
@@ -747,6 +688,7 @@ def validate_transaction_links(db, customer_id, account_id, holding_id):
         FinancialAccount.id == account_id,
         FinancialAccount.customer_id == customer_id,
         FinancialAccount.is_active.is_(True),
+        FinancialAccount.deleted_at.is_(None),
     ).first()
     if not account:
         raise HTTPException(status_code=422, detail="Financial account does not belong to this customer")
@@ -754,6 +696,7 @@ def validate_transaction_links(db, customer_id, account_id, holding_id):
         Holding.id == holding_id,
         Holding.financial_account_id == account_id,
         Holding.is_active.is_(True),
+        Holding.deleted_at.is_(None),
     ).first():
         raise HTTPException(status_code=422, detail="Holding does not belong to this financial account")
 
@@ -763,9 +706,13 @@ def apply_position_effect(db, transaction, reverse=False):
     if transaction.quantity is None or transaction.unit_price is None:
         raise HTTPException(status_code=422, detail="Linked BUY/SELL transactions require quantity and unit price")
     try:
-        holding = db.query(Holding).filter(
+        holding = db.query(Holding).join(
+            FinancialAccount, Holding.financial_account_id == FinancialAccount.id,
+        ).filter(
             Holding.id == transaction.holding_id,
             Holding.is_active.is_(True), Holding.deleted_at.is_(None),
+            Holding.financial_account_id == transaction.financial_account_id,
+            FinancialAccount.customer_id == transaction.customer_id,
         ).with_for_update().one()
     except NoResultFound:
         raise HTTPException(status_code=409, detail="Linked holding is no longer active")
@@ -794,13 +741,15 @@ def apply_position_effect(db, transaction, reverse=False):
     "/transactions",
     response_model=TransactionResponse,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("TRANSACTION.CREATE"))],
 )
 def create_advisor_transaction(
     payload: TransactionCreate,
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
+    idempotency_key: str | None = Header(default=None),
 ):
-    customer_ids = get_advisor_customer_ids(advisor, db)
+    customer_ids = get_report_customer_ids(advisor, db)
 
     if payload.customer_id not in customer_ids:
         raise HTTPException(
@@ -809,9 +758,12 @@ def create_advisor_transaction(
         )
 
     validate_transaction_links(db, payload.customer_id, payload.financial_account_id, payload.holding_id)
+    reservation = reserve_create(db, key=idempotency_key, operation="transaction.create", actor_scope=f"user:{advisor.user_id}", payload=payload.model_dump())
+    if reservation and reservation.replay:
+        return get_advisor_transaction(reservation.resource_id, advisor=advisor, db=db)
     transaction = Transaction(
         **payload.model_dump(),
-        created_by=advisor.id,
+        created_by=advisor.user_id,
     )
 
     db.add(transaction)
@@ -819,6 +771,7 @@ def create_advisor_transaction(
 
     # Generate the transaction ID before creating its history record.
     db.flush()
+    finish_create(db, reservation, transaction.id)
 
     new_values = TransactionResponse.model_validate(
         transaction
@@ -828,7 +781,7 @@ def create_advisor_transaction(
         db=db,
         transaction=transaction,
         action="CREATE",
-        changed_by=advisor.id,
+        changed_by=advisor.user_id,
         old_values=None,
         new_values=new_values,
     )
@@ -841,14 +794,15 @@ def create_advisor_transaction(
 @router.put(
     "/transactions/{transaction_id}",
     response_model=TransactionResponse,
+    dependencies=[Depends(require_permission("TRANSACTION.UPDATE"))],
 )
 def update_advisor_transaction(
     transaction_id: int,
     payload: TransactionUpdate,
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
 ):
-    customer_ids = get_advisor_customer_ids(advisor, db)
+    customer_ids = get_report_customer_ids(advisor, db)
 
     transaction = (
         db.query(Transaction)
@@ -856,6 +810,7 @@ def update_advisor_transaction(
             Transaction.id == transaction_id,
             Transaction.customer_id.in_(customer_ids),
             Transaction.is_active.is_(True),
+            Transaction.deleted_at.is_(None),
         )
         .first()
     )
@@ -885,7 +840,7 @@ def update_advisor_transaction(
 
     apply_position_effect(db, transaction)
 
-    transaction.updated_by = advisor.id
+    transaction.updated_by = advisor.user_id
 
     # Apply the changes before capturing the new snapshot.
     db.flush()
@@ -898,7 +853,7 @@ def update_advisor_transaction(
         db=db,
         transaction=transaction,
         action="UPDATE",
-        changed_by=advisor.id,
+        changed_by=advisor.user_id,
         old_values=old_values,
         new_values=new_values,
     )
@@ -912,13 +867,14 @@ def update_advisor_transaction(
 @router.delete(
     "/transactions/{transaction_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission("TRANSACTION.UPDATE"))],
 )
 def delete_advisor_transaction(
     transaction_id: int,
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
     db: Session = Depends(get_db),
 ):
-    customer_ids = get_advisor_customer_ids(advisor, db)
+    customer_ids = get_report_customer_ids(advisor, db)
 
     transaction = (
         db.query(Transaction)
@@ -926,6 +882,7 @@ def delete_advisor_transaction(
             Transaction.id == transaction_id,
             Transaction.customer_id.in_(customer_ids),
             Transaction.is_active.is_(True),
+            Transaction.deleted_at.is_(None),
         )
         .first()
     )
@@ -944,7 +901,7 @@ def delete_advisor_transaction(
     transaction.is_active = False
     apply_position_effect(db, transaction, reverse=True)
     transaction.deleted_at = datetime.utcnow()
-    transaction.deleted_by = advisor.id
+    transaction.deleted_by = advisor.user_id
 
     db.flush()
 
@@ -952,7 +909,7 @@ def delete_advisor_transaction(
         db=db,
         transaction=transaction,
         action="DELETE",
-        changed_by=advisor.id,
+        changed_by=advisor.user_id,
         old_values=old_values,
         new_values=None,
     )
@@ -961,18 +918,27 @@ def delete_advisor_transaction(
 
     return None
 
-@router.post("/verify-email", response_model=MessageResponse)
-def verify_advisor_email(request: OTPVerifyRequest, db: Session = Depends(get_db)):
-    """Verify advisor email using OTP and activate the account."""
+@router.post("/verify-email", response_model=MessageResponse,
+             dependencies=[Depends(require_permission("PROFILE.READ"))])
+def verify_advisor_email(
+    request: OTPVerifyRequest,
+    advisor: AccessContext = Depends(require_employee),
+    db: Session = Depends(get_db),
+):
+    """Verify only the signed-in staff member's email using OTP."""
+    user = db.query(User).filter(
+        User.id == advisor.user_id, User.party_id == advisor.party_id,
+        User.is_active.is_(True), User.deleted_at.is_(None),
+    ).first()
+    if user is None or user.email.casefold() != str(request.email).casefold():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if request.purpose != "email_verification":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email verification OTP required")
     is_valid = verify_otp(db, request.email, request.otp_code, "email_verification")
     if not is_valid:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired OTP")
 
-    user = auth.get_user_by_email(db, request.email)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
     # Update user verification
     user.email_verified = True
     db.commit()
-    return MessageResponse(message="Email verified successfully. You can now login.")
+    return MessageResponse(message="Email verified successfully")

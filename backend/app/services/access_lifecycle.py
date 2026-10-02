@@ -9,6 +9,7 @@ from ..models.identity.auth import RefreshToken, User, UserSession
 from ..models.identity.authorization import Role, UserRole
 from ..models.identity.security import AuditLog
 from ..models.organization.employee import Employee
+from ..models.organization.core import Organization
 from ..models.crm.customer import Customer
 from ..models.identity.invitation import AccessInvitation
 from .access import AccessContext, utc_naive
@@ -40,7 +41,12 @@ def employee_user_for_update(
 
 
 def protect_last_active_head(db: Session, target_user_id: int, organization_id: int) -> None:
-    """Lock effective Head grants and reject removal of the final active Head."""
+    """Serialize Head removals per organization before checking current grants."""
+    # Lock a stable row shared by every Head in this organization. Locking only
+    # UserRole rows cannot serialize a concurrent change to a different User.
+    db.query(Organization.id).filter(
+        Organization.id == organization_id,
+    ).with_for_update().one()
     now = now_utc_naive()
     rows = db.query(UserRole, User.id).join(
         Role, Role.id == UserRole.role_id,
@@ -97,6 +103,10 @@ def set_employee_login_access(
         user.is_active = False
         user.updated_by = actor.user_id
         revoked_sessions = revoke_user_sessions(db, user.id)
+        db.add(AuditLog(organization_id=actor.organization_id, user_id=actor.user_id,
+            module_name="EMPLOYEE_ACCESS", table_name="user_sessions", record_id=user.id,
+            action="SESSIONS_REVOKED", new_values={"employee_id": employee.id,
+                "user_id": user.id, "count": revoked_sessions}, session_id=actor.session_id))
         action = "LOGIN_DISABLED"
     else:
         user.account_status = "ACTIVE"
@@ -160,7 +170,15 @@ def set_client_portal_access(
         ).with_for_update().all()
         for invitation in pending:
             invitation.revoked_at = timestamp
+            db.add(AuditLog(organization_id=actor.organization_id, user_id=actor.user_id,
+                module_name="AUTHORIZATION", table_name="access_invitations", record_id=invitation.id,
+                action="INVITATION_REVOKED", new_values={"reason": "CLIENT_PORTAL_DISABLED"},
+                session_id=actor.session_id))
         revoked_sessions = revoke_user_sessions(db, user.id)
+        db.add(AuditLog(organization_id=actor.organization_id, user_id=actor.user_id,
+            module_name="CLIENT_PORTAL_ACCESS", table_name="user_sessions", record_id=user.id,
+            action="SESSIONS_REVOKED", new_values={"customer_id": customer.id,
+                "user_id": user.id, "count": revoked_sessions}, session_id=actor.session_id))
         other_active = db.query(UserRole).filter(UserRole.user_id == user.id,
             UserRole.role_id != role.id, UserRole.effective_from <= timestamp,
             or_(UserRole.effective_to.is_(None), UserRole.effective_to > timestamp)).first()

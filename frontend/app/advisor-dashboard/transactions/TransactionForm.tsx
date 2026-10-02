@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,8 @@ export default function TransactionForm({
   onCancel,
 }: TransactionFormProps) {
   const isEditMode = Boolean(initialData);
+  const submittingRef = useRef(false);
+  const createKeyRef = useRef<{ payload: string; key: string } | null>(null);
 
   const [transactionDate, setTransactionDate] = useState("");
   const [transactionType, setTransactionType] = useState("BUY");
@@ -89,6 +91,7 @@ export default function TransactionForm({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (submittingRef.current) return;
 
     setError("");
 
@@ -102,6 +105,7 @@ export default function TransactionForm({
       return;
     }
 
+    submittingRef.current = true;
     setLoading(true);
 
     try {
@@ -143,10 +147,16 @@ export default function TransactionForm({
           holding_id: holdingId ? Number(holdingId) : undefined,
         };
 
+        const serialized = JSON.stringify(payload);
+        if (createKeyRef.current?.payload !== serialized) {
+          createKeyRef.current = { payload: serialized, key: crypto.randomUUID() };
+        }
         const createdTransaction = await createTransaction(
           token,
-          payload
+          payload,
+          createKeyRef.current.key,
         );
+        createKeyRef.current = null;
 
         onSuccess?.(createdTransaction);
       }
@@ -159,6 +169,7 @@ export default function TransactionForm({
           : "Unable to save transaction."
       );
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   }

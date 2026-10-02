@@ -194,7 +194,8 @@ def download_document(document_id: int, context: AccessContext = Depends(require
     if DOCUMENT_ROOT.resolve() not in path.parents or not path.is_file():
         raise HTTPException(404, "Document file not found")
     return FileResponse(path, media_type=document.file_type,
-        filename=document.file_name or document.document_name)
+        filename=document.file_name or document.document_name,
+        headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
 
 
 def customer_report(snapshot: ReportSnapshot, customer_id: int):
@@ -258,7 +259,8 @@ def download_report(report_id: int, context: AccessContext = Depends(require_cli
         writer.writerow([key.replace("_", " ").title(), ", ".join(value) if isinstance(value, list) else value])
     filename = f"financial-report-{snapshot.id}-{snapshot.report_date}.csv"
     return Response(output.getvalue(), media_type="text/csv; charset=utf-8",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+        headers={"Content-Disposition": f'attachment; filename="{filename}"',
+                 "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
 
 
 @router.get("/messages", dependencies=[Depends(require_permission("PORTAL.MESSAGE.READ"))])

@@ -1,6 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useSingleSubmission } from "@/lib/use-single-submission";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 
@@ -42,6 +43,8 @@ function TaskFormContent({
   const searchParams = useSearchParams();
 
   const isEdit = Boolean(task);
+  const submittingRef = useRef(false);
+  const { keyFor, clearKey } = useSingleSubmission();
 
   const [clients, setClients] = useState<Client[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -127,6 +130,8 @@ function TaskFormContent({
     event: React.FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
 
     try {
       setSaving(true);
@@ -183,8 +188,10 @@ function TaskFormContent({
       } else {
         const created = await createTask(
           token,
-          payload
+          payload,
+          keyFor(payload),
         );
+        clearKey();
 
         router.push(
           `/advisor-dashboard/tasks/${created.id}`
@@ -201,6 +208,7 @@ function TaskFormContent({
           : "Unable to save task."
       );
     } finally {
+      submittingRef.current = false;
       setSaving(false);
     }
   }

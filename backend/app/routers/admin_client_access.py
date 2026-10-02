@@ -35,6 +35,8 @@ def list_client_access(search: str | None = None, status: str | None = None,
         if user:
             enabled = db.query(UserRole).join(Role, Role.id == UserRole.role_id).filter(
                 UserRole.user_id == user.id, Role.role_code == "CLIENT",
+                Role.is_active.is_(True),
+                or_(Role.organization_id.is_(None), Role.organization_id == context.organization_id),
                 UserRole.effective_from <= now,
                 or_(UserRole.effective_to.is_(None), UserRole.effective_to > now)).first() is not None
         pending = db.query(AccessInvitation.id).filter(
@@ -45,7 +47,8 @@ def list_client_access(search: str | None = None, status: str | None = None,
         result.append({"customer_id": customer.id, "customer_code": customer.customer_code,
             "display_name": party.display_name, "email": party.email,
             "mobile_number": party.mobile_number, "customer_status": customer.customer_status,
-            "has_account": user is not None, "enabled": enabled and bool(user and user.is_active),
+            "has_account": user is not None,
+            "enabled": enabled and bool(user and user.is_active and user.account_status == "ACTIVE"),
             "account_status": user.account_status if user else "NOT_INVITED",
             "pending_invitation": pending})
     return result

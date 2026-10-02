@@ -1,26 +1,27 @@
 """Advisor-scoped financial-account operations."""
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ..database.session import get_db
 from ..models.crm.financial_account import FinancialAccount
-from ..models.identity.auth import User
+from ..services.access import AccessContext, require_employee, require_permission
+from ..services.idempotency import finish_create, reserve_create
 from ..schemas.financial_account import (
     ACCOUNT_STATUSES, ACCOUNT_TYPES, LIABILITY_TYPES,
     FinancialAccountCreate, FinancialAccountListResponse,
     FinancialAccountResponse, FinancialAccountUpdate,
 )
-from .advisors import get_current_advisor
 from .goals import authorize_owner, normalize_choice
 
 router = APIRouter(prefix="/advisors/financial-accounts", tags=["advisor-financial-accounts"])
 
 
-def get_account_for_advisor(db: Session, advisor: User, account_id: int) -> FinancialAccount:
+def get_account_for_advisor(db: Session, advisor: AccessContext, account_id: int) -> FinancialAccount:
     account = db.query(FinancialAccount).filter(
         FinancialAccount.id == account_id,
+        FinancialAccount.organization_id == advisor.organization_id,
         FinancialAccount.is_active.is_(True), FinancialAccount.deleted_at.is_(None),
     ).first()
     if not account:
@@ -31,11 +32,12 @@ def get_account_for_advisor(db: Session, advisor: User, account_id: int) -> Fina
     return account
 
 
-@router.get("", response_model=FinancialAccountListResponse)
+@router.get("", response_model=FinancialAccountListResponse,
+            dependencies=[Depends(require_permission("ACCOUNT.READ"))])
 def list_financial_accounts(
     customer_id: int | None = Query(None), customer_group_id: int | None = Query(None),
     account_status: str | None = Query(None, alias="status"),
-    advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db),
+    advisor: AccessContext = Depends(require_employee), db: Session = Depends(get_db),
 ):
     if (customer_id is None) == (customer_group_id is None):
         raise HTTPException(422, "Exactly one owner filter is required")
@@ -52,14 +54,19 @@ def list_financial_accounts(
     return FinancialAccountListResponse(accounts=accounts, total=len(accounts))
 
 
-@router.get("/{account_id}", response_model=FinancialAccountResponse)
-def get_financial_account(account_id: int, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+@router.get("/{account_id}", response_model=FinancialAccountResponse,
+            dependencies=[Depends(require_permission("ACCOUNT.READ"))])
+def get_financial_account(account_id: int, advisor: AccessContext = Depends(require_employee), db: Session = Depends(get_db)):
     return get_account_for_advisor(db, advisor, account_id)
 
 
-@router.post("", response_model=FinancialAccountResponse, status_code=201)
-def create_financial_account(payload: FinancialAccountCreate, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+@router.post("", response_model=FinancialAccountResponse, status_code=201,
+             dependencies=[Depends(require_permission("ACCOUNT.CREATE"))])
+def create_financial_account(payload: FinancialAccountCreate, advisor: AccessContext = Depends(require_employee), db: Session = Depends(get_db), idempotency_key: str | None = Header(default=None)):
     employee = authorize_owner(db, advisor, payload.customer_id, payload.customer_group_id)
+    reservation = reserve_create(db, key=idempotency_key, operation="financial_account.create", actor_scope=f"user:{advisor.user_id}", payload=payload.model_dump())
+    if reservation and reservation.replay:
+        return get_account_for_advisor(db, advisor, reservation.resource_id)
     account_type = normalize_choice(payload.account_type, ACCOUNT_TYPES, "account type")
     account = FinancialAccount(
         organization_id=employee.organization_id,
@@ -67,14 +74,15 @@ def create_financial_account(payload: FinancialAccountCreate, advisor: User = De
         account_type=account_type,
         account_nature="LIABILITY" if account_type in LIABILITY_TYPES else "ASSET",
         status=normalize_choice(payload.status, ACCOUNT_STATUSES, "account status"),
-        currency_code=payload.currency_code.upper(), created_by=advisor.id,
+        currency_code=payload.currency_code.upper(), created_by=advisor.user_id,
     )
-    db.add(account); db.commit(); db.refresh(account)
+    db.add(account); db.flush(); finish_create(db, reservation, account.id); db.commit(); db.refresh(account)
     return account
 
 
-@router.put("/{account_id}", response_model=FinancialAccountResponse)
-def update_financial_account(account_id: int, payload: FinancialAccountUpdate, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+@router.put("/{account_id}", response_model=FinancialAccountResponse,
+            dependencies=[Depends(require_permission("ACCOUNT.UPDATE"))])
+def update_financial_account(account_id: int, payload: FinancialAccountUpdate, advisor: AccessContext = Depends(require_employee), db: Session = Depends(get_db)):
     account = get_account_for_advisor(db, advisor, account_id)
     updates = payload.model_dump(exclude_unset=True)
     if "account_type" in updates:
@@ -85,14 +93,14 @@ def update_financial_account(account_id: int, payload: FinancialAccountUpdate, a
     if "currency_code" in updates:
         updates["currency_code"] = updates["currency_code"].upper()
     for field, value in updates.items(): setattr(account, field, value)
-    account.updated_by = advisor.id
+    account.updated_by = advisor.user_id
     db.commit(); db.refresh(account)
     return account
 
 
-@router.delete("/{account_id}")
-def archive_financial_account(account_id: int, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+@router.delete("/{account_id}", dependencies=[Depends(require_permission("ACCOUNT.UPDATE"))])
+def archive_financial_account(account_id: int, advisor: AccessContext = Depends(require_employee), db: Session = Depends(get_db)):
     account = get_account_for_advisor(db, advisor, account_id)
-    account.is_active = False; account.deleted_at = datetime.utcnow(); account.deleted_by = advisor.id
+    account.is_active = False; account.deleted_at = datetime.utcnow(); account.deleted_by = advisor.user_id
     db.commit()
     return {"message": "Financial account archived successfully"}

@@ -2,9 +2,10 @@
 OTP Service - handles OTP generation, hashing, sending, and verification.
 Uses identity.otp_requests table with bcrypt-hashed OTP codes.
 """
-import random
+import secrets
 import string
 import smtplib
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta, timezone
@@ -12,7 +13,7 @@ from typing import Optional
 
 import bcrypt
 from sqlalchemy.orm import Session
-from fastapi import BackgroundTasks, HTTPException
+from fastapi import HTTPException
 
 from ..models.identity.auth import OTPRequest
 from ..core.config import settings
@@ -20,11 +21,13 @@ from ..core.config import settings
 OTP_EXPIRY_MINUTES = 10
 OTP_LENGTH = 6
 MAX_OTP_PER_HOUR = 3  # Rate limiting: max 3 OTPs per hour per destination
+MAX_OTP_ATTEMPTS = 5
+logger = logging.getLogger(__name__)
 
 
 def generate_otp() -> str:
     """Generate a 6-digit OTP code."""
-    return ''.join(random.choices(string.digits, k=OTP_LENGTH))
+    return ''.join(secrets.choice(string.digits) for _ in range(OTP_LENGTH))
 
 
 def hash_otp(otp_code: str) -> str:
@@ -39,6 +42,9 @@ def verify_otp_hash(otp_code: str, otp_code_hash: str) -> bool:
 
 def send_otp_email(email: str, otp_code: str, purpose: str) -> bool:
     """Send OTP via email using SMTP."""
+    if not settings.smtp_user or not settings.smtp_password:
+        logger.error("OTP email delivery is not configured")
+        return False
     try:
         purpose_label = "Registration" if purpose == "registration" else "Password Reset"
         
@@ -105,26 +111,15 @@ def send_otp_email(email: str, otp_code: str, purpose: str) -> bool:
         msg.attach(part2)
         
         # Send email
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
+        with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=10) as server:
             server.starttls()
             server.login(settings.smtp_user, settings.smtp_password)
             server.send_message(msg)
         
-        print(f"✅ OTP email sent to {email}")
         return True
         
-    except Exception as e:
-        print(f"❌ Failed to send email: {str(e)}")
-        # For development, still print the OTP to console
-        print(f"""
-        ========================================
-        📧 OTP EMAIL (Console Fallback)
-        To: {email}
-        Purpose: {purpose_label}
-        OTP Code: {otp_code}
-        Expires: {OTP_EXPIRY_MINUTES} minutes
-        ========================================
-        """)
+    except Exception:
+        logger.exception("OTP email delivery failed")
         return False
 
 
@@ -133,7 +128,6 @@ def create_otp(
     destination: str,
     purpose: str = "registration",
     user_id: Optional[int] = None,
-    background_tasks: Optional[BackgroundTasks] = None
 ) -> OTPRequest:
     """Create a new OTP record, hash the code, and send via email."""
     # Rate limiting: Check if user has exceeded max OTPs per hour
@@ -175,17 +169,18 @@ def create_otp(
     )
     
     db.add(otp_record)
-    db.commit()
-    db.refresh(otp_record)
-    
-    # Store plain OTP temporarily for email sending
-    otp_record._plain_otp = otp_code
-    
-    # Send OTP via email
-    if background_tasks:
-        background_tasks.add_task(send_otp_email, destination, otp_code, purpose)
-    else:
-        send_otp_email(destination, otp_code, purpose)
+    try:
+        db.flush()
+        if not send_otp_email(destination, otp_code, purpose):
+            db.rollback()
+            raise HTTPException(status_code=503, detail="Verification email is temporarily unavailable")
+        db.commit()
+        db.refresh(otp_record)
+    except HTTPException:
+        raise
+    except Exception:
+        db.rollback()
+        raise
     
     return otp_record
 
@@ -200,12 +195,15 @@ def verify_otp(db: Session, destination: str, otp_code: str, purpose: str = "reg
         OTPRequest.purpose == purpose,
         OTPRequest.is_used == False,
         OTPRequest.expires_at > now
-    ).order_by(OTPRequest.created_at.desc()).first()
+    ).order_by(OTPRequest.created_at.desc()).with_for_update().first()
     
     if not otp_record:
         return False
     
     # Verify the OTP code against stored hash
+    if otp_record.failed_attempts >= MAX_OTP_ATTEMPTS:
+        return False
+
     if verify_otp_hash(otp_code, otp_record.otp_code_hash):
         otp_record.is_used = True
         otp_record.verified_at = now
@@ -214,6 +212,8 @@ def verify_otp(db: Session, destination: str, otp_code: str, purpose: str = "reg
     
     # Increment failed attempts
     otp_record.failed_attempts += 1
+    if otp_record.failed_attempts >= MAX_OTP_ATTEMPTS:
+        otp_record.is_used = True
     db.commit()
     return False
 

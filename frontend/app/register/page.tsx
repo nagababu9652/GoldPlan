@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { sendOTP, verifyOTP, registerUser } from '@/lib/api';
+import { useSingleSubmission } from '@/lib/use-single-submission';
 
 // Floating goal icons
 const goals = [
@@ -61,9 +62,11 @@ export default function RegisterPage() {
   const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [successMessage, setSuccessMessage] = useState('');
+  const [created, setCreated] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { run, finish, keyFor } = useSingleSubmission();
 
   // Initialize floating particles
   useEffect(() => {
@@ -122,14 +125,10 @@ export default function RegisterPage() {
     setIsResending(true);
     setLoading(true);
 
+    await run(async () => {
     try {
-      const data = await sendOTP(email, 'registration');
-
-      if (data.otp_code) {
-        setSuccessMessage(`✅ OTP sent to ${email}\n\nYour OTP is: ${data.otp_code}\n\n(Valid for 10 minutes)`);
-      } else {
-        setSuccessMessage('OTP sent successfully! Please check your email.');
-      }
+      await sendOTP(email, 'registration');
+      setSuccessMessage('OTP sent successfully! Please check your email.');
       
       setOtpSent(true);
       setStep('otp');
@@ -140,6 +139,7 @@ export default function RegisterPage() {
       setLoading(false);
       setIsResending(false);
     }
+    });
   };
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
@@ -147,6 +147,7 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
 
+    await run(async () => {
     try {
       await verifyOTP(email, otp, 'registration');
 
@@ -156,6 +157,7 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
+    });
   };
 
   const handleFieldFocus = (fieldName: string) => setFocusedField(fieldName);
@@ -169,6 +171,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (created) return;
     setError('');
 
     if (formData.password !== formData.confirmPassword) {
@@ -183,6 +186,7 @@ export default function RegisterPage() {
 
     setLoading(true);
 
+    await run(async () => {
     try {
       const { confirmPassword, phone, ...rest } = formData;
       const userData = {
@@ -190,8 +194,10 @@ export default function RegisterPage() {
         email,
         mobile_number: phone || undefined,
       };
-      await registerUser(userData);
+      await registerUser(userData, keyFor(userData));
 
+      finish();
+      setCreated(true);
       setSuccessMessage('Account created successfully! Please login with your credentials.');
       setTimeout(() => router.push('/login'), 1500);
     } catch (err) {
@@ -199,6 +205,7 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
+    });
   };
 
   return (
@@ -397,8 +404,8 @@ export default function RegisterPage() {
                     <label htmlFor="confirmPassword" style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#C9A227' }}>Confirm Password</label>
                     <input id="confirmPassword" name="confirmPassword" type="password" required value={formData.confirmPassword} onChange={handleChange} onFocus={() => handleFieldFocus('confirmPassword')} onBlur={handleFieldBlur} style={{ width: '100%', padding: '10px 14px', border: '1px solid #C9A227', background: '#1C1A19', color: '#F8F6F0', fontSize: '14px', outline: 'none' }} placeholder="••••••••" />
                   </div>
-                  <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px 20px', background: '#C9A227', color: '#0C0B0A', fontSize: '14px', fontWeight: '600', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? '0.5' : '1' }}>
-                    {loading ? 'Creating Account...' : 'Create Account'}
+                  <button type="submit" disabled={loading || created} style={{ width: '100%', padding: '12px 20px', background: '#C9A227', color: '#0C0B0A', fontSize: '14px', fontWeight: '600', border: 'none', cursor: loading || created ? 'not-allowed' : 'pointer', opacity: loading || created ? '0.5' : '1' }}>
+                    {loading ? 'Creating Account...' : created ? 'Account Created' : 'Create Account'}
                   </button>
                 </form>
               )}

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Navigation from '@/components/home/Navigation';
 import Footer from '@/components/home/Footer';
 import { getAccessContext, loginUser, type LoginCredentials } from '@/lib/api';
+import { useSingleSubmission } from '@/lib/use-single-submission';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { run, finish, keyFor } = useSingleSubmission();
 
   // Check if user is already logged in
   useEffect(() => {
@@ -60,13 +62,13 @@ export default function LoginPage() {
       return;
     }
 
+    await run(async () => {
     try {
       const credentials: LoginCredentials = { email, password };
-      const response = await loginUser(credentials);
+      const response = await loginUser(credentials, keyFor(credentials));
 
       // Store token in localStorage
       localStorage.setItem('finplan_token', response.access_token);
-      localStorage.setItem('finplan_refresh_token', response.refresh_token);
       localStorage.setItem('finplan_user', JSON.stringify({
         email: email,
         token: response.access_token,
@@ -74,6 +76,7 @@ export default function LoginPage() {
       }));
 
       const access = await getAccessContext(response.access_token);
+      finish();
       router.push(
         !access ? '/onboarding/organization' :
         access.subscription_active ? (access.actor_type==='CLIENT'?'/client-portal':access.actor_type==='EMPLOYEE'?'/employee-dashboard':'/advisor-dashboard') : '/admin/subscription'
@@ -82,6 +85,7 @@ export default function LoginPage() {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
       setLoading(false);
     }
+    });
   };
 
   return (

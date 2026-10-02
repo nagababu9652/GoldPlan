@@ -3001,8 +3001,9 @@ authorization foundation is enforced.
 - [x] Seed and document the canonical permission-code catalog from section 31,
   including the business and portal namespaces used by the shared resolver.
 - [ ] Close public registration/onboarding role-grant gaps and protect direct
-  document downloads, including the current static upload path. Registration
-  and organization bootstrap are secured; direct downloads remain pending.
+  document downloads, including any deployment-level static upload path.
+  Registration and organization bootstrap are secured; download deployment
+  configuration remains pending.
 - [ ] Inventory and migrate all protected endpoints after the pilot; verify that
   revoked sessions and changed grants affect the next request.
 - [ ] Add denial tests for another organization, another employee's client,
@@ -3018,8 +3019,104 @@ session, Party, organization, eligible staff/client identities, effective roles,
 role-profile grants/denials, and active ADVISOR customer assignments. Ambiguous
 identities fail closed. Service-team membership does not provide resource scope.
 `GET /auth/access-context` exposes the resolved context and
-`GET /advisors/profile` now additionally requires `PROFILE.READ` through this
-service. The profile endpoint retains its existing advisor dependency.
+`GET /advisors/profile` requires `PROFILE.READ` and live staff access through
+this service.
+
+**Legacy document slice (2026-10-01):** All seven `/advisors/documents` routes
+now use the live Employee context, including active organization and session
+checks. Read/download requires `DOCUMENT.READ`; create/upload/update requires
+`DOCUMENT.UPLOAD`; archive also requires `DOCUMENT.UPLOAD`. Document owner validation
+also requires an active customer/group and non-deleted assignment. File storage
+URLs can only be set by the upload path, and downloads disable caching. HTTP
+tests cover missing permission, client-persona denial, and assignment denial.
+
+**Legacy meetings slice (2026-10-01):** The six `/advisors/meetings` routes now
+use the live Employee context. List/detail require `MEETING.READ`, create
+requires `MEETING.CREATE`, and update/cancel/complete require `MEETING.UPDATE`.
+Customer and group ownership require active records and a current, non-deleted
+advisor assignment. Meeting reads and changes recheck the assignment, so
+reassignment or expiry removes access on the next request. Route and ownership
+regression tests cover these rules.
+
+**Legacy tasks slice (2026-10-01):** The six `/advisors/tasks` routes now use
+the live Employee context and `TASK.READ`, `TASK.CREATE`, or `TASK.UPDATE` as
+appropriate. A customer-group task requires a current group or branch advisor
+assignment even when no primary advisor is configured. Reads and status changes
+recheck ownership so expired or removed assignments no longer expose old tasks.
+
+**Legacy messages slice (2026-10-01):** The six `/advisors/messages` routes now
+use the live Employee context. List/detail require `MESSAGE.READ`, create
+requires `MESSAGE.CREATE`, and update/read/archive require `MESSAGE.UPDATE`.
+Messages remain scoped to their sender and organization, and every read or
+change rechecks active customer/group ownership and current advisor assignment.
+The additive `17b1514df345` migration grants the new codes to the Head and
+standard financial-advisor profiles so existing staff retain message access.
+Permission, group-assignment, and expired-assignment regression tests cover
+these rules.
+
+**Legacy reports slice (2026-10-02):** The five `/advisors/reports` routes now
+use live Employee access. Financial and cash-flow reports plus snapshot list and
+detail require `REPORT.READ`; snapshot creation requires `REPORT.GENERATE`.
+Current report data is limited to active customers in the employee's organization
+with a current, non-deleted advisor assignment. Saved snapshots retain their
+stored payload and assumptions, and become inaccessible to the advisor when an
+included customer is reassigned. Permission and assignment regression tests
+cover these boundaries.
+
+**Advisor overview slice (2026-10-02):** Dashboard, portfolio, and profile now
+require live Head/Employee access and `CLIENT.READ`, `HOLDING.READ`, or
+`PROFILE.READ`, respectively. Dashboard client counts use current, non-deleted
+assignments and organization-scoped customers. Portfolio figures are calculated
+from active holdings in active, organization-scoped accounts belonging to those
+assigned clients; the former fixed sample figures were removed. Route permission
+and portfolio calculation tests cover this slice.
+
+**Remaining `advisors.py` slice (2026-10-02):** Client password reset, all six
+transaction and transaction-history routes, and staff email verification now
+require live Employee access. Password reset requires `CLIENT.UPDATE` and a
+currently assigned, active customer in the same organization. Transaction reads
+require `TRANSACTION.READ`, creation requires `TRANSACTION.CREATE`, and update
+and soft delete require `TRANSACTION.UPDATE`; each uses current, non-deleted
+customer assignments. Linked holdings must belong to the transaction's customer
+account before position effects are applied. Email verification requires
+`PROFILE.READ`, a matching signed-in email, and an `email_verification` OTP.
+The OTP sender accepts that purpose. Access, reassignment, and OTP regression
+tests cover these rules. No HTTP route in `advisors.py` now depends on the
+legacy advisor-role guard.
+
+**Advisor finance slice (2026-10-02):** Goal, financial-account, and holding
+routes now require live Head/Employee access and their resource-specific
+`READ`, `CREATE`, or `UPDATE` permission. Customer-owned records use current,
+non-deleted advisor assignments to active customers in the employee's
+organization. Group-owned records require a current group or branch assignment,
+including groups without a primary advisor. Detail and mutation routes recheck
+the owner; account lookup filters organization before ownership resolution, and
+holding access rechecks its parent account. Route and ownership tests cover
+cross-client and cross-organization denial.
+
+**Advisor clients slice (2026-10-02):** All twelve `/advisors/clients` routes
+now use live Head/Employee access. Client list/detail and KYC/service-team reads
+require `CLIENT.READ`; creation requires `CLIENT.CREATE`; client and KYC updates
+and service-team changes require `CLIENT.UPDATE`; deactivation requires
+`CLIENT.DEACTIVATE`. Customer lookups use current, non-deleted assignments and
+active organization-scoped customer records. Service-team employee options and
+membership display are scoped to active employees in the same organization.
+The client creation subscription limit remains in force. Route, assignment,
+and organization-boundary tests cover this slice.
+
+**Advisor groups slice (2026-10-02):** All twelve `/advisors/groups` routes
+now use live Head/Employee access and `GROUP.READ`, `GROUP.CREATE`,
+`GROUP.UPDATE`, or `GROUP.DEACTIVATE`. The financial summary additionally
+requires `ACCOUNT.READ`, `HOLDING.READ`, and `GOAL.READ`. Group detail, list,
+membership history, and mutations require a current group or branch advisor
+assignment, even when `primary_advisor_employee_id` is unset. Customer additions
+and moves require an active assigned customer; moves also validate access to
+each source household before changing it. New groups and initial client
+households create explicit group assignments. Migration `5b8057c5ac93`
+backfills assignments for existing groups with a primary advisor; five local
+development records were backfilled and none remain without an active assignment.
+The old ADVISOR-only dependency is no longer used by any advisor route.
+Household-move history and the existing membership rules remain intact.
 
 Head-only employee login lifecycle endpoints now require
 `ORG.EMPLOYEE.ACCESS_MANAGE`, an active `FEATURE.EMPLOYEE_MANAGEMENT`
@@ -3156,21 +3253,148 @@ second address model.
 
 ### Pending A6 — External organization records
 
-- [ ] Add Associate, Agency, ARN Holder, and ARN document models only after A1–A5.
-- [ ] Implement their status lifecycles, ownership, relationships, and deactivation.
-- [ ] Keep login disabled by default and use the same invitation system if enabled later.
+- [x] Add organization-scoped Associate, Agency, and ARN Holder records after A1–A5.
+- [x] Implement their status lifecycles, ownership, relationships, and deactivation;
+  ARN status history is viewable from the Admin page.
+- [x] Add ARN registration, renewal, and supporting documents through the shared
+  Foundation Document/DocumentFile model, with scoped upload and download APIs.
+- [x] Keep Agency and Associate records separate from User accounts; creating
+  either record grants no login. A future portal must use an invitation linked
+  to its existing Party.
 
 ### Pending A7 — Governance and production gate
 
-- [ ] Emit audit events for organization, employee, permission, assignment,
-  invitation, login-access, and session-revocation changes.
-- [ ] Add bulk deactivate/reactivate operations with authorization and audit records.
-- [ ] Add permission-aware frontend navigation while keeping backend enforcement mandatory.
+- [x] Emit audit events for organization, employee, permission, assignment,
+  invitation, login-access, and session-revocation changes. Invitation
+  supersession, explicit revocation, and client-portal disablement are recorded
+  individually; publication and revocation of client-visible artifacts are
+  recorded in the same transaction as the visibility change.
+- [x] Add bulk deactivate/reactivate operations for Branches, Departments,
+  Designations, Employees, Agencies, Associates, and ARN Holders with
+  organization-scoped validation and audit records. Employee deactivation
+  also revokes active sessions, and ARN changes preserve status history.
+- [x] Filter Admin, Advisor, and Employee navigation using the live access
+  context's permissions, explicit denials, and feature entitlements. The Admin
+  entry route selects the first available section. Backend enforcement remains
+  authoritative for direct URLs and requests.
 - [ ] Complete security review, authorization integration tests, and audit-retention policy.
 - [ ] Execute the legacy-role migration, idempotent seed, rollback, and acceptance
   checklist in section 58A; retain evidence of negative and positive integration tests.
-- [ ] Verify every Admin query has an organization boundary and every Employee
-  business query has both permission and assignment checks.
+- [x] Verify the dedicated Admin and Employee routes have persona and permission
+  guards, and their business queries have an organization boundary and, for
+  employee client data, an assignment check. Legacy advisor routes remain part
+  of the broader A1 endpoint migration audit.
+
+#### A7 security review and audit-retention baseline (2026-10-01)
+
+Authorization HTTP tests now cover denied Admin permissions, a non-Head actor,
+organization-scoped Agency reads, and foreign ARN document access. Invitation
+acceptance rechecks current inviter Head authority and invitation-manage
+permission, target status, purpose/role, Party linkage, and recipient email
+before setting a password or granting a role. These checks add to
+the existing live-session, override-denial, assignment, and replay tests.
+
+Audit records are append-only application records. No routine API may edit or
+delete them. Reads require `ORG.AUDIT.READ` and an organization boundary; exports
+and backup restores must preserve actor, action, target, timestamp, and session
+provenance. Raw invitation tokens, passwords, and file bytes must never be stored
+in audit values. There is no automatic purge until an organization-specific
+retention period and legal-hold process are approved and documented. A future
+purge job must honor legal holds, record its own execution, and be tested against
+backup and restore procedures before deployment.
+
+Security review remains open for a complete endpoint authorization matrix,
+broader database-backed cross-organization coverage, and direct-download
+deployment checks. Client document and report download HTTP tests now verify
+permission denial, revoked-publication denial, customer and organization query
+scope, and that downloaded reports contain only the published customer's saved
+values. These route tests do not replace deployment checks of proxy/static-file
+configuration. Client downloads send `Cache-Control: no-store` and
+`X-Content-Type-Options: nosniff`. The HTTP tests above use dependency
+overrides and do not replace those database-backed tests.
+
+An Admin query review aligned the per-client portal-access status with the
+organization-scoped, active `CLIENT` role check used elsewhere. A disabled user
+account is no longer reported as enabled. A regression test covers both active
+and disabled account status.
+
+The dedicated Admin/Employee route inventory covers 78 HTTP endpoints. A route
+test now requires every `/admin` and `/employee` endpoint to declare both a
+Head/Employee persona guard and a permission dependency. Query boundaries were
+reviewed by route family:
+
+| Route family | Authorization and data boundary |
+| --- | --- |
+| `/admin/organization`, branches, departments, designations | Head permission; organization ID on roots and scoped parent validation on child/reference IDs. |
+| `/admin/organization/employees`, `/admin/employees` | Head permission; scoped Employee parent, linked Party constrained to same organization or legacy NULL owner, and last-Head protection for disabling access. |
+| `/admin/access` | Head permission; scoped Employee parent; organization-bound assignment/profile/override rows. Global permission catalog is intentionally shared. |
+| `/admin/organization/agencies`, associates, ARN holders | Head permission; organization-bound records and reference validation; ARN documents require a scoped holder and document owner. |
+| `/admin/invitations`, `/admin/client-invitations` | Head permission; organization-bound invitation and target Employee/Customer. Token preview/accept are public token-scoped flows with live inviter checks. |
+| `/admin/client-access`, `/admin/clients/{id}/portal-access` | Head or assigned Employee permission; scoped Customer parent and valid current-organization `CLIENT` role. |
+| `/employee/dashboard`, `/employee/clients` | Employee persona and permission; dashboard uses own active Employee row; clients query organization ID plus live assigned customer IDs. |
+| `/advisors/clients/{id}/portal-publications` | Staff persona, organization-bound Customer and assignment check; listing filters document/report types by read permission, while publish/revoke check type-specific write permission. |
+
+Linked child tables without an organization column are reached only after a
+scoped parent has been validated. The advisor route migration is complete;
+broader endpoint inventory and database-backed negative tests remain open under
+A1/A7.
+
+The account endpoints `/auth/me`, `/auth/change-password`, and `/auth/sessions`
+now require the same live access-session identity used by onboarding. Revoking
+a session requires that it belongs to the authenticated user. OTP codes are no
+longer returned by the API, shown in registration/reset pages, or printed on
+SMTP failure; password-reset requests return the same message whether an
+account exists or not. An SMTP delivery path is required to complete email
+verification and password recovery. OTP delivery now runs before the new code
+is committed; failed delivery rolls back the request and returns 503, and each
+code is invalidated after five failed verification attempts. The remaining A1
+review should cover other public authentication flows. OTP verification now
+locks its database row, and a two-session PostgreSQL test confirms that the
+same code cannot be accepted twice. Refresh tokens are returned only in an
+HTTP-only cookie; `REFRESH_COOKIE_SECURE` must be enabled for HTTPS deployment.
+Password changes and resets now revoke all
+active sessions and refresh tokens in the password-update transaction; users
+must sign in again afterward.
+
+The login, registration, invitation acceptance, password recovery, client,
+employee, group, member, and organization create forms use a synchronous
+single-submission guard so a second click while a request is in flight does
+not send another request. Successful login, registration, invitation acceptance,
+client creation, and password reset stay locked until navigation. Direct API
+retries can now reuse an `Idempotency-Key` for registration, login, clients,
+groups, employees, branches, departments, designations, agencies, associates,
+ARN holders, and employee/client invitations. `identity.idempotency_keys`
+records the request fingerprint and created resource in the same transaction.
+Concurrent retries wait for the first commit; matching retries return the
+created resource, while a changed payload gets 409. Login and invitation
+retries return 409 because their one-time secrets are not replayed. The UI
+reuses a key when retrying unchanged form data and clears it after a successful
+create. Keys expire after one day; expired rows are pruned opportunistically.
+Legacy callers that omit the header remain supported but do not receive this
+backend guarantee. Goals, financial accounts, holdings, transactions, report
+snapshots, tasks, meetings, messages, and document creation/upload now also
+reserve keys in the same database transaction. Transaction retries skip position
+effects and history writes; report retries return the saved snapshot without
+recalculating it. Document uploads hash the file with its metadata before
+writing it and remove a newly stored file if the database commit fails.
+Remaining create endpoints, including organization onboarding, service-team
+assignments, permission assignments, and publication, need a separate key audit.
+
+An isolated PostgreSQL database named `finplan_security_test` now supports
+opt-in authorization tests (`FINPLAN_SECURITY_TEST_DB=1`). The tests roll back
+their fixtures and verify real SQL organization filtering for Agencies, foreign
+ARN lookup denial, and last-Head protection after another Head becomes inactive.
+A committed two-session race test now verifies that simultaneous attempts to
+disable different Heads yield one successful removal, one 409, and one remaining
+active Head. The protection serializes these decisions on the organization row.
+
+The baseline migration now installs the original pre-Alembic schema from
+`backend/alembic/baseline_schema.sql` on empty databases. A separate
+`finplan_migration_test` database was created empty and upgraded through every
+revision to `7eac361b92d0`; downgrading one revision and upgrading back to head
+also succeeded. The original baseline downgrade is still a no-op because it
+predates Alembic ownership of the schema; a full downgrade to an empty database
+is not supported. Existing installations already past the baseline are unaffected.
 
 ## Definition of done for this track
 

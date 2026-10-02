@@ -9,18 +9,19 @@ BUSINESS/INVESTMENT/TRUST/HUF/OTHER groups.
 from datetime import date
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from decimal import Decimal
 
 from ..database.session import get_db
+from ..services.idempotency import reserve_create, finish_create
 from ..models.crm.customer import Customer, CustomerGroup, GroupMember
 from ..models.crm.financial_account import FinancialAccount
 from ..models.crm.holding import Holding
 from ..models.crm.goal import FinancialGoal
-from ..models.identity.auth import User
 from ..models.organization.employee import Employee
+from ..models.organization.assignment import EmployeeAssignment
 from ..schemas.group import (
     GroupActionResponse,
     GroupCreate,
@@ -34,7 +35,7 @@ from ..schemas.group import (
     GroupUpdate,
     GroupFinancialSummary,
 )
-from .advisors import get_current_advisor
+from ..services.access import AccessContext, require_employee, require_permission
 from ..schemas.group_options import GROUP_RELATIONSHIPS
 
 
@@ -48,14 +49,18 @@ HOUSEHOLD_GROUP_TYPES = {
     "FAMILY",
 }
 
-@router.get("/{group_id}/financial-summary", response_model=GroupFinancialSummary)
-def get_group_financial_summary(group_id: int, advisor: User = Depends(get_current_advisor), db: Session = Depends(get_db)):
+@router.get("/{group_id}/financial-summary", response_model=GroupFinancialSummary,
+            dependencies=[Depends(require_permission("GROUP.READ")),
+                          Depends(require_permission("ACCOUNT.READ")),
+                          Depends(require_permission("HOLDING.READ")),
+                          Depends(require_permission("GOAL.READ"))])
+def get_group_financial_summary(group_id: int, advisor: AccessContext = Depends(require_employee), db: Session = Depends(get_db)):
     employee = get_advisor_employee(db, advisor)
     group = get_group_for_advisor(db, group_id, employee)
     member_ids = [row.customer_id for row in db.query(GroupMember).filter(
         GroupMember.customer_group_id == group.id, GroupMember.left_on.is_(None)).all()]
     owner_filter = or_(FinancialAccount.customer_group_id == group.id, FinancialAccount.customer_id.in_(member_ids))
-    accounts = db.query(FinancialAccount).filter(owner_filter, FinancialAccount.is_active.is_(True), FinancialAccount.deleted_at.is_(None)).all()
+    accounts = db.query(FinancialAccount).filter(FinancialAccount.organization_id == employee.organization_id, owner_filter, FinancialAccount.is_active.is_(True), FinancialAccount.deleted_at.is_(None)).all()
     assets = sum((a.current_balance for a in accounts if a.account_nature == "ASSET"), Decimal(0))
     liabilities = sum((a.current_balance for a in accounts if a.account_nature == "LIABILITY"), Decimal(0))
     account_ids = [a.id for a in accounts]
@@ -63,7 +68,7 @@ def get_group_financial_summary(group_id: int, advisor: User = Depends(get_curre
     invested = sum((h.quantity * h.average_cost for h in holdings), Decimal(0))
     current = sum((h.quantity * h.current_price for h in holdings), Decimal(0))
     goal_filter = or_(FinancialGoal.customer_group_id == group.id, FinancialGoal.customer_id.in_(member_ids))
-    goals = db.query(FinancialGoal).filter(goal_filter, FinancialGoal.is_active.is_(True), FinancialGoal.deleted_at.is_(None)).all()
+    goals = db.query(FinancialGoal).filter(FinancialGoal.organization_id == employee.organization_id, goal_filter, FinancialGoal.is_active.is_(True), FinancialGoal.deleted_at.is_(None)).all()
     target = sum((g.target_amount for g in goals), Decimal(0)); funded = sum((g.current_amount for g in goals), Decimal(0))
     return GroupFinancialSummary(group_id=group.id, active_member_count=len(member_ids), account_count=len(accounts), holding_count=len(holdings), total_assets=assets, total_liabilities=liabilities, net_worth=assets-liabilities, invested_value=invested, holdings_value=current, unrealized_gain=current-invested, goal_count=len(goals), goal_target_amount=target, goal_current_amount=funded)
 
@@ -92,27 +97,16 @@ def validate_group_relationship(group_type: str, value: str | None, default: str
 
 def get_advisor_employee(
     db: Session,
-    advisor: User,
+    advisor: AccessContext,
 ) -> Employee:
-    """
-    Resolve the organization employee record belonging to
-    the currently authenticated advisor.
-
-    The organization employee model exposes an active-status flag in some
-    versions and an employment_status string in others; support both.
-    """
-
-    active_filter = (
-        Employee.is_active.is_(True)
-        if hasattr(Employee, "is_active")
-        else Employee.employment_status == "ACTIVE"
-    )
-
     employee = (
         db.query(Employee)
         .filter(
-            Employee.party_id == advisor.party_id,
-            active_filter,
+            Employee.id == advisor.employee_id,
+            Employee.organization_id == advisor.organization_id,
+            Employee.is_active.is_(True),
+            Employee.employment_status == "ACTIVE",
+            Employee.deleted_at.is_(None),
         )
         .first()
     )
@@ -131,18 +125,14 @@ def get_group_for_advisor(
     group_id: int,
     employee: Employee,
 ) -> CustomerGroup:
-    """
-    Load a group belonging to the advisor's organization.
-
-    Groups are organization-owned. If a group has a specific
-    primary advisor, only that advisor can manage it.
-    """
+    """Load an organization group only when this employee is assigned to it."""
 
     group = (
         db.query(CustomerGroup)
         .filter(
             CustomerGroup.id == group_id,
             CustomerGroup.organization_id == employee.organization_id,
+            CustomerGroup.deleted_at.is_(None),
         )
         .first()
     )
@@ -153,14 +143,24 @@ def get_group_for_advisor(
             detail="Household not found",
         )
 
-    if (
-        group.primary_advisor_employee_id is not None
-        and group.primary_advisor_employee_id != employee.id
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not assigned to this household",
-        )
+    today = date.today()
+    assigned = db.query(EmployeeAssignment).filter(
+        EmployeeAssignment.employee_id == employee.id,
+        EmployeeAssignment.assignment_type == "ADVISOR",
+        or_(
+            (EmployeeAssignment.entity_type == "CUSTOMER_GROUP") &
+            (EmployeeAssignment.entity_id == group.id),
+            (EmployeeAssignment.entity_type == "BRANCH") &
+            (EmployeeAssignment.entity_id == group.primary_branch_id),
+        ),
+        EmployeeAssignment.effective_from <= today,
+        or_(EmployeeAssignment.effective_to.is_(None),
+            EmployeeAssignment.effective_to >= today),
+        EmployeeAssignment.is_active.is_(True),
+        EmployeeAssignment.deleted_at.is_(None),
+    ).first()
+    if assigned is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Household not found")
 
     return group
 
@@ -169,6 +169,7 @@ def get_customer_for_advisor(
     db: Session,
     customer_id: int,
     employee: Employee,
+    advisor: AccessContext,
 ) -> Customer:
     """Load a customer belonging to the advisor's organization."""
 
@@ -177,11 +178,13 @@ def get_customer_for_advisor(
         .filter(
             Customer.id == customer_id,
             Customer.organization_id == employee.organization_id,
+            Customer.is_active.is_(True),
+            Customer.deleted_at.is_(None),
         )
         .first()
     )
 
-    if not customer:
+    if not customer or customer.id not in advisor.customer_ids:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Client not found",
@@ -302,6 +305,7 @@ def ensure_active_group(
 @router.get(
     "/",
     response_model=GroupListResponse,
+    dependencies=[Depends(require_permission("GROUP.READ"))],
 )
 def list_groups(
     group_type: Optional[str] = Query(
@@ -317,23 +321,34 @@ def list_groups(
         description="Include inactive households",
     ),
     db: Session = Depends(get_db),
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
 ):
     """List households available to the current advisor."""
 
     employee = get_advisor_employee(db, advisor)
 
+    today = date.today()
+    assignments = db.query(EmployeeAssignment).filter(
+        EmployeeAssignment.employee_id == employee.id,
+        EmployeeAssignment.assignment_type == "ADVISOR",
+        EmployeeAssignment.entity_type.in_(("CUSTOMER_GROUP", "BRANCH")),
+        EmployeeAssignment.effective_from <= today,
+        or_(EmployeeAssignment.effective_to.is_(None),
+            EmployeeAssignment.effective_to >= today),
+        EmployeeAssignment.is_active.is_(True),
+        EmployeeAssignment.deleted_at.is_(None),
+    ).all()
+    group_ids = [row.entity_id for row in assignments if row.entity_type == "CUSTOMER_GROUP"]
+    branch_ids = [row.entity_id for row in assignments if row.entity_type == "BRANCH"]
+
     query = (
         db.query(CustomerGroup)
         .filter(
             CustomerGroup.organization_id == employee.organization_id,
+            CustomerGroup.deleted_at.is_(None),
+            or_(CustomerGroup.id.in_(group_ids),
+                CustomerGroup.primary_branch_id.in_(branch_ids)),
         )
-    )
-
-    # Assigned groups + organization-level groups.
-    query = query.filter(
-        (CustomerGroup.primary_advisor_employee_id == employee.id)
-        | (CustomerGroup.primary_advisor_employee_id.is_(None))
     )
 
     if not include_inactive:
@@ -360,10 +375,7 @@ def list_groups(
         .all()
     )
 
-    responses = [
-        build_group_response(db, group)
-        for group in groups
-    ]
+    responses = [build_group_response(db, group) for group in groups]
 
     return GroupListResponse(
         groups=responses,
@@ -379,11 +391,13 @@ def list_groups(
     "/",
     response_model=GroupResponse,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("GROUP.CREATE"))],
 )
 def create_group(
     group_data: GroupCreate,
     db: Session = Depends(get_db),
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
+    idempotency_key: str | None = Header(default=None),
 ):
     """
     Create a household.
@@ -395,6 +409,13 @@ def create_group(
     """
 
     employee = get_advisor_employee(db, advisor)
+    reservation = reserve_create(
+        db, key=idempotency_key, operation="group.create",
+        actor_scope=f"org:{advisor.organization_id}:user:{advisor.user_id}",
+        payload=group_data.model_dump(mode="json"),
+    )
+    if reservation and reservation.replay:
+        return build_group_response(db, get_group_for_advisor(db, reservation.resource_id, employee))
 
     normalized_group_type = (
         group_data.group_type or "HOUSEHOLD"
@@ -407,6 +428,7 @@ def create_group(
             db,
             group_data.head_customer_id,
             employee,
+            advisor,
         )
 
         if head_customer.customer_status != "ACTIVE":
@@ -474,6 +496,16 @@ def create_group(
     db.add(db_group)
     db.flush()
 
+    db.add(EmployeeAssignment(
+        employee_id=employee.id,
+        assignment_type="ADVISOR",
+        entity_type="CUSTOMER_GROUP",
+        entity_id=db_group.id,
+        effective_from=date.today(),
+        is_active=True,
+        created_by=advisor.user_id,
+    ))
+
     # Add initial head/member if supplied.
     if head_customer:
         member = GroupMember(
@@ -490,6 +522,7 @@ def create_group(
 
         db.add(member)
 
+    finish_create(db, reservation, db_group.id)
     db.commit()
     db.refresh(db_group)
 
@@ -503,11 +536,12 @@ def create_group(
 @router.get(
     "/{group_id}",
     response_model=GroupResponse,
+    dependencies=[Depends(require_permission("GROUP.READ"))],
 )
 def get_group(
     group_id: int,
     db: Session = Depends(get_db),
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
 ):
     """Get household information."""
 
@@ -529,11 +563,12 @@ def get_group(
 @router.get(
     "/{group_id}/members",
     response_model=GroupMemberListResponse,
+    dependencies=[Depends(require_permission("GROUP.READ"))],
 )
 def list_group_members(
     group_id: int,
     db: Session = Depends(get_db),
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
 ):
     """List current active members. See /members/history for all periods."""
 
@@ -582,11 +617,12 @@ def list_group_members(
 @router.get(
     "/{group_id}/members/history",
     response_model=GroupMemberListResponse,
+    dependencies=[Depends(require_permission("GROUP.READ"))],
 )
 def list_group_membership_history(
     group_id: int,
     db: Session = Depends(get_db),
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
 ):
     """List every membership period, including active and ended periods."""
     employee = get_advisor_employee(db, advisor)
@@ -616,12 +652,13 @@ def list_group_membership_history(
 @router.put(
     "/{group_id}",
     response_model=GroupResponse,
+    dependencies=[Depends(require_permission("GROUP.UPDATE"))],
 )
 def update_group(
     group_id: int,
     group_data: GroupUpdate,
     db: Session = Depends(get_db),
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
 ):
     """Update household information."""
 
@@ -676,12 +713,13 @@ def update_group(
     "/{group_id}/members",
     response_model=GroupMemberResponse,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("GROUP.UPDATE"))],
 )
 def add_group_member(
     group_id: int,
     member_data: GroupMemberAdd,
     db: Session = Depends(get_db),
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
 ):
     """
     Add a client to a group.
@@ -711,6 +749,7 @@ def add_group_member(
         db,
         member_data.customer_id,
         employee,
+        advisor,
     )
 
     if customer.customer_status != "ACTIVE":
@@ -838,12 +877,13 @@ def add_group_member(
 @router.put(
     "/{group_id}/head",
     response_model=GroupActionResponse,
+    dependencies=[Depends(require_permission("GROUP.UPDATE"))],
 )
 def set_group_head(
     group_id: int,
     body: GroupHeadUpdate,
     db: Session = Depends(get_db),
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
 ):
     """
     Change household head.
@@ -865,6 +905,7 @@ def set_group_head(
         db,
         body.customer_id,
         employee,
+        advisor,
     )
 
     if customer.customer_status != "ACTIVE":
@@ -921,12 +962,13 @@ def set_group_head(
 
 @router.delete(
     "/{group_id}/members/{customer_id}",
+    dependencies=[Depends(require_permission("GROUP.UPDATE"))],
 )
 def remove_group_member(
     group_id: int,
     customer_id: int,
     db: Session = Depends(get_db),
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
 ):
     """
     Remove a client from a household.
@@ -1009,11 +1051,12 @@ def remove_group_member(
 @router.post(
     "/{group_id}/deactivate",
     response_model=GroupActionResponse,
+    dependencies=[Depends(require_permission("GROUP.DEACTIVATE"))],
 )
 def deactivate_group(
     group_id: int,
     db: Session = Depends(get_db),
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
 ):
     """
     Deactivate a group without deleting its history.
@@ -1090,12 +1133,12 @@ def deactivate_group(
     )
 
 
-@router.post("/{group_id}/move-client")
+@router.post("/{group_id}/move-client", dependencies=[Depends(require_permission("GROUP.UPDATE"))])
 def move_client_to_household(
     group_id: int,
     payload: MoveHouseholdRequest,
     db: Session = Depends(get_db),
-    advisor: User = Depends(get_current_advisor),
+    advisor: AccessContext = Depends(require_employee),
 ):
     employee = get_advisor_employee(
         db,
@@ -1125,6 +1168,7 @@ def move_client_to_household(
         db,
         payload.customer_id,
         employee,
+        advisor,
     )
 
     if customer.customer_status != "ACTIVE":
@@ -1195,6 +1239,10 @@ def move_client_to_household(
 
             if not current_group:
                 continue
+
+            # Moving a member also changes the source household. Require
+            # current access to that group before touching its history/head.
+            get_group_for_advisor(db, current_group.id, employee)
 
             remaining_members = (
                 db.query(GroupMember)

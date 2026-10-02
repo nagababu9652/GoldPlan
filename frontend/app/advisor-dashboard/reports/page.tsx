@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CashFlowReport,
   FinancialSummaryReport,
@@ -32,6 +32,8 @@ export default function ReportsPage() {
   const [selectedSnapshot, setSelectedSnapshot] = useState<ReportSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const snapshotKeyRef = useRef<string | null>(null);
   const [error, setError] = useState("");
 
   const loadReport = useCallback(async () => {
@@ -66,11 +68,14 @@ export default function ReportsPage() {
 
   const saveSnapshot = async () => {
     const token = localStorage.getItem("finplan_token");
-    if (!token || !report || !cashFlow) return;
+    if (!token || !report || !cashFlow || savingRef.current) return;
+    savingRef.current = true;
     try {
       setSaving(true);
       setError("");
-      const snapshot = await createReportSnapshot(token);
+      snapshotKeyRef.current ??= crypto.randomUUID();
+      const snapshot = await createReportSnapshot(token, undefined, snapshotKeyRef.current);
+      snapshotKeyRef.current = null;
       setSnapshots((current) => [snapshot, ...current]);
       setSelectedSnapshot(snapshot);
       setReport(snapshot.payload.financial_summary);
@@ -78,6 +83,7 @@ export default function ReportsPage() {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to save report");
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };

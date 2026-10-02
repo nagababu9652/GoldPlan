@@ -18,7 +18,8 @@ import {
   Receipt,
   Settings,
 } from "lucide-react";
-import { getAccessContext, logoutUser } from "@/lib/api";
+import { getAccessContext, logoutUser, type AccessContext } from "@/lib/api";
+import { canNavigate } from "@/lib/navigation-access";
 
 interface NavItem {
   label: string;
@@ -125,6 +126,22 @@ const navigation: NavModule[] = [
         path: "/admin/organization/employees",
       },
       {
+        label: "Associates",
+        path: "/admin/organization/associates",
+      },
+      {
+        label: "Agencies",
+        path: "/admin/organization/agencies",
+      },
+      {
+        label: "ARN Holders",
+        path: "/admin/organization/arn-holders",
+      },
+      {
+        label: "Client Access",
+        path: "/admin/client-access",
+      },
+      {
         label: "Subscription",
         path: "/admin/subscription",
       },
@@ -178,6 +195,7 @@ export default function AdvisorDashboardLayout({
 
   const [userName, setUserName] =
     useState("Advisor");
+  const [access, setAccess] = useState<AccessContext | null>(null);
 
   useEffect(() => {
     const token =
@@ -194,21 +212,16 @@ export default function AdvisorDashboardLayout({
     void getAccessContext(token)
       .then((access) => {
         if (!access) router.replace("/onboarding/organization");
+        else if (access.actor_type === "EMPLOYEE") router.replace("/employee-dashboard");
+        else if (access.actor_type === "CLIENT") router.replace("/client-portal");
         else if (!access.subscription_active) router.replace("/admin/subscription");
+        else setAccess(access);
       })
       .catch(() => router.replace("/login"));
 
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
-
-        if (
-          user.role &&
-          user.role !== "advisor"
-        ) {
-          router.replace("/dashboard");
-          return;
-        }
 
         setUserName(
           user.name ||
@@ -220,7 +233,15 @@ export default function AdvisorDashboardLayout({
         setUserName("Advisor");
       }
     }
-  }, [router]);
+  }, [router, pathname]);
+
+  const visibleNavigation = navigation
+    .map((module) => module.items
+      ? { ...module, items: module.items.filter((item) => canNavigate(access, item.href ?? item.path ?? "")) }
+      : module)
+    .filter((module) => module.path
+      ? canNavigate(access, module.path)
+      : Boolean(module.items?.length));
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -347,7 +368,7 @@ export default function AdvisorDashboardLayout({
         {/* Module navigation */}
         <nav className="relative z-40 hidden border-b border-line bg-bone/80 backdrop-blur-sm lg:block">
           <div className="shell-gutter flex min-h-[76px] items-stretch overflow-visible">
-            {navigation.map((module) => {
+            {visibleNavigation.map((module) => {
               const Icon = module.icon;
               const active = isModuleActive(
                 pathname,
@@ -500,7 +521,7 @@ export default function AdvisorDashboardLayout({
               </div>
 
               <div className="space-y-2">
-                {navigation.map((module) => {
+                {visibleNavigation.map((module) => {
                   const Icon = module.icon;
                   const active =
                     isModuleActive(

@@ -66,7 +66,12 @@ class DocumentBase(BaseModel):
 
 
 class DocumentCreate(DocumentBase):
-    pass
+    @field_validator("file_url")
+    @classmethod
+    def stored_file_url_is_server_owned(cls, value):
+        if value is not None:
+            raise ValueError("Upload a file to set its storage URL")
+        return value
 
 
 class DocumentUpdate(BaseModel):
@@ -105,6 +110,13 @@ class DocumentUpdate(BaseModel):
     customer_id: Optional[int] = None
 
     customer_group_id: Optional[int] = None
+
+    @field_validator("file_url")
+    @classmethod
+    def stored_file_url_is_server_owned(cls, value):
+        if value is not None:
+            raise ValueError("A document's storage URL cannot be changed")
+        return value
 
     @field_validator("document_type")
     @classmethod

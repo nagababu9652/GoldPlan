@@ -11,6 +11,7 @@ from app.routers.advisors import apply_position_effect, build_monthly_cash_flow
 
 class HoldingQuery:
     def __init__(self, holding): self.holding = holding
+    def join(self, *args): return self
     def filter(self, *args): return self
     def with_for_update(self): return self
     def one(self): return self.holding
@@ -21,6 +22,7 @@ class PositionDB:
 
 def transaction(kind, quantity, price):
     return SimpleNamespace(status="COMPLETED", holding_id=1, transaction_type=kind,
+                           customer_id=7, financial_account_id=5,
                            quantity=Decimal(quantity), unit_price=Decimal(price))
 
 def test_buy_sell_and_reversal_update_position():

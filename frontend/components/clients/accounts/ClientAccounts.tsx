@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FinancialAccount, FinancialAccountStatus, FinancialAccountType,
   archiveFinancialAccount, createFinancialAccount,
@@ -25,6 +25,8 @@ export default function ClientAccounts({ clientId, groupId }: { clientId?: numbe
   const [editingId, setEditingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const createKeyRef = useRef<{ payload: string; key: string } | null>(null);
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
@@ -52,6 +54,7 @@ export default function ClientAccounts({ clientId, groupId }: { clientId?: numbe
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    if (savingRef.current) return;
     const token = localStorage.getItem("finplan_token"); if (!token) return;
     const payload = {
       account_type: form.account_type, account_name: form.account_name,
@@ -63,13 +66,20 @@ export default function ClientAccounts({ clientId, groupId }: { clientId?: numbe
       interest_rate: form.interest_rate ? Number(form.interest_rate) : null,
       status: form.status, remarks: form.remarks || null,
     };
+    savingRef.current = true;
     try {
       setSaving(true); setError("");
       if (editingId) await updateFinancialAccount(token, editingId, payload);
-      else await createFinancialAccount(token, { ...payload, ...(groupId ? { customer_group_id: groupId } : { customer_id: clientId }) });
+      else {
+        const createPayload = { ...payload, ...(groupId ? { customer_group_id: groupId } : { customer_id: clientId }) };
+        const serialized = JSON.stringify(createPayload);
+        if (createKeyRef.current?.payload !== serialized) createKeyRef.current = { payload: serialized, key: crypto.randomUUID() };
+        await createFinancialAccount(token, createPayload, createKeyRef.current.key);
+        createKeyRef.current = null;
+      }
       setEditingId(null); setForm(emptyForm); await load();
     } catch (err) { setError(err instanceof Error ? err.message : "Failed to save account."); }
-    finally { setSaving(false); }
+    finally { savingRef.current = false; setSaving(false); }
   };
 
   const edit = (account: FinancialAccount) => {

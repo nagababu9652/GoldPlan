@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/finplan_db"
     secret_key: str = "CHANGE_ME"
     access_token_expire_minutes: int = 30
+    refresh_cookie_secure: bool = False  # Set true when served over HTTPS
     
     # Email Configuration
     smtp_host: str = "smtp.gmail.com"

@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -9,7 +9,8 @@ from ...models.crm.customer import Customer, CustomerGroup
 from ...models.crm.meeting import Meeting
 from ...models.organization.employee import Employee
 from ...models.organization.assignment import EmployeeAssignment
-from ...routers.advisors import get_current_advisor as get_current_user
+from ...services.access import AccessContext, require_employee as get_current_user, require_permission
+from ...services.idempotency import finish_create, reserve_create
 from ...schemas.meeting import (
     MeetingCreate,
     MeetingListResponse,
@@ -25,13 +26,16 @@ router = APIRouter(
 
 def get_advisor_employee(
     db: Session,
-    current_user,
+    current_user: AccessContext,
 ) -> Employee:
     employee = (
         db.query(Employee)
         .filter(
-            Employee.party_id == current_user.party_id,
+            Employee.id == current_user.employee_id,
+            Employee.organization_id == current_user.organization_id,
             Employee.is_active.is_(True),
+            Employee.employment_status == "ACTIVE",
+            Employee.deleted_at.is_(None),
         )
         .first()
     )
@@ -99,11 +103,13 @@ def validate_meeting_owner(
                 | (EmployeeAssignment.effective_to >= today)
             ),
             EmployeeAssignment.is_active.is_(True),
+            EmployeeAssignment.deleted_at.is_(None),
         ).first()
         customer = db.query(Customer).filter(
             Customer.id == customer_id,
             Customer.organization_id == employee.organization_id,
             Customer.is_active.is_(True),
+            Customer.deleted_at.is_(None),
         ).first()
         if not assigned or not customer:
             raise HTTPException(404, "Assigned customer not found")
@@ -112,17 +118,31 @@ def validate_meeting_owner(
             CustomerGroup.id == customer_group_id,
             CustomerGroup.organization_id == employee.organization_id,
             CustomerGroup.is_active.is_(True),
+            CustomerGroup.deleted_at.is_(None),
         ).first()
         if not group:
             raise HTTPException(404, "Customer group not found")
-        if (
-            group.primary_advisor_employee_id is not None
-            and group.primary_advisor_employee_id != employee.id
-        ):
-            raise HTTPException(403, "You are not assigned to this customer group")
+        assigned = db.query(EmployeeAssignment).filter(
+            EmployeeAssignment.employee_id == employee.id,
+            EmployeeAssignment.assignment_type == "ADVISOR",
+            or_(
+                (EmployeeAssignment.entity_type == "CUSTOMER_GROUP") &
+                (EmployeeAssignment.entity_id == group.id),
+                (EmployeeAssignment.entity_type == "BRANCH") &
+                (EmployeeAssignment.entity_id == group.primary_branch_id),
+            ),
+            EmployeeAssignment.effective_from <= date.today(),
+            or_(EmployeeAssignment.effective_to.is_(None),
+                EmployeeAssignment.effective_to >= date.today()),
+            EmployeeAssignment.is_active.is_(True),
+            EmployeeAssignment.deleted_at.is_(None),
+        ).first()
+        if not assigned:
+            raise HTTPException(404, "Assigned customer group not found")
 
 
-@router.get("/", response_model=MeetingListResponse)
+@router.get("/", response_model=MeetingListResponse,
+            dependencies=[Depends(require_permission("MEETING.READ"))])
 def list_meetings(
     search: str | None = Query(default=None),
     status: str | None = Query(default=None),
@@ -175,18 +195,27 @@ def list_meetings(
         .all()
     )
 
+    accessible = []
+    for meeting in meetings:
+        try:
+            validate_meeting_owner(db, employee, meeting.customer_id, meeting.customer_group_id)
+            accessible.append(meeting)
+        except HTTPException:
+            continue
+
     return MeetingListResponse(
         meetings=[
             build_meeting_response(meeting)
-            for meeting in meetings
+            for meeting in accessible
         ],
-        total=len(meetings),
+        total=len(accessible),
     )
 
 
 @router.get(
     "/{meeting_id}",
     response_model=MeetingResponse,
+    dependencies=[Depends(require_permission("MEETING.READ"))],
 )
 def get_meeting(
     meeting_id: int,
@@ -211,6 +240,8 @@ def get_meeting(
             detail="Meeting not found",
         )
 
+    validate_meeting_owner(db, employee, meeting.customer_id, meeting.customer_group_id)
+
     return build_meeting_response(meeting)
 
 
@@ -218,17 +249,25 @@ def get_meeting(
     "/",
     response_model=MeetingResponse,
     status_code=201,
+    dependencies=[Depends(require_permission("MEETING.CREATE"))],
 )
 def create_meeting(
     payload: MeetingCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    idempotency_key: str | None = Header(default=None),
 ):
     employee = get_advisor_employee(db, current_user)
 
     validate_meeting_owner(
         db, employee, payload.customer_id, payload.customer_group_id,
     )
+    reservation = reserve_create(db, key=idempotency_key, operation="meeting.create", actor_scope=f"user:{current_user.user_id}", payload=payload.model_dump())
+    if reservation and reservation.replay:
+        meeting = db.query(Meeting).filter(Meeting.id == reservation.resource_id, Meeting.organization_id == employee.organization_id, Meeting.advisor_employee_id == employee.id).first()
+        if meeting is None:
+            raise HTTPException(status_code=404, detail="Meeting not found")
+        return build_meeting_response(meeting)
 
     meeting = Meeting(
         organization_id=employee.organization_id,
@@ -248,6 +287,8 @@ def create_meeting(
     )
 
     db.add(meeting)
+    db.flush()
+    finish_create(db, reservation, meeting.id)
     db.commit()
     db.refresh(meeting)
 
@@ -257,6 +298,7 @@ def create_meeting(
 @router.put(
     "/{meeting_id}",
     response_model=MeetingResponse,
+    dependencies=[Depends(require_permission("MEETING.UPDATE"))],
 )
 def update_meeting(
     meeting_id: int,
@@ -281,6 +323,8 @@ def update_meeting(
             status_code=404,
             detail="Meeting not found",
         )
+
+    validate_meeting_owner(db, employee, meeting.customer_id, meeting.customer_group_id)
 
     updates = payload.model_dump(exclude_unset=True)
 
@@ -348,6 +392,7 @@ def update_meeting(
 @router.post(
     "/{meeting_id}/cancel",
     response_model=MeetingResponse,
+    dependencies=[Depends(require_permission("MEETING.UPDATE"))],
 )
 def cancel_meeting(
     meeting_id: int,
@@ -372,6 +417,8 @@ def cancel_meeting(
             detail="Meeting not found",
         )
 
+    validate_meeting_owner(db, employee, meeting.customer_id, meeting.customer_group_id)
+
     if meeting.status not in {"SCHEDULED", "RESCHEDULED"}:
         raise HTTPException(409, "Only scheduled or rescheduled meetings can be cancelled")
 
@@ -386,6 +433,7 @@ def cancel_meeting(
 @router.post(
     "/{meeting_id}/complete",
     response_model=MeetingResponse,
+    dependencies=[Depends(require_permission("MEETING.UPDATE"))],
 )
 def complete_meeting(
     meeting_id: int,
@@ -400,6 +448,7 @@ def complete_meeting(
     ).first()
     if not meeting:
         raise HTTPException(404, "Meeting not found")
+    validate_meeting_owner(db, employee, meeting.customer_id, meeting.customer_group_id)
     if meeting.status not in {"SCHEDULED", "RESCHEDULED"}:
         raise HTTPException(409, "Only scheduled or rescheduled meetings can be completed")
     meeting.status = "COMPLETED"

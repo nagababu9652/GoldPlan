@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { createClient } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { useSingleSubmission } from "@/lib/use-single-submission";
 
 export default function NewClientPage() {
   const router = useRouter();
+  const { run, finish, submitting, keyFor } = useSingleSubmission();
   const token =
     typeof window !== "undefined"
       ? localStorage.getItem("finplan_token")
@@ -59,8 +61,9 @@ export default function NewClientPage() {
         return;
     }
 
+    await run(async () => {
     try {
-        const client = await createClient(token, {
+        const payload = {
         ...form,
         date_of_birth: form.date_of_birth || undefined,
         annual_income: form.annual_income
@@ -69,7 +72,10 @@ export default function NewClientPage() {
         net_worth: form.net_worth
             ? Number(form.net_worth)
             : undefined,
-        });
+        };
+        const client = await createClient(token, payload, keyFor(payload));
+
+        finish();
 
         console.log("Client created:", client);
 
@@ -87,6 +93,7 @@ export default function NewClientPage() {
             : "Failed to create client."
         );
     }
+    });
     };
 
   return (
@@ -361,9 +368,10 @@ export default function NewClientPage() {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="rounded-lg bg-obsidian px-6 py-3 font-medium text-bone"
+            disabled={submitting}
+            className="rounded-lg bg-obsidian px-6 py-3 font-medium text-bone disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Create Client
+            {submitting ? 'Creating…' : 'Create Client'}
           </button>
         </div>
       </form>

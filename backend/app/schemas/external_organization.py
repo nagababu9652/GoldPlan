@@ -109,3 +109,14 @@ class ArnResponse(BaseModel):
     id:int;organization_id:int;arn_number:str;holder_party_id:int;holder_name:str;holder_type:str
     branch_id:int|None;employee_id:int|None;associate_id:int|None;agency_id:int|None
     registration_date:date|None;valid_from:date|None;valid_to:date|None;status:str;remarks:str|None;is_active:bool;created_at:datetime
+
+
+class ArnStatusHistoryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    arn_holder_id: int
+    old_status: str | None
+    new_status: str
+    changed_at: datetime
+    changed_by: int
+    reason: str | None

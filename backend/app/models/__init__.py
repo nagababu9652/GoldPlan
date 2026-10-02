@@ -24,6 +24,7 @@ from .identity import (
     EmployeePermissionProfile, EmployeePermissionOverride,
     Device, UserDevice, AccountLockout, SecurityEvent, AuditLog,
     AccessInvitation,
+    IdempotencyKey,
 )
 
 # Organization models
@@ -61,7 +62,7 @@ __all__ = [
     "Permission", "Role", "PermissionProfile", "ProfilePermission", "RolePermissionProfile", "UserRole",
     "EmployeePermissionProfile", "EmployeePermissionOverride",
     "Device", "UserDevice", "AccountLockout", "SecurityEvent", "AuditLog",
-    "AccessInvitation",
+    "AccessInvitation", "IdempotencyKey",
 
     # Organization
     "Organization", "Branch", "Department", "Designation", "OrganizationSetting",

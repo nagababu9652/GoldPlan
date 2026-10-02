@@ -9,6 +9,7 @@ from app.models.base import Base
 # Import all active models so SQLAlchemy knows about them
 from app.models.identity.auth import User
 from app.models.identity.authorization import Role, UserRole
+from app.models.identity.idempotency import IdempotencyKey
 
 from app.models.foundation import Party
 from app.models.crm import Customer

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FinancialGoal, GoalStatus, GoalType } from "@/lib/api";
 import { archiveFinancialGoal, createFinancialGoal, getClientGoals, toDisplayGoal, updateFinancialGoal } from "./api";
 import { getGroupGoals, getGroupMembers } from "@/lib/api";
@@ -21,6 +21,8 @@ export default function ClientGoals({ clientId, groupId }: Props) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const createKeyRef = useRef<{ payload: string; key: string } | null>(null);
   const [error, setError] = useState("");
 
   const loadGoals = useCallback(async () => {
@@ -47,6 +49,7 @@ export default function ClientGoals({ clientId, groupId }: Props) {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    if (savingRef.current) return;
     const token = localStorage.getItem("finplan_token");
     if (!token) return;
     const payload = {
@@ -57,14 +60,21 @@ export default function ClientGoals({ clientId, groupId }: Props) {
       expected_return_rate: form.expected_return_rate ? Number(form.expected_return_rate) : null,
       status: form.status,
     };
+    savingRef.current = true;
     try {
       setSaving(true); setError("");
       if (editingId) await updateFinancialGoal(token, editingId, payload);
-      else await createFinancialGoal(token, { ...payload, ...(groupId ? { customer_group_id: groupId } : { customer_id: clientId }) });
+      else {
+        const createPayload = { ...payload, ...(groupId ? { customer_group_id: groupId } : { customer_id: clientId }) };
+        const serialized = JSON.stringify(createPayload);
+        if (createKeyRef.current?.payload !== serialized) createKeyRef.current = { payload: serialized, key: crypto.randomUUID() };
+        await createFinancialGoal(token, createPayload, createKeyRef.current.key);
+        createKeyRef.current = null;
+      }
       setForm(emptyForm); setEditingId(null); await loadGoals();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save goal.");
-    } finally { setSaving(false); }
+    } finally { savingRef.current = false; setSaving(false); }
   };
 
   const edit = (goal: FinancialGoal) => {
