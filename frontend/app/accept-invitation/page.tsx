@@ -1,11 +1,19 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { acceptAccessInvitation, previewAccessInvitation } from '@/lib/api';
 import { useSingleSubmission } from '@/lib/use-single-submission';
 
 export default function AcceptInvitationPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-bone" />}>
+      <AcceptInvitationContent />
+    </Suspense>
+  );
+}
+
+function AcceptInvitationContent() {
   const params = useSearchParams();
   const router = useRouter();
   const token = params.get('token') || '';
