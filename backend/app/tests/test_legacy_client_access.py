@@ -36,7 +36,8 @@ def test_client_routes_require_staff_and_client_permissions():
     expected = {
         ("GET", "/advisors/clients"): "CLIENT.READ",
         ("POST", "/advisors/clients"): "CLIENT.CREATE",
-        ("GET", "/advisors/clients/{client_id}"): "CLIENT.READ",
+            ("GET", "/advisors/clients/{client_id}"): "CLIENT.READ",
+            ("GET", "/advisors/clients/{client_id}/risk-parameters"): "CLIENT.READ",
         ("PUT", "/advisors/clients/{client_id}"): "CLIENT.UPDATE",
         ("DELETE", "/advisors/clients/{client_id}"): "CLIENT.DEACTIVATE",
         ("GET", "/advisors/clients/{client_id}/kyc"): "CLIENT.READ",

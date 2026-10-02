@@ -517,6 +517,34 @@ async function adminOrganizationRequest<T>(token:string, path:string, options:Re
   if(!response.ok){const error=await response.json(); throw new Error(formatApiError(error.detail,'Organization request failed'));}
   return response.json();
 }
+export type ApplicationConfigurationSection = 'COMMON' | 'PRE_SALES' | 'DOMAIN_RELATED';
+export interface ApplicationConfigurationVersion {
+  id: number;
+  section: ApplicationConfigurationSection;
+  version: number;
+  values: Record<string, unknown>;
+  created_by: number;
+  created_at: string;
+}
+async function adminConfigurationRequest<T>(token: string, path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}/admin/configuration${path}`, {
+    ...options,
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...options.headers },
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(formatApiError(error?.detail, 'Configuration request failed'));
+  }
+  return response.json();
+}
+export const getApplicationConfiguration = (token: string, section: ApplicationConfigurationSection) =>
+  adminConfigurationRequest<ApplicationConfigurationVersion | null>(token, `/${section}`);
+export const listApplicationConfigurationHistory = (token: string, section: ApplicationConfigurationSection) =>
+  adminConfigurationRequest<ApplicationConfigurationVersion[]>(token, `/${section}/history`);
+export const saveApplicationConfiguration = (token: string, section: ApplicationConfigurationSection, expectedVersion: number, values: Record<string, unknown>) =>
+  adminConfigurationRequest<ApplicationConfigurationVersion>(token, `/${section}`, {
+    method: 'PUT', body: JSON.stringify({ expected_version: expectedVersion, values }),
+  });
 export const getAdminOrganization=(token:string)=>adminOrganizationRequest<OrganizationAdminProfile>(token,'');
 export const updateAdminOrganization=(token:string,data:Partial<OrganizationAdminProfile>)=>adminOrganizationRequest<OrganizationAdminProfile>(token,'',{method:'PUT',body:JSON.stringify(data)});
 export const listAdminBranches=(token:string,all=true)=>adminOrganizationRequest<AdminBranch[]>(token,`/branches?include_inactive=${all}`);
@@ -957,6 +985,20 @@ export function createClient(token: string, data: ClientCreate, idempotencyKey =
 
 export function getClient(token: string, id: number): Promise<Client> {
   return advisorFetch(`/clients/${id}`, token);
+}
+
+export interface ClientRiskParameters {
+  risk_code: string | null;
+  configuration_version: number | null;
+  parameters: {
+    equity_allocation_pct: string;
+    debt_allocation_pct: string;
+    expected_equity_return_pct: string;
+    expected_debt_return_pct: string;
+  } | null;
+}
+export function getClientRiskParameters(token: string, id: number): Promise<ClientRiskParameters> {
+  return advisorFetch(`/clients/${id}/risk-parameters`, token);
 }
 
 export function deleteClient(token: string, id: number): Promise<{ message: string }> {

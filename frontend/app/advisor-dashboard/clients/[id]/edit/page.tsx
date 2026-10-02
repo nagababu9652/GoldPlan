@@ -367,6 +367,9 @@ export default function EditClientPage() {
               <option value="AGGRESSIVE">
                 Aggressive
               </option>
+              <option value="VERY_AGGRESSIVE">
+                Very Aggressive
+              </option>
             </select>
 
             <input

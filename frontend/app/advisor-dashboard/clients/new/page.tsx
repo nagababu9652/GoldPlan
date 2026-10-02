@@ -237,6 +237,7 @@ export default function NewClientPage() {
               <option value="CONSERVATIVE">Conservative</option>
               <option value="MODERATE">Moderate</option>
               <option value="AGGRESSIVE">Aggressive</option>
+              <option value="VERY_AGGRESSIVE">Very Aggressive</option>
             </select>
 
             <input

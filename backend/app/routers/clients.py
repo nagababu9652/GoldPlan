@@ -30,6 +30,7 @@ from ..services.party_profile import save_address, save_bank_account, primary_re
 from ..services.access import AccessContext, require_employee, require_permission
 from ..services.idempotency import reserve_create, finish_create
 from ..models.crm.customer import CustomerGroup, GroupMember
+from ..models.organization.configuration import ApplicationConfigurationVersion
 
 router = APIRouter(
     prefix="/advisors/clients",
@@ -290,6 +291,35 @@ def build_client_response(
     response_model=ClientListResponse,
     dependencies=[Depends(require_permission("CLIENT.READ"))],
 )
+
+
+@router.get("/{client_id}/risk-parameters",
+            dependencies=[Depends(require_permission("CLIENT.READ"))])
+def get_client_risk_parameters(client_id: int,
+                               advisor: AccessContext = Depends(require_employee),
+                               db: Session = Depends(get_db)):
+    """Return only the configured parameters matching an accessible client's risk code."""
+    _, customer = get_assigned_customer(advisor, db, client_id)
+    configuration = (
+        db.query(ApplicationConfigurationVersion)
+        .filter(
+            ApplicationConfigurationVersion.organization_id == advisor.organization_id,
+            ApplicationConfigurationVersion.section == "PRE_SALES",
+        )
+        .order_by(ApplicationConfigurationVersion.version.desc())
+        .first()
+    )
+    risk_code = (customer.risk_profile or "").strip().upper().replace("-", "_").replace(" ", "_")
+    parameters = next(
+        (item for item in configuration.values.get("risk_profiles", [])
+         if item.get("risk_code") == risk_code),
+        None,
+    ) if configuration else None
+    return {
+        "risk_code": risk_code or None,
+        "configuration_version": configuration.version if configuration else None,
+        "parameters": parameters,
+    }
 def list_clients(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),

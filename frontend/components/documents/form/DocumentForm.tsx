@@ -5,8 +5,10 @@ import {
   FormEvent,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
+import { useSingleSubmission } from "@/lib/use-single-submission";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -84,6 +86,8 @@ export default function DocumentForm({
   documentId,
 }: Props) {
   const router = useRouter();
+  const submittingRef = useRef(false);
+  const { keyFor, clearKey } = useSingleSubmission();
 
   const [documentType, setDocumentType] =
     useState("KYC");
@@ -353,6 +357,8 @@ export default function DocumentForm({
     event: React.DragEvent<HTMLDivElement>,
   ) {
     event.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setDragActive(false);
 
     const file =
@@ -400,8 +406,7 @@ export default function DocumentForm({
           return;
         }
 
-        const created =
-          await uploadDocument(token, {
+        const uploadPayload = {
             customer_id: customerId
               ? Number(customerId)
               : null,
@@ -419,7 +424,12 @@ export default function DocumentForm({
               notes.trim() || null,
 
             file: selectedFile,
-          });
+          };
+        const created = await uploadDocument(token, uploadPayload, keyFor({
+          ...uploadPayload,
+          file: { name: selectedFile.name, size: selectedFile.size, lastModified: selectedFile.lastModified },
+        }));
+        clearKey();
 
         router.push(
           `/advisor-dashboard/documents/${created.id}`,
@@ -473,6 +483,7 @@ export default function DocumentForm({
           : "Unable to save document.",
       );
     } finally {
+      submittingRef.current = false;
       setSaving(false);
     }
   }

@@ -35,7 +35,7 @@ from .models.identity import (
 )
 # Organization
 from .models.organization import (
-    Organization, Branch, Department, Designation, OrganizationSetting,
+    Organization, Branch, Department, Designation, OrganizationSetting, ApplicationConfigurationVersion,
     Employee, EmployeeRole, EmployeeReporting,
     EmployeeBranchHistory, EmployeeDepartmentHistory, EmployeeDesignationHistory,
     EmployeeAssignment, EmployeeSkill, EmployeeCertification,
@@ -76,6 +76,7 @@ from .routers.portal_publications import router as portal_publications_router
 from .routers.client_portal_access import router as client_portal_access_router
 from .routers.admin_external import router as admin_external_router
 from .routers.admin_client_access import router as admin_client_access_router
+from .routers.admin_configuration import router as admin_configuration_router
 from .services.access import require_active_subscription, require_subscription_entitlement
 
 
@@ -134,6 +135,7 @@ def create_app() -> FastAPI:
         dependencies=[Depends(require_subscription_entitlement("FEATURE.EMPLOYEE_MANAGEMENT"))],
     )
     app.include_router(admin_organization_router, dependencies=active_subscription)
+    app.include_router(admin_configuration_router, dependencies=active_subscription)
     app.include_router(
         admin_employees_router,
         dependencies=[Depends(require_subscription_entitlement("FEATURE.EMPLOYEE_MANAGEMENT"))],

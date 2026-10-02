@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { useSingleSubmission } from "@/lib/use-single-submission";
 import { useRouter } from "next/navigation";
 
 import {
@@ -20,6 +21,8 @@ type Props = {
 
 export function MessageForm({ messageId }: Props) {
   const router = useRouter();
+  const submittingRef = useRef(false);
+  const { keyFor, clearKey } = useSingleSubmission();
 
   const [clients, setClients] = useState<Client[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -119,6 +122,8 @@ export function MessageForm({ messageId }: Props) {
     event: FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
 
     try {
       setSaving(true);
@@ -167,7 +172,7 @@ export function MessageForm({ messageId }: Props) {
           `/advisor-dashboard/messages/${messageId}`,
         );
       } else {
-        const created = await createMessage(token, {
+        const payload = {
           message_type: messageType,
           subject: subject.trim() || null,
           body: body.trim(),
@@ -180,7 +185,9 @@ export function MessageForm({ messageId }: Props) {
             recipientType === "GROUP"
               ? Number(groupId)
               : null,
-        });
+        };
+        const created = await createMessage(token, payload, keyFor(payload));
+        clearKey();
 
         router.push(
           `/advisor-dashboard/messages/${created.id}`,
@@ -193,6 +200,7 @@ export function MessageForm({ messageId }: Props) {
           : "Failed to save message.",
       );
     } finally {
+      submittingRef.current = false;
       setSaving(false);
     }
   }

@@ -14,6 +14,7 @@ from app.models.identity.idempotency import IdempotencyKey
 from app.models.foundation import Party
 from app.models.crm import Customer
 from app.models.crm.meeting import Meeting
+from app.models.organization.configuration import ApplicationConfigurationVersion
 
 config = context.config
 

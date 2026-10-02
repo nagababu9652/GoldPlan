@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { useSingleSubmission } from "@/lib/use-single-submission";
 import { useRouter } from "next/navigation";
 
 import {
@@ -79,6 +80,8 @@ export default function MeetingForm({
   const router = useRouter();
 
   const isEditMode = Boolean(meeting);
+  const submittingRef = useRef(false);
+  const { keyFor, clearKey } = useSingleSubmission();
 
   const [form, setForm] =
     useState<FormState>(initialForm);
@@ -244,6 +247,8 @@ export default function MeetingForm({
       return;
     }
 
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     try {
       setSubmitting(true);
 
@@ -341,7 +346,9 @@ export default function MeetingForm({
         await createMeeting(
           token,
           payload,
+          keyFor(payload),
         );
+      clearKey();
 
       router.push(
         `/advisor-dashboard/meetings/${createdMeeting.id}`,
@@ -362,6 +369,7 @@ export default function MeetingForm({
             : "Unable to create meeting.",
       );
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   }

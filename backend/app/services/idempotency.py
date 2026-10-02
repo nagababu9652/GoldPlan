@@ -34,7 +34,7 @@ def reserve_create(
     if not isinstance(key, str):
         return None
     if not KEY_PATTERN.fullmatch(key):
-        raise HTTPException(400, "Idempotency-Key must be 16–128 letters, digits, or ._:-")
+        raise HTTPException(400, "Idempotency-Key must be 16-128 letters, digits, or ._:-")
 
     key_hash = hashlib.sha256(f"{operation}\0{actor_scope}\0{key}".encode()).hexdigest()
     request_hash = hashlib.sha256(

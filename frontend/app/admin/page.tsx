@@ -7,6 +7,7 @@ import { canNavigate } from '@/lib/navigation-access';
 
 const destinations = [
   '/admin/organization',
+  '/admin/configuration',
   '/admin/organization/branches',
   '/admin/organization/departments',
   '/admin/organization/designations',

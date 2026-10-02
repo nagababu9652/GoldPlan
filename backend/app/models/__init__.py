@@ -29,7 +29,7 @@ from .identity import (
 
 # Organization models
 from .organization import (
-    Organization, Branch, Department, Designation, OrganizationSetting,
+    Organization, Branch, Department, Designation, OrganizationSetting, ApplicationConfigurationVersion,
     Employee, EmployeeRole, EmployeeReporting, EmployeeBranchHistory, EmployeeDepartmentHistory, EmployeeDesignationHistory,
     EmployeeAssignment, EmployeeSkill, EmployeeCertification, OrganizationHoliday,
     SubscriptionPlan, OrganizationSubscription, SubscriptionEvent,
@@ -65,7 +65,7 @@ __all__ = [
     "AccessInvitation", "IdempotencyKey",
 
     # Organization
-    "Organization", "Branch", "Department", "Designation", "OrganizationSetting",
+    "Organization", "Branch", "Department", "Designation", "OrganizationSetting", "ApplicationConfigurationVersion",
     "Employee", "EmployeeRole", "EmployeeReporting", "EmployeeBranchHistory", "EmployeeDepartmentHistory", "EmployeeDesignationHistory",
     "EmployeeAssignment", "EmployeeSkill", "EmployeeCertification", "OrganizationHoliday",
     "SubscriptionPlan", "OrganizationSubscription", "SubscriptionEvent",

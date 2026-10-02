@@ -20,7 +20,8 @@ def load_seed_migration(filename="91ad7e60c2b4_seed_authorization_catalog.py"):
 def test_runtime_and_migration_catalogs_cannot_drift():
     migration = load_seed_migration()
     message_migration = load_seed_migration("17b1514df345_add_advisor_message_permissions.py")
-    assert set(migration.PERMISSIONS) | set(message_migration.MESSAGE_PERMISSIONS) == set(PERMISSION_CODES)
+    config_migration = load_seed_migration("9f13c0b7e84a_application_configuration_versions.py")
+    assert set(migration.PERMISSIONS) | set(message_migration.MESSAGE_PERMISSIONS) | set(config_migration.CONFIG_PERMISSIONS) == set(PERMISSION_CODES)
     assert set(migration.ADVISOR_PERMISSIONS) | set(message_migration.MESSAGE_PERMISSIONS) == set(ADVISOR_PERMISSIONS)
 
 

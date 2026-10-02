@@ -9,6 +9,7 @@ import LogoutButton from '@/components/auth/LogoutButton';
 
 const links=[
   ['Organization','/admin/organization'],
+  ['Application Configuration','/admin/configuration'],
   ['Branches','/admin/organization/branches'],
   ['Departments','/admin/organization/departments'],
   ['Designations','/admin/organization/designations'],

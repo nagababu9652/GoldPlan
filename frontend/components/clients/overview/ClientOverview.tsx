@@ -1,6 +1,7 @@
 "use client";
 
-import type { Client } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { getClientRiskParameters, type Client, type ClientRiskParameters } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 
 interface Props {
@@ -33,6 +34,16 @@ function InfoItem({
 }
 
 export default function ClientOverview({ client }: Props) {
+  const [riskParameters, setRiskParameters] = useState<ClientRiskParameters | null>(null);
+  useEffect(() => {
+    const token = localStorage.getItem('finplan_token');
+    if (!token || !client.risk_profile) { setRiskParameters(null); return; }
+    let active = true;
+    void getClientRiskParameters(token, client.id)
+      .then((value) => { if (active) setRiskParameters(value); })
+      .catch(() => { if (active) setRiskParameters(null); });
+    return () => { active = false; };
+  }, [client.id, client.risk_profile]);
   const clientName =
     `${client.first_name || ""} ${client.last_name || ""}`.trim();
 
@@ -155,6 +166,23 @@ export default function ClientOverview({ client }: Props) {
           />
         </div>
       </Card>
+
+      {client.risk_profile && (
+        <Card className="p-6">
+          <h2 className="mb-2 text-xl font-semibold">Risk-profile parameters</h2>
+          {riskParameters?.parameters ? (
+            <>
+              <p className="mb-5 text-sm text-muted-foreground">Organization configuration, version {riskParameters.configuration_version}. These are reference assumptions for the client&apos;s {riskParameters.risk_code?.replace(/_/g, ' ')} profile.</p>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <InfoItem label="Equity allocation" value={`${riskParameters.parameters.equity_allocation_pct}%`} />
+                <InfoItem label="Debt allocation" value={`${riskParameters.parameters.debt_allocation_pct}%`} />
+                <InfoItem label="Expected equity return" value={`${riskParameters.parameters.expected_equity_return_pct}%`} />
+                <InfoItem label="Expected debt return" value={`${riskParameters.parameters.expected_debt_return_pct}%`} />
+              </div>
+            </>
+          ) : <p className="text-sm text-muted-foreground">Parameters for this risk profile are not configured yet.</p>}
+        </Card>
+      )}
 
       {/* Financial Information */}
       <Card className="p-6">

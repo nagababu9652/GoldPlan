@@ -2,6 +2,7 @@ import type { AccessContext } from '@/lib/api';
 
 const requirements: Record<string, { permission?: string; feature?: string; head?: boolean }> = {
   '/admin/organization': { permission: 'ORG.PROFILE.READ', head: true },
+  '/admin/configuration': { permission: 'ORG.CONFIG.READ', head: true },
   '/admin/organization/branches': { permission: 'ORG.BRANCH.READ', head: true },
   '/admin/organization/departments': { permission: 'ORG.DEPARTMENT.READ', head: true },
   '/admin/organization/designations': { permission: 'ORG.DESIGNATION.READ', head: true },
